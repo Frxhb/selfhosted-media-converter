@@ -1,6 +1,6 @@
 # Media Converter
 
-Disclaimer: Vibe-Coding Project. GUI mainly in german right now. English version coming soon...
+  Disclaimer: Vibe-Coding Project. GUI mainly in german right now. English version coming soon...
 
 <p align="center">
   <img src="docs/banner.png" alt="Media Converter Banner" width="100%">
@@ -11,9 +11,9 @@ Disclaimer: Vibe-Coding Project. GUI mainly in german right now. English version
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/stars/Frxhb/media-converter-selfhosted?style=flat-square" alt="GitHub Stars">
-  <img src="https://img.shields.io/github/license/Frxhb/media-converter-selfhosted?style=flat-square" alt="License">
-  <img src="https://img.shields.io/github/last-commit/Frxhb/media-converter-selfhosted?style=flat-square" alt="Last Commit">
+  <img src="https://img.shields.io/github/stars/Frxhb/selfhosted-media-converter?style=flat-square" alt="GitHub Stars">
+  <img src="https://img.shields.io/github/license/Frxhb/selfhosted-media-converter?style=flat-square" alt="License">
+  <img src="https://img.shields.io/github/last-commit/Frxhb/selfhosted-media-converter?style=flat-square" alt="Last Commit">
   <img src="https://img.shields.io/badge/Python-3.x-blue?style=flat-square&logo=python" alt="Python Version">
   <img src="https://img.shields.io/badge/Docker-supported-blue?style=flat-square&logo=docker" alt="Docker">
   <img src="https://img.shields.io/badge/FastAPI-powered-009688?style=flat-square&logo=fastapi" alt="FastAPI">
