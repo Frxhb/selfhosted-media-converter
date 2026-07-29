@@ -1,0 +1,16 @@
+services:
+  media-converter:
+    image: mein-converter-image:latest # Oder 'build: .' für lokale Builds
+    container_name: media_converter_pro
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./media/inputs:/media/inputs
+      - ./media/outputs:/media/outputs
+      - ./config:/app/config
+      - ./logs:/app/config/logs
+    environment:
+      - TZ=Europe/Berlin
+    restart: unless-stopped

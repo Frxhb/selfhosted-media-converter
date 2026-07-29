@@ -1,0 +1,30 @@
+# Nutzdaten - werden zur Laufzeit als Volumes gemountet, gehören nicht ins Image
+media/
+config/
+
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Secrets / lokale Konfiguration
+.env
+.env.*
+!.env.example
+
+# Editor/OS-Müll
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Docker selbst
+Dockerfile
+docker-compose*.yml

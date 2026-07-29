@@ -1,0 +1,27 @@
+# Media contents (ignore downloaded/processed files, keep empty directories)
+media/inputs/*
+media/outputs/*
+
+# Database, runtime configs, and backups
+config/*
+
+# Python cache and environments
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Environment files and secrets
+.env
+.env.*
+*.db
+# test docker yml
+docker-compose.override.yml
+
+# System / Editor junk
+.DS_Store
+.vscode/
+.idea/
+*.log

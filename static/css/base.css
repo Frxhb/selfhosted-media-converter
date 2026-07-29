@@ -1,0 +1,92 @@
+      /* ============================================================
+           DESIGN SYSTEM — "Patch Bay"
+           A signal-chain metaphor for a self-hosted media pipeline.
+           Palette: near-black studio surfaces, one warm signal accent.
+           ============================================================ */
+      :root {
+        --bg: #0b0c0e;
+        --surface: #16181c;
+        --surface-raised: #1d2025;
+        --surface-sunken: #0e0f12;
+        --line: #292c32;
+        --line-soft: #202226;
+
+        --signal: #ff8a3d;
+        --signal-dim: rgba(255, 138, 61, 0.14);
+        --signal-rgb: 255, 138, 61;
+
+        --ink: #edeff2;
+        --ink-dim: #8b909a;
+        --ink-faint: #565b64;
+
+        --ok: #5fd97a;
+        --ok-dim: rgba(95, 217, 122, 0.14);
+        --warn: #f5c451;
+        --warn-dim: rgba(245, 196, 81, 0.14);
+        --danger: #f2495c;
+        --danger-dim: rgba(242, 73, 92, 0.14);
+
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+
+        --font-display: "Space Grotesk", "Inter", sans-serif;
+        --font-body:
+          "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono:
+          "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      body.light-mode {
+        --bg: #f2f1ee;
+        --surface: #ffffff;
+        --surface-raised: #f8f7f5;
+        --surface-sunken: #ebeae6;
+        --line: #ddd9d2;
+        --line-soft: #e6e3dd;
+        --signal: #d9631f;
+        --signal-dim: rgba(217, 99, 31, 0.1);
+        --signal-rgb: 217, 99, 31;
+        --ink: #17181a;
+        --ink-dim: #6b6b6b;
+        --ink-faint: #a3a09a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+        font-size: 17px;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background-color: var(--bg);
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        line-height: 1.5;
+        transition:
+          background-color 0.2s,
+          color 0.2s;
+      }
+
+      *:focus-visible {
+        outline: 2px solid var(--signal);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+
