@@ -1,6 +1,6 @@
 services:
   media-converter:
-    image: mein-converter-image:latest # Oder 'build: .' für lokale Builds
+    build: .
     container_name: media_converter_pro
     ports:
       - "8080:8080"
