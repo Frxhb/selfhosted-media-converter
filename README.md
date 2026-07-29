@@ -1,5 +1,7 @@
 # Media Converter
 
+Disclaimer: Vibe-Coding Project. GUI mainly in german right now. English version coming soon...
+
 <p align="center">
   <img src="docs/banner.png" alt="Media Converter Banner" width="100%">
 </p>
@@ -38,8 +40,6 @@
 ---
 
 ## Overview
-
-Disclaimer: Vibe-Coding Project. GUI mainly in german right now. English version coming soon...
 
 Media Converter is a self-hosted media toolkit for downloading, converting, transcribing and processing multimedia files.
 
