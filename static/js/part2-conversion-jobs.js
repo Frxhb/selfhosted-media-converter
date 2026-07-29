@@ -376,84 +376,137 @@ function dismissToast(toast) {
         clearTabQueue("audio");
       }
 
-      function submitSpeedJob() {
-        const select = document.getElementById("global-file-select");
-        const filePath = select.value;
-        if (!filePath)
-          return showToast(
-            "Bitte eine Datei im File Import Manager auswählen.",
-            "warn",
-          );
+      async function submitSpeedJob() {
+        const queueFiles = tabQueues["tools"];
+        let filesToProcess = [];
+
+        if (queueFiles && queueFiles.length > 0) {
+          filesToProcess = [...queueFiles];
+        } else {
+          const select = document.getElementById("global-file-select");
+          const filePath = select.value;
+          if (!filePath)
+            return showToast(
+              "Bitte eine Datei im File Import Manager auswählen oder zur Warteschlange hinzufügen.",
+              "warn",
+            );
+          const fileName = filePath.split("/").pop();
+          filesToProcess.push({ name: fileName, path: filePath });
+        }
 
         const speed = parseFloat(
           document.getElementById("tool-speed-val").value,
         );
-        const fileName = filePath.split("/").pop();
-        const baseName = fileName.replace(/\.[^/.]+$/, "");
-        const outPath = `/media/outputs/videos/${baseName}_${speed}x.mp4`;
-
         const setpts = (1.0 / speed).toFixed(2);
         const atempo = speed.toFixed(2);
 
-        const args = [
-          "-hide_banner",
-          "-y",
-          "-i",
-          filePath,
-          "-filter_complex",
-          `[0:v]setpts=${setpts}*PTS[v];[0:a]atempo=${atempo}[a]`,
-          "-map",
-          "[v]",
-          "-map",
-          "[a]",
-          outPath,
-        ];
-        submitJob({
-          job_type: "speed",
-          tool: "ffmpeg",
-          title: `Speed ${speed}x: ${fileName}`,
-          command_args: args,
-          input_file: filePath,
-          output_file: outPath,
-        });
+        for (let idx = 0; idx < filesToProcess.length; idx++) {
+          const f = filesToProcess[idx];
+          const fileName = f.name || f.path.split("/").pop();
+          const baseName = fileName.replace(/\.[^/.]+$/, "");
+          const ext = fileName.split(".").pop().toLowerCase();
+          const isAudio = ["mp3", "m4a", "flac", "wav", "ogg", "aac", "opus", "wma"].includes(ext);
+
+          let outPath = "";
+          let args = [];
+
+          if (isAudio) {
+            outPath = `/media/outputs/audio/${baseName}_${speed}x.${ext}`;
+            args = [
+              "-hide_banner",
+              "-y",
+              "-i",
+              f.path,
+              "-filter:a",
+              `atempo=${atempo}`,
+              outPath,
+            ];
+          } else {
+            outPath = `/media/outputs/videos/${baseName}_${speed}x.mp4`;
+            args = [
+              "-hide_banner",
+              "-y",
+              "-i",
+              f.path,
+              "-filter_complex",
+              `[0:v]setpts=${setpts}*PTS[v];[0:a]atempo=${atempo}[a]`,
+              "-map",
+              "[v]",
+              "-map",
+              "[a]",
+              outPath,
+            ];
+          }
+
+          await submitJob({
+            job_type: "speed",
+            tool: "ffmpeg",
+            title: `Speed ${speed}x: ${fileName}`,
+            command_args: args,
+            input_file: f.path,
+            output_file: outPath,
+          });
+        }
+
+        if (queueFiles && queueFiles.length > 0) {
+          clearTabQueue("tools");
+        }
       }
 
-      function submitThumbnailJob() {
-        const select = document.getElementById("global-file-select");
-        const filePath = select.value;
-        if (!filePath)
-          return showToast(
-            "Bitte eine Datei im File Import Manager auswählen.",
-            "warn",
-          );
+      async function submitThumbnailJob() {
+        const queueFiles = tabQueues["tools"];
+        let filesToProcess = [];
+
+        if (queueFiles && queueFiles.length > 0) {
+          filesToProcess = [...queueFiles];
+        } else {
+          const select = document.getElementById("global-file-select");
+          const filePath = select.value;
+          if (!filePath)
+            return showToast(
+              "Bitte eine Datei im File Import Manager auswählen oder zur Warteschlange hinzufügen.",
+              "warn",
+            );
+          const fileName = filePath.split("/").pop();
+          filesToProcess.push({ name: fileName, path: filePath });
+        }
 
         const timeStr =
           document.getElementById("tool-thumb-time").value.trim() || "00:00:05";
-        const fileName = filePath.split("/").pop();
-        const baseName = fileName.replace(/\.[^/.]+$/, "");
-        const outPath = `/media/outputs/images/${baseName}_thumb.jpg`;
 
-        const args = [
-          "-hide_banner",
-          "-y",
-          "-ss",
-          timeStr,
-          "-i",
-          filePath,
-          "-vframes",
-          "1",
-          "-q:v",
-          "2",
-          outPath,
-        ];
-        submitJob({
-          job_type: "thumbnail",
-          tool: "ffmpeg",
-          title: `Thumb (${timeStr}): ${fileName}`,
-          command_args: args,
-          input_file: filePath,
-          output_file: outPath,
-        });
+        for (let idx = 0; idx < filesToProcess.length; idx++) {
+          const f = filesToProcess[idx];
+          const fileName = f.name || f.path.split("/").pop();
+          const baseName = fileName.replace(/\.[^/.]+$/, "");
+          const outPath = `/media/outputs/images/${baseName}_thumb.jpg`;
+
+          const args = [
+            "-hide_banner",
+            "-y",
+            "-ss",
+            timeStr,
+            "-i",
+            f.path,
+            "-vframes",
+            "1",
+            "-q:v",
+            "2",
+            outPath,
+          ];
+
+          await submitJob({
+            job_type: "thumbnail",
+            tool: "ffmpeg",
+            title: `Thumb (${timeStr}): ${fileName}`,
+            command_args: args,
+            input_file: f.path,
+            output_file: outPath,
+          });
+        }
+
+        if (queueFiles && queueFiles.length > 0) {
+          clearTabQueue("tools");
+        }
       }
 
       function submitImageJob() {

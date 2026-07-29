@@ -61,6 +61,12 @@ async def cancel_job(job_id: str):
     return {"status": "cancelled", "job_id": job_id}
 
 
+@router.post("/api/jobs/cancel-all")
+async def cancel_all_jobs():
+    count = await job_manager.cancel_all_jobs()
+    return {"status": "cancelled_all", "count": count}
+
+
 @router.post("/api/jobs/{job_id}/retry", response_model=Job)
 async def retry_job(job_id: str):
     min_free_gb = getattr(job_manager, "min_free_disk_gb", 2.0)

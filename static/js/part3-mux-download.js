@@ -88,12 +88,123 @@ function submitMuxJob() {
             refreshFiles();
             setTimeout(() => {
               document.getElementById("d-batch-select").value = res.path;
-              updateYtdlpPreview();
+              updateDownloadPreview();
             }, 500);
           });
       }
 
+      let activeDlEngine = "ytdlp";
+
+      function preprocessGalleryUrl(rawUrl) {
+        if (!rawUrl) return "";
+        let url = rawUrl.trim();
+        const wikiMediaMatch = url.match(
+          /^(https?:\/\/[^\/]+)\/wiki\/.*#\/media\/(File|Datei):([^#\?\/]+)/i,
+        );
+        if (wikiMediaMatch) {
+          const domain = wikiMediaMatch[1];
+          const fileName = wikiMediaMatch[3];
+          return `${domain}/wiki/File:${fileName}`;
+        }
+        return url;
+      }
+
+      function switchDlEngine(engine) {
+        activeDlEngine = engine;
+        document
+          .querySelectorAll(".subtab-dl-engine")
+          .forEach((btn) => btn.classList.remove("active"));
+        const btn = document.getElementById(`btn-dl-engine-${engine}`);
+        if (btn) btn.classList.add("active");
+
+        const ytdlpOpts = document.getElementById("d-ytdlp-options");
+        const gallerydlOpts = document.getElementById("d-gallerydl-options");
+        const urlLabel = document.getElementById("d-url-label");
+        const urlInput = document.getElementById("d-url");
+        const fetchBtn = document.getElementById("d-fetch-btn");
+        const searchSection = document.getElementById("d-ytdlp-search-section");
+        const batchTextarea = document.getElementById("d-batch-textarea");
+
+        if (engine === "gallerydl") {
+          if (ytdlpOpts) ytdlpOpts.style.display = "none";
+          if (gallerydlOpts) gallerydlOpts.style.display = "flex";
+          if (urlLabel) urlLabel.textContent = "Galerie / Bild URL:";
+          if (urlInput)
+            urlInput.placeholder =
+              "https://www.instagram.com/p/... oder https://... (Instagram, Pinterest, Reddit, Wiki...)";
+          if (batchTextarea)
+            batchTextarea.placeholder =
+              "https://www.instagram.com/p/...\nhttps://www.pinterest.com/pin/...";
+          if (fetchBtn) fetchBtn.style.display = "none";
+          if (searchSection) searchSection.style.display = "none";
+          updateGalleryDlPreview();
+        } else {
+          if (gallerydlOpts) gallerydlOpts.style.display = "none";
+          if (ytdlpOpts) ytdlpOpts.style.display = "flex";
+          if (urlLabel) urlLabel.textContent = "Video / Playlist URL:";
+          if (urlInput)
+            urlInput.placeholder = "https://www.youtube.com/watch?v=...";
+          if (batchTextarea)
+            batchTextarea.placeholder =
+              "https://youtube.com/watch?v=1\nhttps://youtube.com/watch?v=2";
+          if (fetchBtn) fetchBtn.style.display = "inline-block";
+          if (searchSection) searchSection.style.display = "block";
+          if (typeof updateYtdlpPreview === "function") updateYtdlpPreview();
+        }
+      }
+
+      function updateDownloadPreview() {
+        if (activeDlEngine === "gallerydl") {
+          updateGalleryDlPreview();
+        } else if (typeof updateYtdlpPreview === "function") {
+          updateYtdlpPreview();
+        }
+      }
+
+      function toggleGalleryRangeInput() {
+        const mode = document.getElementById("g-range-mode")?.value;
+        const valInput = document.getElementById("g-range-val");
+        if (valInput) {
+          valInput.style.display = mode === "custom" ? "block" : "none";
+        }
+      }
+
+      function updateGalleryDlPreview() {
+        const dest =
+          document.getElementById("g-dest")?.value || "/media/outputs/images";
+        const customFlags =
+          document.getElementById("g-custom-flags")?.value.trim() || "";
+        const rangeMode =
+          document.getElementById("g-range-mode")?.value || "all";
+        const rangeVal =
+          document.getElementById("g-range-val")?.value.trim() || "";
+
+        let target = "URL_HIER";
+        if (activeDlSubTab === "single") {
+          const raw = document.getElementById("d-url")?.value;
+          target = preprocessGalleryUrl(sanitizeUrl(raw)) || "URL_HIER";
+        } else {
+          const batchSel = document.getElementById("d-batch-select")?.value;
+          target = batchSel ? `-i "${batchSel}"` : "-i [BATCH_URLS]";
+        }
+        let args = ["gallery-dl", "--no-mtime", "--dest", `"${dest}"`];
+        if (rangeMode === "first") {
+          args.push("--range 1");
+        } else if (rangeMode === "custom" && rangeVal) {
+          args.push(`--range "${rangeVal}"`);
+        }
+        if (customFlags) args.push(customFlags);
+        args.push(target);
+        const preview = document.getElementById("g-cmd-preview");
+        if (preview) preview.textContent = args.join(" ");
+      }
+
       async function handleDownloadSubmit() {
+        clearDuplicateWarning();
+        if (activeDlEngine === "gallerydl") {
+          return handleGalleryDlSubmit();
+        }
+
         const type = document.getElementById("d-type").value;
         const res = document.getElementById("d-res").value;
         const container = document.getElementById("d-container").value;
@@ -248,12 +359,101 @@ function submitMuxJob() {
         }
       }
 
+      async function handleGalleryDlSubmit() {
+        const dest =
+          document.getElementById("g-dest")?.value || "/media/outputs/images";
+        const customFlags =
+          document.getElementById("g-custom-flags")?.value.trim() || "";
+        const rangeMode =
+          document.getElementById("g-range-mode")?.value || "all";
+        const rangeVal =
+          document.getElementById("g-range-val")?.value.trim() || "";
+
+        let baseArgs = ["--no-mtime", "--dest", dest];
+        if (rangeMode === "first") {
+          baseArgs.push("--range", "1");
+        } else if (rangeMode === "custom" && rangeVal) {
+          baseArgs.push("--range", rangeVal);
+        }
+        if (customFlags) {
+          customFlags.split(" ").forEach((f) => {
+            if (f) baseArgs.push(f);
+          });
+        }
+
+        if (activeDlSubTab === "single") {
+          const rawUrl = document.getElementById("d-url").value;
+          const url = preprocessGalleryUrl(sanitizeUrl(rawUrl));
+          if (!url) return showToast("Bitte URL eingeben.", "warn");
+          const shortUrl = url.length > 35 ? url.slice(0, 35) + "…" : url;
+
+          clearDuplicateWarning();
+          await submitJob({
+            job_type: "download",
+            tool: "gallery-dl",
+            title: `Gallery: ${shortUrl}`,
+            command_args: [...baseArgs, url],
+            input_file: url,
+          });
+        } else {
+          const batchFile = document.getElementById("d-batch-select").value;
+          const textarea = document.getElementById("d-batch-textarea").value.trim();
+
+          if (batchFile) {
+            let args = ["-i", batchFile, ...baseArgs];
+            clearDuplicateWarning();
+            await submitJob({
+              job_type: "download",
+              tool: "gallery-dl",
+              title: `Gallery Batch (${batchFile.split("/").pop()})`,
+              command_args: args,
+              input_file: batchFile,
+            });
+          } else if (textarea) {
+            const links = textarea
+              .split("\n")
+              .map((l) => preprocessGalleryUrl(sanitizeUrl(l)))
+              .filter((l) => l.length > 0);
+
+            if (links.length > 1) {
+              showToast(
+                `${links.length} Gallery-Links werden nacheinander gestartet...`,
+                "info",
+                3000,
+              );
+            }
+
+            clearDuplicateWarning();
+            for (let idx = 0; idx < links.length; idx++) {
+              const link = links[idx];
+              const shortUrl = link.length > 35 ? link.slice(0, 35) + "…" : link;
+              await submitJob({
+                job_type: "download",
+                tool: "gallery-dl",
+                title: `Gallery Batch ${idx + 1}/${links.length}: ${shortUrl}`,
+                command_args: [...baseArgs, link],
+                input_file: link,
+              });
+              if ((idx + 1) % 3 === 0) {
+                await new Promise((resolve) => setTimeout(resolve, 300));
+              }
+            }
+          } else {
+            showToast(
+              "Bitte eine .txt Datei hochladen/wählen oder Links einfügen.",
+              "warn",
+            );
+          }
+        }
+      }
+
       function executeDownloadJob(
         baseArgs,
         targetUrl,
         extraFlags = [],
         customTitle = null,
       ) {
+        clearDuplicateWarning();
         const isAudio = baseArgs.includes("-x");
         const outputSubdir = isAudio ? "audio" : "videos";
 

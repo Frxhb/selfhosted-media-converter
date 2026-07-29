@@ -10,7 +10,6 @@ services:
       - ./media/inputs:/media/inputs
       - ./media/outputs:/media/outputs
       - ./config:/app/config
-      - ./logs:/app/config/logs
     environment:
       - TZ=Europe/Berlin
     restart: unless-stopped

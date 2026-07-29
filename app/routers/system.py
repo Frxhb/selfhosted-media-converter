@@ -60,7 +60,7 @@ def backup_config():
 
 
 @router.post("/api/config/restore")
-async def restore_config(file: UploadFile = File(...)):
+def restore_config(file: UploadFile):
     """
     Importiert ein zuvor über /api/config/backup exportiertes ZIP. Überschreibt die
     aktuelle app_config.json und Stats-Datenbank. Ein Neustart des Containers wird
@@ -103,9 +103,10 @@ def get_logs(lines: int = Query(300, ge=10, le=5000), level: str = Query("app"))
     if not os.path.exists(path):
         return {"lines": [], "file": filename}
     try:
+        from collections import deque
         with open(path, "r", encoding="utf-8", errors="replace") as f:
-            all_lines = f.readlines()
-        return {"lines": [l.rstrip("\n") for l in all_lines[-lines:]], "file": filename}
+            tail = deque(f, maxlen=lines)
+        return {"lines": [l.rstrip("\n") for l in tail], "file": filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Log konnte nicht gelesen werden: {e}")
 

@@ -19,6 +19,7 @@ function removeFromTabQueue(tab, index) {
         let expectedType = "video"; // Default
         if (activeConvSubTab === "audio") expectedType = "audio";
         if (activeConvSubTab === "images") expectedType = "image";
+        if (activeConvSubTab === "tools") expectedType = "tools";
 
         showToast("Prüfe Datei-Integrität...", "info", 1500);
 
@@ -176,7 +177,7 @@ function removeFromTabQueue(tab, index) {
         const consoleEl = document.getElementById("log-console");
         if (consoleEl) consoleEl.textContent = "";
 
-        ["audio", "video", "images"].forEach((tab) => {
+        ["audio", "video", "images", "tools"].forEach((tab) => {
           tabQueues[tab] = [];
           renderTabQueue(tab);
         });

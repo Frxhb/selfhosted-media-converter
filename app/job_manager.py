@@ -488,6 +488,16 @@ class JobManager:
             return True
         return False
 
+    async def cancel_all_jobs(self) -> int:
+        cancelled_count = 0
+        job_ids = list(self.jobs.keys())
+        for jid in job_ids:
+            job = self.jobs.get(jid)
+            if job and job.status in [JobStatus.RUNNING, JobStatus.PENDING]:
+                if await self.cancel_job(jid):
+                    cancelled_count += 1
+        return cancelled_count
+
     def _send_pushover(self, title: str, message: str):
         enabled = os.getenv("PUSHOVER_ENABLED", "false").lower() == "true"
         user_key = os.getenv("PUSHOVER_USER_KEY", "").strip()
@@ -724,6 +734,8 @@ class JobManager:
     def _diagnose_failure(job: Job) -> str:
         """Durchsucht die letzten Log-Zeilen nach bekannten Fehlermustern für eine klare Nutzer-Meldung."""
         recent = "\n".join(job.logs[-30:]).lower()
+        if "ist auf dem server nicht installiert" in recent:
+            return f"Das Werkzeug '{job.tool}' ist auf dem Server nicht installiert."
         if "no space left" in recent:
             return "Kein Speicherplatz mehr frei auf der Festplatte. Lösche Dateien in der Library."
         if "permission denied" in recent:
@@ -752,6 +764,32 @@ class JobManager:
         clean_args = list(args)
         while clean_args and clean_args[0] == tool:
             clean_args.pop(0)
+
+        # Autokorrektur für FFmpeg: Wenn ein filter_complex mit [0:v] auf eine reine Audiodatei angewendet wird
+        if tool == "ffmpeg" and job.input_file:
+            ext = os.path.splitext(job.input_file)[1].lower()
+            if ext in ['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac', '.opus', '.wma'] and "-filter_complex" in clean_args:
+                try:
+                    fc_idx = clean_args.index("-filter_complex")
+                    filter_str = clean_args[fc_idx + 1]
+                    if "[0:v]" in filter_str and "atempo" in filter_str:
+                        a_match = re.search(r'\[0:a\](.*?)\[a\]', filter_str)
+                        filter_expr = a_match.group(1) if a_match else "atempo=1.0"
+                        clean_args[fc_idx] = "-filter:a"
+                        clean_args[fc_idx + 1] = filter_expr
+                        
+                        # Entferne -map [v] und -map [a]
+                        new_clean = []
+                        i = 0
+                        while i < len(clean_args):
+                            if clean_args[i] == "-map" and i + 1 < len(clean_args) and clean_args[i+1] in ["[v]", "[a]"]:
+                                i += 2
+                            else:
+                                new_clean.append(clean_args[i])
+                                i += 1
+                        clean_args = new_clean
+                except Exception:
+                    pass
 
         cmd = [tool] + clean_args
         if tool == "ffmpeg" and self.ffmpeg_threads > 0 and "-threads" not in clean_args:
@@ -817,6 +855,11 @@ class JobManager:
 
             await process.wait()
             return process.returncode == 0
+        except FileNotFoundError:
+            err_msg = f"[ERROR] Das Werkzeug '{tool}' ist auf dem Server nicht installiert oder wurde nicht im PATH gefunden."
+            job.error_message = err_msg
+            self._append_log(job, err_msg)
+            return False
         except Exception as e:
             job.error_message = str(e)
             self._append_log(job, f"[ERROR] {str(e)}")

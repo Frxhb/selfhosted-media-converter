@@ -1,4 +1,4 @@
-const tabQueues = { audio: [], video: [], images: [] };
+const tabQueues = { audio: [], video: [], images: [], tools: [] };
       let currentGroup = "dashboard";
       let activeConvSubTab = "video";
       let activeDlSubTab = "single";

@@ -666,6 +666,23 @@
 
           <!-- VIEW 1: DOWNLOADER -->
           <div id="group-downloader" class="group-view">
+            <div class="subtab-nav" style="margin-bottom: 0.75rem;">
+              <button
+                onclick="switchDlEngine('ytdlp')"
+                class="subtab-btn subtab-dl-engine active"
+                id="btn-dl-engine-ytdlp"
+              >
+                yt-dlp (Video &amp; Audio)
+              </button>
+              <button
+                onclick="switchDlEngine('gallerydl')"
+                class="subtab-btn subtab-dl-engine"
+                id="btn-dl-engine-gallerydl"
+              >
+                gallery-dl (Bilder &amp; Galerien)
+              </button>
+            </div>
+
             <div class="subtab-nav">
               <button
                 onclick="switchSubTab('dl', 'single')"
@@ -689,13 +706,13 @@
               style="display: flex; flex-direction: column; gap: 1rem"
             >
               <div>
-                <label>Video / Playlist URL:</label>
+                <label id="d-url-label">Video / Playlist URL:</label>
                 <div style="display: flex; gap: 0.5rem">
                   <input
                     type="url"
                     id="d-url"
                     placeholder="https://www.youtube.com/watch?v=..."
-                    oninput="updateYtdlpPreview(); clearDuplicateWarning();"
+                    oninput="updateDownloadPreview(); clearDuplicateWarning();"
                   />
                   <button
                     onclick="fetchYtDlpInfo()"
@@ -705,6 +722,7 @@
                     Info abrufen
                   </button>
                 </div>
+                <div id="d-ytdlp-search-section">
                 <div
                   style="
                     display: flex;
@@ -762,6 +780,7 @@
                     overflow-y: auto;
                   "
                 ></div>
+                </div>
               </div>
 
               <div
@@ -864,7 +883,7 @@
                   <label>Option B: .txt aus Eingabe-Ordner wählen</label>
                   <select
                     id="d-batch-select"
-                    onchange="updateYtdlpPreview()"
+                    onchange="updateDownloadPreview()"
                   ></select>
                 </div>
               </div>
@@ -884,12 +903,13 @@
                   id="d-batch-textarea"
                   rows="4"
                   placeholder="https://youtube.com/watch?v=1&#10;https://youtube.com/watch?v=2"
-                  oninput="updateYtdlpPreview()"
+                  oninput="updateDownloadPreview()"
                 ></textarea>
               </div>
             </div>
 
             <div
+              id="d-ytdlp-options"
               class="card"
               style="
                 display: flex;
@@ -898,7 +918,7 @@
                 margin-top: 1rem;
               "
             >
-              <div class="card-title">Format &amp; Qualität</div>
+              <div class="card-title">yt-dlp: Format &amp; Qualität</div>
 
               <div class="grid-3">
                 <div>
@@ -979,6 +999,98 @@
                 class="btn btn-primary btn-full"
               >
                 Download starten
+              </button>
+            </div>
+
+            <div
+              id="d-gallerydl-options"
+              class="card"
+              style="
+                display: none;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+              "
+            >
+              <div class="card-title">gallery-dl: Einstellungen &amp; Ziel</div>
+
+              <div class="grid-2">
+                <div>
+                  <label>Zielordner:</label>
+                  <select id="g-dest" onchange="updateGalleryDlPreview()">
+                    <option value="/media/outputs/images">/media/outputs/images</option>
+                    <option value="/media/outputs/videos">/media/outputs/videos</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Bilder-Auswahl / Range:</label>
+                  <select id="g-range-mode" onchange="toggleGalleryRangeInput(); updateGalleryDlPreview()">
+                    <option value="all">Alle Bilder der Galerie/Seite herunterladen</option>
+                    <option value="first">Nur 1. Bild / Hauptbild herunterladen (--range 1)</option>
+                    <option value="custom">Benutzerdefinierte Range (z. B. --range 1-5)</option>
+                  </select>
+                  <input
+                    type="text"
+                    id="g-range-val"
+                    placeholder="z. B. 1-5 oder 1,3,5"
+                    style="display: none; margin-top: 0.4rem"
+                    oninput="updateGalleryDlPreview()"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label>Eigene gallery-dl Zusatz-Parameter:</label>
+                <input
+                  type="text"
+                  id="g-custom-flags"
+                  placeholder="z. B. --write-metadata --cookies-from-browser firefox"
+                  oninput="updateGalleryDlPreview()"
+                />
+              </div>
+
+              <div>
+                <label>Befehlsvorschau:</label>
+                <div style="position: relative">
+                  <div
+                    id="g-cmd-preview"
+                    class="code-box"
+                    style="padding-right: 3.2rem"
+                  >
+                    gallery-dl ...
+                  </div>
+                  <button
+                    onclick="copyCommandToClipboard('g-cmd-preview')"
+                    class="icon-btn"
+                    style="
+                      position: absolute;
+                      top: 0.3rem;
+                      right: 0.3rem;
+                      width: 26px;
+                      height: 26px;
+                    "
+                    title="Befehl kopieren"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onclick="handleDownloadSubmit()"
+                class="btn btn-primary btn-full"
+              >
+                Gallery Download starten
               </button>
             </div>
           </div>
@@ -1249,6 +1361,17 @@
               class="subtab-content subtab-conv-content card"
               style="display: flex; flex-direction: column; gap: 1rem"
             >
+              <div class="card-title">
+                <span>Schnitt &amp; Tools Warteschlange</span>
+                <button
+                  onclick="clearTabQueue('tools')"
+                  class="btn btn-danger btn-sm"
+                >
+                  Leeren
+                </button>
+              </div>
+              <div id="tools-queue" class="queue-listbox"></div>
+
               <div class="card-title">
                 Geschwindigkeit &amp; Standbild-Extraktion
               </div>
@@ -1771,6 +1894,12 @@
                   class="btn btn-secondary btn-sm"
                 >
                   Fertige entfernen
+                </button>
+                <button
+                  onclick="cancelAllJobs()"
+                  class="btn btn-danger btn-sm"
+                >
+                  Alle abbrechen
                 </button>
               </div>
             </div>

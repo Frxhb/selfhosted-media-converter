@@ -56,17 +56,12 @@ async function fetchYtDlpInfo() {
         warningBox.style.display = "none";
         if (!title) return;
 
-        // Bibliothek nachladen, falls sie noch nie besucht wurde (outputLibraryFiles ist
-        // dann noch leer) - so funktioniert die Prüfung unabhängig davon, ob der Nutzer
-        // vorher schon im Bibliothek-Tab war.
-        if (outputLibraryFiles.length === 0) {
-          try {
-            const res = await fetch("/api/files/outputs");
+        try {
+          const res = await fetch("/api/files/outputs");
+          if (res.ok) {
             outputLibraryFiles = await res.json();
-          } catch (e) {
-            return; // Bibliothek nicht ladbar - Duplikat-Check einfach überspringen, nicht blockieren
           }
-        }
+        } catch (e) {}
 
         const normalizedTitle = normalizeForDuplicateMatch(title);
         if (normalizedTitle.length < 4) return; // zu kurz für einen sinnvollen Vergleich

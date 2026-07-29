@@ -8,3 +8,4 @@ setuptools
 openai-whisper
 aiofiles
 psutil
+gallery-dl

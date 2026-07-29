@@ -296,6 +296,22 @@
         loadJobs();
       }
 
+      async function cancelAllJobs() {
+        if (!confirm("Möchtest du wirklich alle aktiven und wartenden Jobs abbrechen?")) return;
+        try {
+          const res = await fetch("/api/jobs/cancel-all", { method: "POST" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          showToast(`${data.count || 0} Jobs wurden abgebrochen.`, "info");
+        } catch (e) {
+          showToast("Abbrechen fehlgeschlagen: " + e.message, "warn");
+        }
+        loadJobs();
+      }
+
       setInterval(fetchStats, 4000);
 
       let currentTagsEditFile = null;

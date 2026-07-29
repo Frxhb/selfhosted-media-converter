@@ -97,52 +97,130 @@ def _resolve_media_path_safely(file_path: str) -> Optional[str]:
 
 
 def get_container_memory():
-    total_bytes, avail_bytes = 0, 0
+    """
+    Berechnet RAM-Auslastung präzise, indem `/proc/meminfo` (für LXC/Bare-Metal)
+    als Primärquelle und cgroups (für Docker ohne lxcfs) als Fallback priorisiert wird.
+    Vermeidet Syscalls von psutil, die in LXC auf den Host-RAM durchschlagen.
+    """
+    meminfo_total = 0
+    meminfo_avail = 0
+    meminfo_free = 0
+    meminfo_buffers = 0
+    meminfo_cached = 0
+
+    # 1. /proc/meminfo parsen (wird auch von `free -h` genutzt, lxcfs biegt das für LXC passend um)
     try:
         with open("/proc/meminfo", "r") as f:
             for line in f:
                 if line.startswith("MemTotal:"):
-                    total_bytes = int(line.split()[1]) * 1024
+                    meminfo_total = int(line.split()[1]) * 1024
                 elif line.startswith("MemAvailable:"):
-                    avail_bytes = int(line.split()[1]) * 1024
+                    meminfo_avail = int(line.split()[1]) * 1024
+                elif line.startswith("MemFree:"):
+                    meminfo_free = int(line.split()[1]) * 1024
+                elif line.startswith("Buffers:"):
+                    meminfo_buffers = int(line.split()[1]) * 1024
+                elif line.startswith("Cached:"):
+                    meminfo_cached = int(line.split()[1]) * 1024
     except Exception:
         pass
 
-    used_bytes = max(0, total_bytes - avail_bytes)
+    # Fallback auf psutil, falls meminfo fehlschlägt (unwahrscheinlich unter Linux)
+    if meminfo_total == 0:
+        try:
+            mem = psutil.virtual_memory()
+            meminfo_total = mem.total
+            meminfo_avail = mem.available
+        except Exception:
+            pass
 
-    cgroup_limits, cgroup_usages = [], []
-    for root, _, files in os.walk("/sys/fs/cgroup"):
-        for fname in ["memory.max", "memory.limit_in_bytes"]:
-            if fname in files:
+    # Genutzten RAM exakt wie `free` kalkulieren
+    if meminfo_avail > 0:
+        meminfo_used = meminfo_total - meminfo_avail
+    else:
+        meminfo_used = max(0, meminfo_total - meminfo_free - meminfo_buffers - meminfo_cached)
+
+    # 2. Cgroups auslesen (Nur relevant, falls Docker ohne lxcfs läuft und meminfo den Host zeigt)
+    cgroup_limit = None
+    cgroup_usage = None
+    inactive_file = 0
+    rel_path = ""
+
+    try:
+        with open("/proc/self/cgroup", "r") as f:
+            for line in f:
+                parts = line.strip().split(":")
+                if len(parts) == 3 and (parts[1] == "" or "memory" in parts[1]):
+                    rel_path = parts[2].lstrip("/")
+                    break
+    except Exception:
+        pass
+
+    possible_limit_paths = [
+        "/sys/fs/cgroup/memory.max",
+        "/sys/fs/cgroup/memory/memory.limit_in_bytes",
+    ]
+    possible_usage_paths = [
+        "/sys/fs/cgroup/memory.current",
+        "/sys/fs/cgroup/memory/memory.usage_in_bytes",
+    ]
+    possible_stat_paths = [
+        "/sys/fs/cgroup/memory.stat",
+        "/sys/fs/cgroup/memory/memory.stat",
+    ]
+
+    if rel_path:
+        possible_limit_paths.insert(0, f"/sys/fs/cgroup/{rel_path}/memory.max")
+        possible_limit_paths.insert(0, f"/sys/fs/cgroup/memory/{rel_path}/memory.limit_in_bytes")
+        possible_usage_paths.insert(0, f"/sys/fs/cgroup/{rel_path}/memory.current")
+        possible_usage_paths.insert(0, f"/sys/fs/cgroup/memory/{rel_path}/memory.usage_in_bytes")
+        possible_stat_paths.insert(0, f"/sys/fs/cgroup/{rel_path}/memory.stat")
+        possible_stat_paths.insert(0, f"/sys/fs/cgroup/memory/{rel_path}/memory.stat")
+
+    def read_cgroup_val(paths):
+        for p in paths:
+            if os.path.exists(p):
                 try:
-                    with open(os.path.join(root, fname), "r") as f:
-                        val = f.read().strip()
-                        if val.isdigit() and 0 < int(val) < 10**14:
-                            cgroup_limits.append(int(val))
-                except Exception:
-                    pass
-        for fname in ["memory.current", "memory.usage_in_bytes"]:
-            if fname in files:
-                try:
-                    with open(os.path.join(root, fname), "r") as f:
+                    with open(p, "r") as f:
                         val = f.read().strip()
                         if val.isdigit():
-                            cgroup_usages.append(int(val))
+                            ival = int(val)
+                            # Ignoriere Cgroup-"Uncapped" Dummy-Werte (z.B. 9223372036854771712)
+                            if 0 < ival < 10**14:
+                                return ival
+                        elif val.lower() == "max":
+                            return None
                 except Exception:
                     pass
+        return None
 
-    if cgroup_limits:
-        min_limit = min(cgroup_limits)
-        if min_limit < total_bytes or total_bytes == 0:
-            total_bytes = min_limit
-            if cgroup_usages:
-                used_bytes = min(max(cgroup_usages), total_bytes)
-            else:
-                used_bytes = min(used_bytes, total_bytes)
+    cgroup_limit = read_cgroup_val(possible_limit_paths)
+    cgroup_usage = read_cgroup_val(possible_usage_paths)
 
-    if total_bytes == 0:
-        mem = psutil.virtual_memory()
-        return mem.used, mem.total
+    for p in possible_stat_paths:
+        if os.path.exists(p):
+            try:
+                with open(p, "r") as f:
+                    for line in f:
+                        if line.startswith("inactive_file ") or line.startswith("total_inactive_file "):
+                            inactive_file = int(line.split()[1])
+                            break
+            except Exception:
+                pass
+
+    # 3. Entscheidungslogik für das finales Ergebnis
+    total_bytes = meminfo_total if meminfo_total > 0 else 1
+    used_bytes = meminfo_used if meminfo_total > 0 else 0
+
+    # Falls ein Cgroup-Limit greift, UND dieses signifikant kleiner ist als meminfo,
+    # wissen wir: meminfo lügt (Standard-Docker) und wir müssen Cgroups priorisieren.
+    # Bei dir (LXC) sind Cgroup und Meminfo nahezu identisch, wodurch dieser Block ignoriert 
+    # und dein korrekter meminfo-Wert priorisiert wird!
+    if cgroup_limit is not None and cgroup_limit < (meminfo_total * 0.95):
+        total_bytes = cgroup_limit
+        if cgroup_usage is not None:
+            net_usage = max(0, cgroup_usage - inactive_file)
+            used_bytes = min(net_usage, total_bytes)
 
     return used_bytes, total_bytes
 

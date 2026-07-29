@@ -47,11 +47,12 @@ def download_input_file(filename: str):
 @router.get("/api/files/outputs")
 def list_output_files():
     files = []
-    ignored = ("download_archive.txt", ".part", ".ytdl", ".temp")
+    ignored_exact = ("download_archive.txt",)
+    ignored_suffixes = (".part", ".ytdl", ".temp", ".tmp", ".download", ".aria2")
 
     for root, _, filenames in os.walk(OUTPUT_DIR):
         for name in sorted(filenames):
-            if name.endswith(ignored) or name in ignored:
+            if name in ignored_exact or name.endswith(ignored_suffixes) or (".f" in name and (".webm" in name or ".m4a" in name or ".mp4" in name)):
                 continue
 
             full_path = os.path.join(root, name)
@@ -88,7 +89,7 @@ def list_output_files():
 
 
 @router.post("/api/files/outputs/zip")
-async def download_selected_zip(files: list[str] = Body(...)):
+def download_selected_zip(files: list[str] = Body(...)):
     if not files:
         raise HTTPException(status_code=400, detail="Keine Dateien ausgewählt")
 
@@ -177,4 +178,4 @@ def download_output_file(filename: str):
     file_path = safe_join_within(OUTPUT_DIR, filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Datei nicht gefunden")
-    return FileResponse(file_path, content_disposition_type="inline")
+    return FileResponse(file_path, filename=os.path.basename(file_path), content_disposition_type="attachment")

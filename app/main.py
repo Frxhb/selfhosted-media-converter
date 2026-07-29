@@ -105,7 +105,7 @@ def apply_persisted_config():
 async def lifespan(app: FastAPI):
     init_db()
     apply_persisted_config()
-    perform_auto_cleanup()
+    asyncio.create_task(asyncio.to_thread(perform_auto_cleanup))
     asyncio.create_task(ensure_local_ffmpeg_wasm_assets())  # non-blocking: Server startet sofort
     await job_manager.start()
     subscription_manager = init_subscription_manager(job_manager)
