@@ -12,7 +12,7 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
 
 <p align="center">
   <img src="https://img.shields.io/github/stars/Frxhb/selfhosted-media-converter?style=flat-square" alt="GitHub Stars">
-  <img src="https://img.shields.io/github/license/Frxhb/selfhosted-media-converter?style=flat-square" alt="License">
+  <img src="https://img.shields.io/github/license/Frxhb/selfhosted-media-converter?style=flat-square&v=1" alt="License">
   <img src="https://img.shields.io/github/last-commit/Frxhb/selfhosted-media-converter?style=flat-square" alt="Last Commit">
   <img src="https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python" alt="Python Version">
   <img src="https://img.shields.io/badge/Docker-supported-blue?style=flat-square&logo=docker" alt="Docker">
