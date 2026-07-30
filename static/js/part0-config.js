@@ -11,6 +11,9 @@ const MediaOptions = {
             { val: "480", label: "480p (SD)" }
         ],
         containers: ["mp4", "mkv", "webm", "gif"],
+        // yt-dlp's --merge-output-format only accepts avi/flv/mkv/mov/mp4/webm (no gif) -
+        // separate list so the Downloader tab never offers an invalid combination.
+        downloadContainers: ["mp4", "mkv", "webm"],
         codecs: [
             { val: "libx264", label: "H.264 (AVC)" },
             { val: "libx265", label: "H.265 (HEVC)" },

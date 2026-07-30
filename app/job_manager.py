@@ -52,11 +52,17 @@ class JobManager:
             "ytdlp_prog": re.compile(r"\[download\]\s+(\d+\.?\d*)%"),
             "ytdlp_eta": re.compile(r"ETA\s+([\d:]+)"),
             "ytdlp_speed": re.compile(r"at\s+([\d\.]+\s*[kMG]?i?B/s)"),
-	    "ytdlp_dest": re.compile(r"\[(?:download|ExtractAudio|Merger)\] Destination:\s*" + re.escape(OUTPUT_DIR) + r"/(.+)"),
+            # OUTPUT_DIR ist konfigurierbar (siehe app/core.py) - der Pfad wird dynamisch
+            # eingebaut statt hart auf "/media/outputs" zu verdrahten.
+            "ytdlp_dest": re.compile(r"\[(?:download|ExtractAudio|Merger)\] Destination:\s*" + re.escape(OUTPUT_DIR) + r"/(.+)"),
             "ytdlp_already": re.compile(r"\[download\]\s+" + re.escape(OUTPUT_DIR) + r"/(.+?)\s+has already been downloaded"),
             "ytdlp_item": re.compile(r"\[download\] Downloading (?:item|video)\s+(\d+)\s+of\s+(\d+)"),
             "whisper_prog": re.compile(r"(\d+)%"),
-            "whisper_ts": re.compile(r"\[(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})\]")
+            "whisper_ts": re.compile(r"\[(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})\]"),
+            # gallery-dl druckt (ohne -v) pro erfolgreich heruntergeladener Datei einfach den
+            # Ziel-Dateipfad als eigene Zeile aus - kein Prozent-Fortschritt verfügbar, daher
+            # zählen wir stattdessen die Anzahl bereits heruntergeladener Dateien mit.
+            "gallerydl_file": re.compile(r"^/\S+")
         }
 
     PRIORITY_MAP = {"low": 15, "below_normal": 10, "normal": 0, "above_normal": -5, "high": -10}
@@ -104,20 +110,25 @@ class JobManager:
             cleaned.append(a)
         return cleaned
 
-    @staticmethod
-    def _inject_cookies_if_needed(tool: str, args: List[str]) -> List[str]:
-        """Hängt --cookies <pfad> an yt-dlp Kommandos an, falls eine Cookies-Datei hinterlegt
-        wurde (per Upload über /api/config/cookies) UND der Aufruf noch keine eigenen
-        --cookies/--cookies-from-browser Flags mitbringt (z.B. aus einem älteren Pipeline-Preset).
-        Wird serverseitig injiziert statt im Frontend, damit es nicht vom UI-Code abhängt und
-        nicht versehentlich vergessen werden kann - eine einzige Quelle der Wahrheit."""
-        if tool != "yt-dlp":
+    # Flag, mit dem jedes unterstützte Tool eine Cookies-Datei entgegennimmt.
+    _COOKIE_FLAG_BY_TOOL = {"yt-dlp": "--cookies", "gallery-dl": "-C"}
+
+    @classmethod
+    def _inject_cookies_if_needed(cls, tool: str, args: List[str]) -> List[str]:
+        """Hängt das passende Cookies-Flag an yt-dlp/gallery-dl Kommandos an, falls eine
+        Cookies-Datei hinterlegt wurde (per Upload über /api/config/cookies) UND der Aufruf
+        noch keine eigenen --cookies/-C/--cookies-from-browser Flags mitbringt (z.B. aus einem
+        älteren Pipeline-Preset). Wird serverseitig injiziert statt im Frontend, damit es nicht
+        vom UI-Code abhängt und nicht versehentlich vergessen werden kann - eine einzige Quelle
+        der Wahrheit."""
+        cookie_flag = cls._COOKIE_FLAG_BY_TOOL.get(tool)
+        if not cookie_flag:
             return args
         if not os.path.exists(COOKIES_FILE_PATH):
             return args
-        if any(a in ("--cookies", "--cookies-from-browser") for a in args if isinstance(a, str)):
+        if any(a in ("--cookies", "-C", "--cookies-from-browser") for a in args if isinstance(a, str)):
             return args  # Aufruf hat bereits eigene Cookie-Angabe - nicht überschreiben
-        return [*args, "--cookies", COOKIES_FILE_PATH]
+        return [*args, cookie_flag, COOKIES_FILE_PATH]
 
     @staticmethod
     def _extract_domain(url: Optional[str]) -> Optional[str]:
@@ -951,5 +962,15 @@ class JobManager:
                 start_m, start_s = ts_match.group(1), ts_match.group(2)
                 end_m, end_s = ts_match.group(4), ts_match.group(5)
                 job.eta = f"Schreibe Segment: {start_m}:{start_s} ➔ {end_m}:{end_s}"
+
+        elif job.tool == "gallery-dl":
+            # gallery-dl liefert (ohne -v) keinen Prozent-Fortschritt, sondern druckt pro
+            # erfolgreich heruntergeladener Datei deren Zielpfad als eigene Zeile. Wir zählen
+            # diese Zeilen mit, um wenigstens "N Dateien heruntergeladen" anzuzeigen.
+            if self.regex["gallerydl_file"].match(line.strip()):
+                job.playlist_index = (job.playlist_index or 0) + 1
+                job.current_item_title = os.path.basename(line.strip())
+                job.eta = f"{job.playlist_index} Datei(en) heruntergeladen..."
+                await self.broadcast({"type": "job_updated", "job": job.model_dump()})
 
 job_manager = JobManager()

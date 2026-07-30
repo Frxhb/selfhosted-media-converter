@@ -112,12 +112,7 @@ async function openTagsEditor(relPath) {
               ext = "." + s.videoContainer;
             }
             if (s.extraFlags && s.extraFlags.trim())
-              args.push(
-                ...s.extraFlags
-                  .trim()
-                  .split(" ")
-                  .filter((x) => x),
-              );
+              args.push(...tokenizeCliFlags(s.extraFlags.trim()));
             args.push("-o", "{output_noext}.%(ext)s", "{input}");
             return {
               tool: "yt-dlp",
@@ -160,7 +155,7 @@ async function openTagsEditor(relPath) {
                               s.mode === "video"
                                 ? `
                             <select onchange="updateStageSetting(${idx}, 'videoContainer', this.value)">
-                                ${MediaOptions.video.containers.map((c) => `<option value="${c}" ${s.videoContainer === c ? "selected" : ""}>${c.toUpperCase()}</option>`).join("")}
+                                ${MediaOptions.video.downloadContainers.map((c) => `<option value="${c}" ${s.videoContainer === c ? "selected" : ""}>${c.toUpperCase()}</option>`).join("")}
                             </select>`
                                 : `
                             <select onchange="updateStageSetting(${idx}, 'audioContainer', this.value)">

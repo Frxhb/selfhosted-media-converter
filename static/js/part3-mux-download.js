@@ -1,4 +1,14 @@
-function submitMuxJob() {
+function tokenizeCliFlags(str) {
+        const tokens = [];
+        const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
+        let m;
+        while ((m = re.exec(str)) !== null) {
+          tokens.push(m[1] ?? m[2] ?? m[3]);
+        }
+        return tokens;
+      }
+
+      function submitMuxJob() {
         const videoPath = document.getElementById("m-video-select").value;
         const audioPath = document.getElementById("m-audio-select").value;
         if (!videoPath || !audioPath)
@@ -239,7 +249,7 @@ function submitMuxJob() {
         }
 
         if (customFlags) {
-          customFlags.split(" ").forEach((f) => {
+          tokenizeCliFlags(customFlags).forEach((f) => {
             if (f) baseArgs.push(f);
           });
         }
@@ -376,7 +386,7 @@ function submitMuxJob() {
           baseArgs.push("--range", rangeVal);
         }
         if (customFlags) {
-          customFlags.split(" ").forEach((f) => {
+          tokenizeCliFlags(customFlags).forEach((f) => {
             if (f) baseArgs.push(f);
           });
         }
@@ -727,10 +737,10 @@ function submitMuxJob() {
           job.logs.forEach((line) => {
             const match =
               line.match(
-                /\[(?:download|ExtractAudio|Merger)\] Destination:\s*\/media\/outputs\/(.+)/,
+                /\[(?:download|ExtractAudio|Merger)\] Destination:\s*(?:\/[^\s]*\/)?(.+)/,
               ) ||
               line.match(
-                /\[download\]\s*\/media\/outputs\/(.+?)\s+has already been downloaded/,
+                /\[download\]\s*(?:\/[^\s]*\/)?(.+?)\s+has already been downloaded/,
               );
             if (match) {
               const fullFilename = match[1].split(".f")[0];

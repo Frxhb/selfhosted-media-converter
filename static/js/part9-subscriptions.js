@@ -86,7 +86,7 @@ let subscriptionsCache = [];
         } else {
           qualityLabel.textContent = "Qualität:";
           qualitySelect.innerHTML = MediaOptions.video.resolutions.map((q) => `<option value="${q.val}">${q.label}</option>`).join("");
-          containerSelect.innerHTML = MediaOptions.video.containers.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
+          containerSelect.innerHTML = MediaOptions.video.downloadContainers.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
         }
       }
 
