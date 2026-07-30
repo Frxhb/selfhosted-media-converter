@@ -3,7 +3,7 @@
 Disclaimer: Vibe-coding project. The web UI is currently German-only — an English version is planned.
 
 <p align="center">
-  <img src="docs/banner.png" alt="Media Converter Banner" width="100%">
+  <img src="pictures/banner.svg" alt="Media Converter Banner" width="100%">
 </p>
 
 <p align="center">
@@ -23,18 +23,16 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
 
 ## Screenshots
 
-<!-- Replace placeholders with actual screenshots -->
-
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Dashboard Screenshot" width="85%">
+  <img src="pictures/Dashboard.png" alt="Dashboard Screenshot" width="85%">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/converter.png" alt="Converter Screenshot" width="85%">
+  <img src="pictures/yt-dlp.png" alt="YouTube-Downloader Screenshot" width="85%">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/logs.png" alt="Live Logs Screenshot" width="85%">
+  <img src="pictures/live-log.png" alt="Live Logs Screenshot" width="85%">
 </p>
 
 ---
