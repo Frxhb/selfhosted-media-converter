@@ -80,10 +80,10 @@ function dismissToast(toast) {
         const containerSelect = document.getElementById("d-container");
 
         if (isAudio) {
-          resSelect.innerHTML = MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}">${q.label}</option>`).join("");
+          resSelect.innerHTML = MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}">${getOptionLabel(q.val, q.label)}</option>`).join("");
           containerSelect.innerHTML = MediaOptions.audio.formats.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
         } else {
-          resSelect.innerHTML = MediaOptions.video.resolutions.map((q) => `<option value="${q.val}">${q.label}</option>`).join("");
+          resSelect.innerHTML = MediaOptions.video.resolutions.map((q) => `<option value="${q.val}">${getOptionLabel(q.val, q.label)}</option>`).join("");
           containerSelect.innerHTML = MediaOptions.video.downloadContainers.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
         }
       }

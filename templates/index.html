@@ -59,6 +59,7 @@
           id="theme-toggle-btn"
           class="icon-btn"
           title="Design wechseln"
+          data-i18n-title="app.tooltip_theme"
         >
           <svg
             viewBox="0 0 24 24"
@@ -78,6 +79,7 @@
           onclick="openModal('stats-modal')"
           class="icon-btn"
           title="Statistiken"
+          data-i18n-title="app.tooltip_stats"
         >
           <svg
             viewBox="0 0 24 24"
@@ -97,6 +99,7 @@
           onclick="openModal('settings-modal')"
           class="icon-btn"
           title="Einstellungen"
+          data-i18n-title="app.tooltip_settings"
         >
           <svg
             viewBox="0 0 24 24"
@@ -116,6 +119,7 @@
           onclick="resetGuiAndRefresh()"
           class="icon-btn"
           title="UI & Warteschlange zurücksetzen"
+          data-i18n-title="app.tooltip_reset"
         >
           <svg
             viewBox="0 0 24 24"
@@ -142,35 +146,35 @@
         class="stage-btn-mobile active"
         data-group="dashboard"
       >
-        <span class="stage-num">00</span> Übersicht
+        <span class="stage-num">00</span> <span data-i18n="nav.overview">Übersicht</span>
       </button>
       <button
         onclick="switchMainGroup('downloader')"
         class="stage-btn-mobile"
         data-group="downloader"
       >
-        <span class="stage-num">01</span> Import
+        <span class="stage-num">01</span> <span data-i18n="nav.import">Import</span>
       </button>
       <button
         onclick="switchMainGroup('converter')"
         class="stage-btn-mobile"
         data-group="converter"
       >
-        <span class="stage-num">02</span> Verarbeiten
+        <span class="stage-num">02</span> <span data-i18n="nav.process">Verarbeiten</span>
       </button>
       <button
         onclick="switchMainGroup('special')"
         class="stage-btn-mobile"
         data-group="special"
       >
-        <span class="stage-num">03</span> KI-Suite
+        <span class="stage-num">03</span> <span data-i18n="nav.ai_suite">KI-Suite</span>
       </button>
       <button
         onclick="switchMainGroup('library')"
         class="stage-btn-mobile"
         data-group="library"
       >
-        <span class="stage-num">04</span> Ausgabe
+        <span class="stage-num">04</span> <span data-i18n="nav.output">Ausgabe</span>
       </button>
       <span class="stage-rail-divider-mobile"></span>
       <button
@@ -178,14 +182,14 @@
         class="stage-btn-mobile"
         data-group="pipelines"
       >
-        🔗 Pipelines
+        🔗 <span data-i18n="nav.pipelines">Pipelines</span>
       </button>
       <button
         onclick="switchMainGroup('subscriptions')"
         class="stage-btn-mobile"
         data-group="subscriptions"
       >
-        📡 Abos
+        📡 <span data-i18n="nav.subscriptions">Abos</span>
       </button>
     </nav>
 
@@ -211,7 +215,7 @@
             <rect x="14" y="12" width="7" height="9" />
             <rect x="3" y="16" width="7" height="5" />
           </svg>
-          Übersicht
+          <span class="i18n-text" data-i18n="nav.overview">Übersicht</span>
         </button>
         <button
           onclick="switchMainGroup('downloader')"
@@ -231,7 +235,7 @@
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          Download
+          <span class="i18n-text" data-i18n="nav.import">Import</span>
         </button>
         <button
           onclick="switchMainGroup('converter')"
@@ -250,7 +254,7 @@
             <polygon points="23 7 16 12 23 17 23 7" />
             <rect x="1" y="5" width="15" height="14" rx="2" />
           </svg>
-          Verarbeiten
+          <span class="i18n-text" data-i18n="nav.process">Verarbeiten</span>
         </button>
         <button
           onclick="switchMainGroup('special')"
@@ -270,7 +274,7 @@
             <circle cx="6" cy="18" r="3" />
             <circle cx="18" cy="16" r="3" />
           </svg>
-          KI-Suite
+          <span class="i18n-text" data-i18n="nav.ai_suite">KI-Suite</span>
         </button>
         <button
           onclick="switchMainGroup('library')"
@@ -290,7 +294,7 @@
               d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
             />
           </svg>
-          Ausgabe
+          <span class="i18n-text" data-i18n="nav.output">Ausgabe</span>
         </button>
 
         <div class="stage-rail-divider">
@@ -314,7 +318,7 @@
             <circle cx="18" cy="18" r="2.5" />
             <path d="M8.5 6H14a4 4 0 0 1 4 4v2.5" />
           </svg>
-          Pipelines
+          <span class="i18n-text" data-i18n="nav.pipelines">Pipelines</span>
         </button>
         <button
           onclick="switchMainGroup('subscriptions')"
@@ -333,7 +337,7 @@
             <path d="M4 4a16 16 0 0 1 16 16" />
             <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none" />
           </svg>
-          Abonnements
+          <span class="i18n-text" data-i18n="nav.subscriptions">Abonnements</span>
         </button>
       </nav>
 
@@ -344,12 +348,13 @@
           <div id="file-import-card" class="card u-hidden" >
             <div class="card-title">
               <div style="display: flex; align-items: center; gap: 0.5rem">
-                <span>Datei-Import</span>
+                <span data-i18n="import_card.title">Datei-Import</span>
                 <div style="display: flex; gap: 0.25rem; margin-left: 0.5rem">
                   <button
                     onclick="switchFileSource('inputs')"
                     id="src-btn-inputs"
                     class="source-tab-btn active"
+                    data-i18n="import_card.inputs"
                   >
                     Eingänge
                   </button>
@@ -357,6 +362,7 @@
                     onclick="switchFileSource('outputs')"
                     id="src-btn-outputs"
                     class="source-tab-btn"
+                    data-i18n="import_card.outputs"
                   >
                     Ausgänge
                   </button>
@@ -365,7 +371,7 @@
             </div>
             <div class="grid-2">
               <div>
-                <label id="file-select-label">Datei aus Quelle wählen:</label>
+                <label id="file-select-label" data-i18n="import_card.select_source">Datei aus Quelle wählen:</label>
                 <div
                   style="
                     display: flex;
@@ -384,6 +390,7 @@
                       onclick="previewInputFile()"
                       class="btn btn-secondary btn-sm"
                       title="Vorschau ansehen"
+                      data-i18n="import_card.preview"
                     >
                       ▶️ Vorschau
                     </button>
@@ -391,12 +398,14 @@
                       onclick="openMediaInspector()"
                       class="btn btn-secondary btn-sm"
                       title="ffprobe Media Info"
+                      data-i18n="import_card.info"
                     >
                       Info
                     </button>
                     <button
                       onclick="addSelectedFileToActiveQueue()"
                       class="btn btn-primary btn-sm"
+                      data-i18n="import_card.add"
                     >
                       + Hinzufügen
                     </button>
@@ -404,7 +413,7 @@
                 </div>
               </div>
               <div>
-                <label>Neue Datei hochladen (nach /media/inputs):</label>
+                <label data-i18n="import_card.upload_label">Neue Datei hochladen (nach /media/inputs):</label>
                 <div
                   class="dropzone"
                   id="upload-dropzone"
@@ -412,7 +421,7 @@
                     document.getElementById('global-file-upload').click()
                   "
                 >
-                  <span style="font-size: 0.75rem; color: var(--ink-dim)"
+                  <span style="font-size: 0.75rem; color: var(--ink-dim)" data-i18n="import_card.click_or_drag"
                     >Klicken oder Datei hierher ziehen</span
                   >
                   <input
@@ -447,6 +456,7 @@
                     id="upload-cancel-btn"
                     onclick="cancelFileUpload()"
                     class="btn btn-danger btn-sm"
+                    data-i18n="import_card.cancel"
                     style="
                       display: none;
                       padding: 0.1rem 0.4rem;
@@ -464,13 +474,13 @@
           <div id="group-dashboard" class="group-view active">
             <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr)">
               <div class="kpi-card warn-kpi">
-                <span class="lbl">Aktive Jobs</span>
+                <span class="lbl" data-i18n="dashboard.active_jobs">Aktive Jobs</span>
                 <span id="st-active-jobs" class="val" style="color: var(--warn)"
                   >0</span
                 >
               </div>
               <div class="kpi-card">
-                <span class="lbl">Wartend</span>
+                <span class="lbl" data-i18n="dashboard.pending_jobs">Wartend</span>
                 <span
                   id="st-pending-jobs"
                   class="val"
@@ -497,15 +507,15 @@
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-              <span id="disk-warning-text">Wenig Speicherplatz frei.</span>
+              <span id="disk-warning-text" data-i18n="dashboard.disk_warning">Wenig Speicherplatz frei.</span>
             </div>
 
             <div class="card">
-              <div class="card-title">System-Last</div>
+              <div class="card-title" data-i18n="dashboard.sys_load">System-Last</div>
               <div class="u-col-gap-1">
                 <div>
                   <div class="u-row-between-sm">
-                    <span class="u-fw-600">CPU Auslastung</span>
+                    <span class="u-fw-600" data-i18n="dashboard.cpu_usage">CPU Auslastung</span>
                     <span
                       id="st-cpu-val-meter"
                       style="
@@ -525,7 +535,7 @@
                 </div>
                 <div>
                   <div class="u-row-between-sm">
-                    <span class="u-fw-600">RAM Belegung</span>
+                    <span class="u-fw-600" data-i18n="dashboard.ram_usage">RAM Belegung</span>
                     <span
  id="st-ram-val" class="u-mono-dim">0 GB / 0 GB</span
                     >
@@ -545,24 +555,25 @@
                       font-weight: 600;
                       margin-bottom: 0.4rem;
                     "
+                    data-i18n="dashboard.load_avg"
                   >
                     Load Average
                   </div>
                   <div style="display: flex; gap: 0.6rem">
                     <div class="stat-card u-flex-1" >
-                      <span class="lbl">1 Min</span>
+                      <span class="lbl" data-i18n="dashboard.min1">1 Min</span>
                       <span id="st-load1" class="val u-fs-95" 
  >0.00</span
                       >
                     </div>
                     <div class="stat-card u-flex-1" >
-                      <span class="lbl">5 Min</span>
+                      <span class="lbl" data-i18n="dashboard.min5">5 Min</span>
                       <span id="st-load5" class="val u-fs-95" 
  >0.00</span
                       >
                     </div>
                     <div class="stat-card u-flex-1" >
-                      <span class="lbl">15 Min</span>
+                      <span class="lbl" data-i18n="dashboard.min15">15 Min</span>
                       <span
  id="st-load15"
  class="val u-fs-95"
@@ -637,6 +648,7 @@
                 onclick="switchDlEngine('ytdlp')"
                 class="subtab-btn subtab-dl-engine active"
                 id="btn-dl-engine-ytdlp"
+                data-i18n="downloader.ytdlp_tab"
               >
                 yt-dlp (Video &amp; Audio)
               </button>
@@ -644,6 +656,7 @@
                 onclick="switchDlEngine('gallerydl')"
                 class="subtab-btn subtab-dl-engine"
                 id="btn-dl-engine-gallerydl"
+                data-i18n="downloader.gallerydl_tab"
               >
                 gallery-dl (Bilder &amp; Galerien)
               </button>
@@ -654,6 +667,7 @@
                 onclick="switchSubTab('dl', 'single')"
                 class="subtab-btn subtab-dl active"
                 data-sub="single"
+                data-i18n="downloader.single_tab"
               >
                 Einzelner Link
               </button>
@@ -661,6 +675,7 @@
                 onclick="switchSubTab('dl', 'batch')"
                 class="subtab-btn subtab-dl"
                 data-sub="batch"
+                data-i18n="downloader.batch_tab"
               >
                 Batch (.txt / Mehrere URLs)
               </button>
@@ -672,18 +687,20 @@
  
  >
               <div>
-                <label id="d-url-label">Video / Playlist URL:</label>
+                <label id="d-url-label" data-i18n="downloader.url_label">Video / Playlist URL:</label>
                 <div class="u-row-gap-05">
                   <input
                     type="url"
                     id="d-url"
                     placeholder="https://www.youtube.com/watch?v=..."
+                    data-i18n-placeholder="downloader.url_placeholder"
                     oninput="updateDownloadPreview(); clearDuplicateWarning();"
                   />
                   <button
                     onclick="fetchYtDlpInfo()"
                     id="d-fetch-btn"
                     class="btn btn-secondary"
+                    data-i18n="downloader.fetch_info"
                   >
                     Info abrufen
                   </button>
@@ -731,6 +748,7 @@
                     onclick="searchYtDlpByTitle()"
                     id="d-search-btn"
                     class="btn btn-secondary"
+                    data-i18n="downloader.search_btn"
                   >
                     Suchen
                   </button>
@@ -825,7 +843,7 @@
               <div class="grid-2">
                 <div
  id="d-batch-optA" class="u-box">
-                  <label for="d-batch-upload">Option A: Neue .txt Datei hochladen</label>
+                  <label for="d-batch-upload" data-i18n="downloader.batch_opt_a">Option A: Neue .txt Datei hochladen</label>
                   <input
                     type="file"
                     id="d-batch-upload"
@@ -835,7 +853,7 @@
                 </div>
                 <div
  id="d-batch-optB" class="u-box">
-                  <label for="d-batch-select">Option B: .txt aus Eingabe-Ordner wählen</label>
+                  <label for="d-batch-select" data-i18n="downloader.batch_opt_b">Option B: .txt aus Eingabe-Ordner wählen</label>
                   <select
                     id="d-batch-select"
                     onchange="updateDownloadPreview()"
@@ -844,7 +862,7 @@
               </div>
               <div
  id="d-batch-optC" class="u-box">
-                <label
+                <label data-i18n="downloader.batch_opt_c"
                   >Option C: Links direkt hier einfügen (ein Link pro
                   Zeile)</label
                 >
@@ -867,11 +885,11 @@
                 margin-top: 1rem;
               "
             >
-              <div class="card-title">yt-dlp: Format &amp; Qualität</div>
+              <div class="card-title" data-i18n="downloader.ytdlp_title">yt-dlp: Format &amp; Qualität</div>
 
               <div class="grid-3">
                 <div>
-                  <label for="d-type">Typ:</label>
+                  <label for="d-type" data-i18n="downloader.type_label">Typ:</label>
                   <select
                     id="d-type"
                     onchange="
@@ -879,16 +897,16 @@
                       updateYtdlpPreview();
                     "
                   >
-                    <option value="video">Video (Beste Qualität)</option>
-                    <option value="audio">Nur Audio (MP3/M4A)</option>
+                    <option value="video" data-i18n="downloader.type_video">Video (Beste Qualität)</option>
+                    <option value="audio" data-i18n="downloader.type_audio">Nur Audio (MP3/M4A)</option>
                   </select>
                 </div>
                 <div>
-                  <label>Max. Qualität:</label
+                  <label data-i18n="downloader.max_quality">Max. Qualität:</label
                   ><select id="d-res" onchange="updateYtdlpPreview()"></select>
                 </div>
                 <div>
-                  <label>Ziel-Container:</label
+                  <label data-i18n="downloader.target_container">Ziel-Container:</label
                   ><select
                     id="d-container"
                     onchange="updateYtdlpPreview()"
@@ -897,7 +915,7 @@
               </div>
 
               <div>
-                <label for="d-custom-flags">Eigene yt-dlp Zusatz-Parameter:</label>
+                <label for="d-custom-flags" data-i18n="downloader.custom_flags">Eigene yt-dlp Zusatz-Parameter:</label>
                 <input
                   type="text"
                   id="d-custom-flags"
@@ -907,7 +925,7 @@
               </div>
 
               <div>
-                <label>Befehlsvorschau:</label>
+                <label data-i18n="downloader.cmd_preview">Befehlsvorschau:</label>
                 <div class="u-relative">
                   <div
  id="d-cmd-preview"
@@ -920,6 +938,7 @@
  onclick="copyCommandToClipboard('d-cmd-preview')"
  class="icon-btn u-corner-btn"
  title="Befehl kopieren"
+ data-i18n-title="downloader.copy_cmd"
  >
                     <svg
                       viewBox="0 0 24 24"
@@ -939,6 +958,7 @@
               <button
                 onclick="handleDownloadSubmit()"
                 class="btn btn-primary btn-full"
+                data-i18n="downloader.start_btn"
               >
                 Download starten
               </button>
@@ -954,22 +974,22 @@
                 margin-top: 1rem;
               "
             >
-              <div class="card-title">gallery-dl: Einstellungen &amp; Ziel</div>
+              <div class="card-title" data-i18n="downloader.gallerydl_title">gallery-dl: Einstellungen &amp; Ziel</div>
 
               <div class="grid-2">
                 <div>
-                  <label for="g-dest">Zielordner:</label>
+                  <label for="g-dest" data-i18n="downloader.target_folder">Zielordner:</label>
                   <select id="g-dest" onchange="updateGalleryDlPreview()">
                     <option value="/media/outputs/images">/media/outputs/images</option>
                     <option value="/media/outputs/videos">/media/outputs/videos</option>
                   </select>
                 </div>
                 <div>
-                  <label for="g-range-mode">Bilder-Auswahl / Range:</label>
+                  <label for="g-range-mode" data-i18n="downloader.range_mode">Bilder-Auswahl / Range:</label>
                   <select id="g-range-mode" onchange="toggleGalleryRangeInput(); updateGalleryDlPreview()">
-                    <option value="all">Alle Bilder der Galerie/Seite herunterladen</option>
-                    <option value="first">Nur 1. Bild / Hauptbild herunterladen (--range 1)</option>
-                    <option value="custom">Benutzerdefinierte Range (z. B. --range 1-5)</option>
+                    <option value="all" data-i18n="downloader.range_all">Alle Bilder der Galerie/Seite herunterladen</option>
+                    <option value="first" data-i18n="downloader.range_first">Nur 1. Bild / Hauptbild herunterladen (--range 1)</option>
+                    <option value="custom" data-i18n="downloader.range_custom">Benutzerdefinierte Range (z. B. --range 1-5)</option>
                   </select>
                   <input
                     type="text"
@@ -982,7 +1002,7 @@
               </div>
 
               <div>
-                <label for="g-custom-flags">Eigene gallery-dl Zusatz-Parameter:</label>
+                <label for="g-custom-flags" data-i18n="downloader.gallery_flags">Eigene gallery-dl Zusatz-Parameter:</label>
                 <input
                   type="text"
                   id="g-custom-flags"
@@ -992,7 +1012,7 @@
               </div>
 
               <div>
-                <label>Befehlsvorschau:</label>
+                <label data-i18n="downloader.cmd_preview">Befehlsvorschau:</label>
                 <div class="u-relative">
                   <div
  id="g-cmd-preview"
@@ -1005,6 +1025,7 @@
  onclick="copyCommandToClipboard('g-cmd-preview')"
  class="icon-btn u-corner-btn"
  title="Befehl kopieren"
+ data-i18n-title="downloader.copy_cmd"
  >
                     <svg
                       viewBox="0 0 24 24"
@@ -1024,6 +1045,7 @@
               <button
                 onclick="handleDownloadSubmit()"
                 class="btn btn-primary btn-full"
+                data-i18n="downloader.start_gallery_btn"
               >
                 Gallery Download starten
               </button>
@@ -1037,6 +1059,7 @@
                 onclick="switchSubTab('conv', 'video')"
                 class="subtab-btn subtab-conv active"
                 data-sub="video"
+                data-i18n="converter.video_tab"
               >
                 Video
               </button>
@@ -1044,6 +1067,7 @@
                 onclick="switchSubTab('conv', 'audio')"
                 class="subtab-btn subtab-conv"
                 data-sub="audio"
+                data-i18n="converter.audio_tab"
               >
                 Audio
               </button>
@@ -1051,6 +1075,7 @@
                 onclick="switchSubTab('conv', 'images')"
                 class="subtab-btn subtab-conv"
                 data-sub="images"
+                data-i18n="converter.images_tab"
               >
                 Bilder
               </button>
@@ -1058,6 +1083,7 @@
                 onclick="switchSubTab('conv', 'tools')"
                 class="subtab-btn subtab-conv"
                 data-sub="tools"
+                data-i18n="converter.tools_tab"
               >
                 Schnitt &amp; Tools
               </button>
@@ -1066,6 +1092,7 @@
                 onclick="switchSubTab('conv', 'muxing')"
                 class="subtab-btn subtab-conv"
                 data-sub="muxing"
+                data-i18n="converter.muxing_tab"
               >
                 Muxing
               </button>
@@ -1078,10 +1105,11 @@
  
  >
               <div class="card-title">
-                <span>Video-Warteschlange</span>
+                <span data-i18n="converter.video_queue">Video-Warteschlange</span>
                 <button
                   onclick="clearTabQueue('video')"
                   class="btn btn-danger btn-sm"
+                  data-i18n="common.clear"
                 >
                   Leeren
                 </button>
@@ -1090,6 +1118,7 @@
 
               <div>
                 <label
+                  data-i18n="converter.output_name_label"
                   >Ausgabename (optional, Standard:
                   [Originalname]_converted):</label
                 >
@@ -1103,15 +1132,15 @@
 
               <div class="grid-2">
                 <div>
-                  <label for="v-container">Container:</label>
+                  <label for="v-container" data-i18n="converter.container">Container:</label>
                   <select id="v-container" onchange="updateVideoPreview()"></select>
                 </div>
                 <div>
-                  <label for="v-vcodec">Video Codec:</label>
+                  <label for="v-vcodec" data-i18n="converter.vcodec">Video Codec:</label>
                   <select id="v-vcodec" onchange="updateVideoPreview()"></select>
                 </div>
                 <div>
-                  <label for="v-acodec">Audio Codec:</label>
+                  <label for="v-acodec" data-i18n="converter.acodec">Audio Codec:</label>
                   <select id="v-acodec" onchange="updateVideoPreview()">
                     <option value="aac">AAC</option>
                     <option value="ac3">AC3</option>
@@ -1119,7 +1148,7 @@
                   </select>
                 </div>
                 <div>
-                  <label for="v-crf">Qualität (CRF, niedriger = besser):</label>
+                  <label for="v-crf" data-i18n="converter.crf">Qualität (CRF, niedriger = besser):</label>
                   <select id="v-crf" onchange="updateVideoPreview()"></select>
                 </div>
               </div>
@@ -1134,7 +1163,7 @@
                 class="grid-2"
               >
                 <div>
-                  <label for="v-trim-start">Trim Startzeit (HH:MM:SS):</label>
+                  <label for="v-trim-start" data-i18n="converter.trim_start">Trim Startzeit (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="v-trim-start"
@@ -1143,7 +1172,7 @@
                   />
                 </div>
                 <div>
-                  <label for="v-trim-end">Trim Endzeit (HH:MM:SS):</label>
+                  <label for="v-trim-end" data-i18n="converter.trim_end">Trim Endzeit (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="v-trim-end"
@@ -1154,7 +1183,7 @@
               </div>
 
               <div>
-                <label>Befehlsvorschau:</label>
+                <label data-i18n="downloader.cmd_preview">Befehlsvorschau:</label>
                 <div class="u-relative">
                   <div
  id="v-cmd-preview"
@@ -1167,6 +1196,7 @@
  onclick="copyCommandToClipboard('v-cmd-preview')"
  class="icon-btn u-corner-btn"
  title="Befehl kopieren"
+ data-i18n-title="downloader.copy_cmd"
  >
                     <svg
                       viewBox="0 0 24 24"
@@ -1186,6 +1216,7 @@
               <button
                 onclick="submitVideoJob()"
                 class="btn btn-success btn-full"
+                data-i18n="converter.start_video_btn"
               >
                 Video-Jobs starten
               </button>
@@ -1198,10 +1229,11 @@
  
  >
               <div class="card-title">
-                <span>Audio-Warteschlange</span>
+                <span data-i18n="converter.audio_queue">Audio-Warteschlange</span>
                 <button
                   onclick="clearTabQueue('audio')"
                   class="btn btn-danger btn-sm"
+                  data-i18n="common.clear"
                 >
                   Leeren
                 </button>
@@ -1283,10 +1315,11 @@
  
  >
               <div class="card-title">
-                <span>Schnitt &amp; Tools Warteschlange</span>
+                <span data-i18n="converter.tools_queue">Schnitt &amp; Tools Warteschlange</span>
                 <button
                   onclick="clearTabQueue('tools')"
                   class="btn btn-danger btn-sm"
+                  data-i18n="common.clear"
                 >
                   Leeren
                 </button>
@@ -1366,10 +1399,11 @@
  
  >
               <div class="card-title">
-                <span>Bild-Warteschlange</span>
+                <span data-i18n="converter.image_queue">Bild-Warteschlange</span>
                 <button
                   onclick="clearTabQueue('images')"
                   class="btn btn-danger btn-sm"
+                  data-i18n="common.clear"
                 >
                   Leeren
                 </button>
@@ -1527,10 +1561,11 @@
                   margin-bottom: 0.9rem;
                 "
               >
-                <h3 class="u-m0">Pipelines</h3>
+                <h3 class="u-m0" data-i18n="pipelines.title">Pipelines</h3>
                 <button
                   onclick="openPipelineEditor(null)"
                   class="btn btn-secondary"
+                  data-i18n="pipelines.new_btn"
                 >
                   + Neue Pipeline
                 </button>
@@ -1624,17 +1659,19 @@
                   margin-bottom: 0.9rem;
                 "
               >
-                <h3 class="u-m0">Abonnements</h3>
+                <h3 class="u-m0" data-i18n="subscriptions.title">Abonnements</h3>
                 <div class="u-row-gap-05">
                   <button
                     onclick="checkAllSubscriptionsNow()"
                     class="btn btn-secondary"
+                    data-i18n="subscriptions.check_all"
                   >
                     🔄 Alle prüfen
                   </button>
                   <button
                     onclick="openSubscriptionEditor(null)"
                     class="btn btn-secondary"
+                    data-i18n="subscriptions.new_sub"
                   >
                     + Neues Abonnement
                   </button>
@@ -1793,7 +1830,7 @@
             style="height: 380px; display: flex; flex-direction: column"
           >
             <div class="card-title">
-              <span>Warteschlange</span>
+              <span data-i18n="queue.title">Warteschlange</span>
               <div style="display: flex; align-items: center; gap: 0.4rem">
                 <span
                   id="queue-count"
@@ -1807,12 +1844,14 @@
                 <button
                   onclick="clearCompletedServerJobs()"
                   class="btn btn-secondary btn-sm"
+                  data-i18n="queue.clear_completed"
                 >
                   Fertige entfernen
                 </button>
                 <button
                   onclick="cancelAllJobs()"
                   class="btn btn-danger btn-sm"
+                  data-i18n="queue.cancel_all"
                 >
                   Alle abbrechen
                 </button>
@@ -1822,6 +1861,7 @@
               type="text"
               id="job-search"
               placeholder="Jobs durchsuchen..."
+              data-i18n-placeholder="queue.search_jobs"
               oninput="filterJobList()"
               style="
                 margin-bottom: 0.6rem;
@@ -1846,6 +1886,7 @@
                   font-size: 0.8rem;
                   margin-top: 3rem;
                 "
+                data-i18n="queue.no_jobs"
               >
                 Keine aktiven Jobs
               </p>
@@ -1857,7 +1898,7 @@
             style="height: 380px; display: flex; flex-direction: column"
           >
             <div class="card-title">
-              <span>Live-Ausgabe</span>
+              <span data-i18n="logs.title">Live-Ausgabe</span>
               <div style="display: flex; align-items: center; gap: 0.6rem">
                 <label
                   style="
@@ -1876,11 +1917,12 @@
                     checked
                     style="width: auto; cursor: pointer"
                   />
-                  Auto-Scroll
+                  <span data-i18n="logs.autoscroll">Auto-Scroll</span>
                 </label>
                 <button
                   onclick="copyLogToClipboard()"
                   class="btn btn-secondary btn-sm"
+                  data-i18n="logs.copy"
                 >
                   Kopieren
                 </button>
@@ -1889,6 +1931,7 @@
                     document.getElementById('log-console').textContent = ''
                   "
                   class="btn btn-secondary btn-sm"
+                  data-i18n="common.clear"
                 >
                   Leeren
                 </button>
@@ -2551,7 +2594,7 @@
     <div id="settings-modal" class="modal-overlay">
       <div class="modal-card">
         <div class="card-title">
-          <span>Einstellungen</span>
+          <span data-i18n="settings.title">Einstellungen</span>
           <button
             onclick="closeModal('settings-modal')"
             class="btn btn-secondary btn-sm"
@@ -2560,8 +2603,17 @@
           </button>
         </div>
         <div class="u-col-gap-1">
+          <div class="settings-section">
+            <h4 data-i18n="settings.language" style="margin-bottom: 0.4rem;">Sprache / Language</h4>
+            <div style="margin-top: 0.3rem;">
+              <select id="lang-selector" onchange="switchLanguage(this.value)" class="lang-select-btn" style="width: 100%; max-width: 220px; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
+                <option value="de">Deutsch (DE)</option>
+                <option value="en">English (EN)</option>
+              </select>
+            </div>
+          </div>
           <div>
-            <label>Akzentfarbe wählen:</label>
+            <label data-i18n="settings.choose_accent">Akzentfarbe wählen:</label>
             <div style="display: flex; gap: 0.75rem; margin-top: 0.3rem">
               <div
                 class="color-dot"
@@ -2605,7 +2657,7 @@
                 margin-bottom: 0.6rem;
               "
             >
-              <h4 class="u-mb0">Jobs &amp; Performance</h4>
+              <h4 class="u-mb0" data-i18n="settings.jobs_performance">Jobs &amp; Performance</h4>
               <span
                 id="config-source-badge"
                 class="status-badge"
@@ -2620,7 +2672,7 @@
             </div>
             <div class="grid-2">
               <div>
-                <label for="cfg-max-jobs">Max. parallele Jobs:</label>
+                <label for="cfg-max-jobs" data-i18n="settings.max_jobs">Max. parallele Jobs:</label>
                 <input
                   type="number"
                   id="cfg-max-jobs"
@@ -2630,17 +2682,18 @@
                 />
               </div>
               <div>
-                <label for="cfg-cleanup-days">Auto-Cleanup Outputs (Tage):</label>
+                <label for="cfg-cleanup-days" data-i18n="settings.auto_cleanup">Auto-Cleanup Outputs (Tage):</label>
                 <input
                   type="number"
                   id="cfg-cleanup-days"
                   value="0"
                   min="0"
                   placeholder="0 = Deaktiviert"
+                  data-i18n-placeholder="settings.disabled_placeholder"
                 />
               </div>
               <div>
-                <label for="cfg-ffmpeg-threads">ffmpeg Threads:</label>
+                <label for="cfg-ffmpeg-threads" data-i18n="settings.ffmpeg_threads">ffmpeg Threads:</label>
                 <select id="cfg-ffmpeg-threads">
                   <option value="Auto">Auto</option>
                   <option value="1">1</option>
@@ -2650,7 +2703,7 @@
                 </select>
               </div>
               <div>
-                <label>Verarbeitungstempo:</label>
+                <label data-i18n="settings.processing_speed">Verarbeitungstempo:</label>
                 <div class="priority-slider-wrap">
                   <div class="priority-track" id="priority-slider">
                     <div class="priority-thumb" id="priority-thumb"></div>
@@ -2658,6 +2711,7 @@
                       class="priority-option"
                       data-value="low"
                       onclick="setPrioritySlider('low')"
+                      data-i18n="settings.speed_low"
                     >
                       🐢 Sparsam
                     </div>
@@ -2665,6 +2719,7 @@
                       class="priority-option"
                       data-value="below_normal"
                       onclick="setPrioritySlider('below_normal')"
+                      data-i18n="settings.speed_balanced"
                     >
                       ⚖️ Ausgewogen
                     </div>
@@ -2672,6 +2727,7 @@
                       class="priority-option"
                       data-value="high"
                       onclick="setPrioritySlider('high')"
+                      data-i18n="settings.speed_fast"
                     >
                       ⚡ Schnell
                     </div>
@@ -2695,9 +2751,9 @@
               "
             >
               <div>
-                <label class="u-mb-01">Quelldateien nach erfolgreicher Konvertierung löschen</label
+                <label class="u-mb-01" data-i18n="settings.auto_delete_originals">Quelldateien nach erfolgreicher Konvertierung löschen</label
                 >
-                <span class="settings-hint"
+                <span class="settings-hint" data-i18n="settings.auto_delete_hint"
                   >Gilt nur für Konvertierungs-Jobs mit lokaler Eingabedatei,
                   niemals für Downloads.</span
                 >
@@ -2710,10 +2766,10 @@
           </div>
 
           <div class="settings-section">
-            <h4>Ausfallsicherheit</h4>
+            <h4 data-i18n="settings.resiliency">Ausfallsicherheit</h4>
             <div class="u-col-gap-08">
               <div>
-                <label for="cfg-min-disk-gb">Mindest-Speicherplatz für neue Jobs (GB):</label>
+                <label for="cfg-min-disk-gb" data-i18n="settings.min_disk_space">Mindest-Speicherplatz für neue Jobs (GB):</label>
                 <input
                   type="number"
                   id="cfg-min-disk-gb"
@@ -2721,13 +2777,13 @@
                   min="0"
                   step="0.5"
                 />
-                <span class="settings-hint"
+                <span class="settings-hint" data-i18n="settings.min_disk_hint"
                   >Neue Jobs werden blockiert, wenn weniger freier Speicher als
                   hier angegeben verfügbar ist. 0 = deaktiviert.</span
                 >
               </div>
               <div>
-                <label for="cfg-max-per-domain">Max. gleichzeitige Downloads pro Quelle (Domain):</label>
+                <label for="cfg-max-per-domain" data-i18n="settings.max_per_domain">Max. gleichzeitige Downloads pro Quelle (Domain):</label>
                 <input
                   type="number"
                   id="cfg-max-per-domain"
@@ -2735,7 +2791,7 @@
                   min="0"
                   step="1"
                 />
-                <span class="settings-hint"
+                <span class="settings-hint" data-i18n="settings.max_per_domain_hint"
                   >Begrenzt parallele Downloads von derselben Domain (z.B.
                   YouTube), um Sperren wegen zu vieler gleichzeitiger
                   Verbindungen zu vermeiden. 0 = deaktiviert.</span
@@ -2746,9 +2802,9 @@
  
  >
                 <div>
-                  <label class="u-mb-01">Überschreibschutz für Ausgabedateien</label
+                  <label class="u-mb-01" data-i18n="settings.prevent_overwrite">Überschreibschutz für Ausgabedateien</label
                   >
-                  <span class="settings-hint"
+                  <span class="settings-hint" data-i18n="settings.prevent_overwrite_hint"
                     >Verhindert, dass ein Job eine bereits vorhandene
                     Ausgabedatei stillschweigend überschreibt.</span
                   >
@@ -2763,9 +2819,9 @@
  
  >
                 <div>
-                  <label class="u-mb-01">Bestätigung vor komplettem Playlist-Download</label
+                  <label class="u-mb-01" data-i18n="settings.confirm_playlist">Bestätigung vor komplettem Playlist-Download</label
                   >
-                  <span class="settings-hint"
+                  <span class="settings-hint" data-i18n="settings.confirm_playlist_hint"
                     >Zeigt eine zusätzliche Warnung, bevor eine ganze Playlist
                     heruntergeladen wird.</span
                   >
@@ -2789,9 +2845,9 @@
               "
             >
               <div>
-                <label class="u-mb-01">Client-seitige Verarbeitung (FFmpeg.wasm)</label
+                <label class="u-mb-01" data-i18n="settings.client_ffmpeg">Client-seitige Verarbeitung (FFmpeg.wasm)</label
                 >
-                <span class="settings-hint"
+                <span class="settings-hint" data-i18n="settings.client_ffmpeg_hint"
                   >Verarbeitet Video/Audio lokal im Browser.</span
                 >
               </div>
@@ -2803,7 +2859,7 @@
           </div>
 
           <div class="settings-section">
-            <h4>Pushover Benachrichtigungen</h4>
+            <h4 data-i18n="settings.pushover_title">Pushover Benachrichtigungen</h4>
             <div
               class="toggle-row"
               style="
@@ -2813,7 +2869,7 @@
                 margin-bottom: 0.6rem;
               "
             >
-              <label class="u-mb0">Pushover Aktivieren</label>
+              <label class="u-mb0" data-i18n="settings.pushover_enable">Pushover Aktivieren</label>
               <label class="switch">
                 <input type="checkbox" id="cfg-push-enabled" />
                 <span class="slider-toggle"></span>
@@ -2840,7 +2896,7 @@
           </div>
 
           <div class="settings-section">
-            <h4>yt-dlp Engine</h4>
+            <h4 data-i18n="settings.ytdlp_engine">yt-dlp Engine</h4>
             <div
               style="
                 display: flex;
@@ -2850,7 +2906,7 @@
               "
             >
               <span style="font-size: 0.78rem; color: var(--ink-dim)"
-                >Version:
+                ><span data-i18n="settings.version">Version</span>:
                 <span
                   id="ytdlp-version-display"
                   class="code-box"
@@ -2859,6 +2915,7 @@
                     padding: 0.15rem 0.5rem;
                     margin-left: 0.3rem;
                   "
+                  data-i18n="common.loading"
                   >wird geladen...</span
                 ></span
               >
@@ -2866,11 +2923,12 @@
                 onclick="checkAndUpdateYtDlp()"
                 id="btn-ytdlp-update"
                 class="btn btn-secondary btn-sm"
+                data-i18n="settings.check_update"
               >
                 Auf Updates prüfen und aktualisieren
               </button>
             </div>
-            <span class="settings-hint"
+            <span class="settings-hint" data-i18n="settings.ytdlp_hint"
               >Die im Docker-Image enthaltene Version ist fest gepinnt (siehe
               Dockerfile). Dieser Button aktualisiert yt-dlp nur zur Laufzeit;
               nach einem Container-Neubau gilt wieder die gepinnte
@@ -2878,7 +2936,7 @@
             >
 
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line)">
-              <label>Cookies (für altersbeschränkte / Mitglieder-Only Videos):</label>
+              <label data-i18n="settings.cookies_label">Cookies (für altersbeschränkte / Mitglieder-Only Videos):</label>
               <div
                 id="cookies-status-row"
                 style="
@@ -2892,12 +2950,14 @@
                 <span
                   id="cookies-status-text"
                   style="font-size: 0.78rem; color: var(--ink-dim)"
+                  data-i18n="common.loading"
                   >Status wird geladen...</span
                 >
                 <button
  onclick="deleteCookiesFile()"
  id="btn-cookies-delete"
  class="btn btn-danger btn-sm u-hidden"
+ data-i18n="common.remove"
  
  >
                   Entfernen
@@ -2909,7 +2969,7 @@
                 accept=".txt"
                 onchange="uploadCookiesFile()"
               />
-              <span class="settings-hint"
+              <span class="settings-hint" data-i18n="settings.cookies_hint"
                 >Als Netscape cookies.txt exportieren (z.B. mit der
                 Browser-Erweiterung "Get cookies.txt LOCALLY") und hier
                 hochladen. Wird automatisch an jeden yt-dlp Download
@@ -2921,23 +2981,24 @@
           </div>
 
           <div class="settings-section">
-            <h4>Backup &amp; Wiederherstellung</h4>
+            <h4 data-i18n="settings.backup_restore">Backup &amp; Wiederherstellung</h4>
             <div class="u-col-gap-06">
               <a
                 href="/api/config/backup"
                 class="btn btn-secondary btn-full"
                 style="text-decoration: none"
+                data-i18n="settings.export_backup"
                 >Einstellungen &amp; Statistiken exportieren (.zip)</a
               >
               <div>
-                <label for="config-restore-input">Backup wiederherstellen:</label>
+                <label for="config-restore-input" data-i18n="settings.restore_backup">Backup wiederherstellen:</label>
                 <input
                   type="file"
                   id="config-restore-input"
                   accept=".zip"
                   onchange="restoreConfigBackup()"
                 />
-                <span class="settings-hint"
+                <span class="settings-hint" data-i18n="settings.restore_hint"
                   >Überschreibt aktuelle Einstellungen und Job-Historie.
                   Container-Neustart danach empfohlen.</span
                 >
@@ -2946,10 +3007,11 @@
           </div>
 
           <div class="settings-section">
-            <h4>Datenbank &amp; Historie</h4>
+            <h4 data-i18n="settings.database_history">Datenbank &amp; Historie</h4>
             <button
               onclick="resetStatsDatabase()"
               class="btn btn-danger btn-full"
+              data-i18n="settings.reset_db"
             >
               Datenbank &amp; Historie zurücksetzen
             </button>
@@ -2959,6 +3021,7 @@
             onclick="saveServerConfig()"
             class="btn btn-primary btn-full"
             id="btn-save-settings"
+            data-i18n="settings.save_apply"
           >
             Speichern &amp; Anwenden
           </button>
@@ -2967,6 +3030,7 @@
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
+    <script src="/static/js/i18n.js"></script>
     <script src="/static/js/part0-config.js"></script>
     <script src="/static/js/part1-core-utils.js"></script>
     <script src="/static/js/part2-conversion-jobs.js"></script>

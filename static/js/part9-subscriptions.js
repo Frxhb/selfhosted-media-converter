@@ -13,30 +13,31 @@ let subscriptionsCache = [];
       }
 
       function formatSubscriptionInterval(minutes) {
-        if (minutes % 1440 === 0) return `Alle ${minutes / 1440} Tag(e)`;
-        if (minutes % 60 === 0) return `Alle ${minutes / 60} Std.`;
-        return `Alle ${minutes} Min.`;
+        if (minutes % 1440 === 0) return `Every ${minutes / 1440} day(s)`;
+        if (minutes % 60 === 0) return `Every ${minutes / 60} hour(s)`;
+        return `Every ${minutes} min.`;
       }
 
       function formatSubscriptionLastCheck(sub) {
-        if (!sub.last_checked_at) return "Noch nie geprüft";
-        const date = new Date(sub.last_checked_at).toLocaleString("de-DE", {
+        if (!sub.last_checked_at) return t('subscriptions.last_checked_never', 'Noch nie geprüft');
+        const lang = currentLang === 'de' ? 'de-DE' : 'en-US';
+        const date = new Date(sub.last_checked_at).toLocaleString(lang, {
           day: "2-digit",
           month: "2-digit",
           hour: "2-digit",
           minute: "2-digit",
         });
         if (sub.last_check_status === "error") {
-          return `⚠️ Fehler bei letzter Prüfung (${date})`;
+          return `⚠️ Error during last check (${date})`;
         }
-        return `Zuletzt geprüft: ${date} · ${sub.last_check_new_count} neu`;
+        return `${t('subscriptions.last_checked', 'Zuletzt geprüft:')} ${date} · ${sub.last_check_new_count} ${t('subscriptions.new_count', 'neu')}`;
       }
 
       function renderSubscriptionList() {
         const container = document.getElementById("subscription-list");
         if (!container) return;
         if (subscriptionsCache.length === 0) {
-          container.innerHTML = `<div style="color:var(--ink-dim); font-size:0.85rem;">Noch keine Abonnements angelegt.</div>`;
+          container.innerHTML = `<div style="color:var(--ink-dim); font-size:0.85rem;">${t('subscriptions.no_subs_yet', 'Noch keine Abonnements angelegt.')}</div>`;
           return;
         }
         container.innerHTML = subscriptionsCache
@@ -44,8 +45,8 @@ let subscriptionsCache = [];
             const statusColor =
               sub.last_check_status === "error" ? "var(--danger)" : "var(--ink-dim)";
             const activeBadge = sub.enabled
-              ? `<span class="status-badge" style="background:var(--ok-dim); color:var(--ok);">Aktiv</span>`
-              : `<span class="status-badge" style="background:var(--surface-sunken); border:1px solid var(--line); color:var(--ink-dim);">Pausiert</span>`;
+              ? `<span class="status-badge" style="background:var(--ok-dim); color:var(--ok);">${t('subscriptions.active', 'Aktiv')}</span>`
+              : `<span class="status-badge" style="background:var(--surface-sunken); border:1px solid var(--line); color:var(--ink-dim);">${t('subscriptions.paused', 'Pausiert')}</span>`;
 
             return `
                 <div class="card" style="padding:0.7rem 0.9rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
@@ -59,14 +60,14 @@ let subscriptionsCache = [];
                         </div>
                         <div style="font-size:0.72rem; margin-top:0.3rem; color:${statusColor};">
                             ${formatSubscriptionInterval(sub.check_interval_minutes)} · ${formatSubscriptionLastCheck(sub)}
-                            ${sub.total_downloaded > 0 ? ` · ${sub.total_downloaded} insgesamt geladen` : ""}
+                            ${sub.total_downloaded > 0 ? ` · ${sub.total_downloaded} ${t('subscriptions.total_downloaded', 'insgesamt geladen')}` : ""}
                         </div>
                         ${sub.last_check_status === "error" && sub.last_check_error ? `<div style="font-size:0.7rem; color:var(--danger); margin-top:0.25rem;">${escapeHtml(sub.last_check_error)}</div>` : ""}
                     </div>
                     <div style="display:flex; gap:0.4rem; flex-shrink:0;">
-                        <button onclick="checkSubscriptionNow('${sub.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">Jetzt prüfen</button>
-                        <button onclick="openSubscriptionEditor('${sub.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">Bearbeiten</button>
-                        <button onclick="deleteSubscription('${sub.id}')" class="btn btn-danger" style="padding:0.3rem 0.7rem;">Löschen</button>
+                        <button onclick="checkSubscriptionNow('${sub.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">${t('subscriptions.check_now', 'Jetzt prüfen')}</button>
+                        <button onclick="openSubscriptionEditor('${sub.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">${t('common.edit', 'Bearbeiten')}</button>
+                        <button onclick="deleteSubscription('${sub.id}')" class="btn btn-danger" style="padding:0.3rem 0.7rem;">${t('common.delete', 'Löschen')}</button>
                     </div>
                 </div>`;
           })
@@ -80,20 +81,17 @@ let subscriptionsCache = [];
         const containerSelect = document.getElementById("sub-edit-container");
 
         if (type === "audio") {
-          qualityLabel.textContent = "Audioqualität:";
-          qualitySelect.innerHTML = MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}">${q.label}</option>`).join("");
+          qualityLabel.textContent = t('subscriptions.quality_label', 'Audioqualität:');
+          qualitySelect.innerHTML = MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}">${getOptionLabel(q.val, q.label)}</option>`).join("");
           containerSelect.innerHTML = MediaOptions.audio.formats.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
         } else {
-          qualityLabel.textContent = "Qualität:";
-          qualitySelect.innerHTML = MediaOptions.video.resolutions.map((q) => `<option value="${q.val}">${q.label}</option>`).join("");
+          qualityLabel.textContent = t('subscriptions.quality_label', 'Qualität:');
+          qualitySelect.innerHTML = MediaOptions.video.resolutions.map((q) => `<option value="${q.val}">${getOptionLabel(q.val, q.label)}</option>`).join("");
           containerSelect.innerHTML = MediaOptions.video.downloadContainers.map((c) => `<option value="${c}">${c.toUpperCase()}</option>`).join("");
         }
       }
 
       function minutesToIntervalParts(totalMinutes) {
-        // Wählt die "glatteste" Darstellung: Tage, wenn ohne Rest teilbar, sonst Stunden,
-        // sonst Minuten. Rein für die Anzeige beim Bearbeiten - gespeichert wird ohnehin
-        // immer in Minuten.
         if (totalMinutes % 1440 === 0 && totalMinutes >= 1440) {
           return { value: totalMinutes / 1440, unit: "1440" };
         }
@@ -108,8 +106,8 @@ let subscriptionsCache = [];
         const sub = subId ? subscriptionsCache.find((s) => s.id === subId) : null;
 
         document.getElementById("subscription-editor-title").textContent = sub
-          ? "Abonnement bearbeiten"
-          : "Neues Abonnement";
+          ? t('subscriptions.modal_edit_title', 'Abonnement bearbeiten')
+          : t('subscriptions.modal_new_title', 'Neues Abonnement');
         document.getElementById("sub-edit-name").value = sub ? sub.name : "";
         document.getElementById("sub-edit-url").value = sub ? sub.url : "";
         document.getElementById("sub-edit-type").value = sub ? sub.download_type : "video";

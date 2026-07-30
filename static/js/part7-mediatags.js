@@ -136,14 +136,14 @@ async function openTagsEditor(relPath) {
                         <div>
                             <label>Auflösung:</label>
                             <select onchange="updateStageSetting(${idx}, 'resolution', this.value)">
-                                ${MediaOptions.video.resolutions.map((r) => `<option value="${r.val}" ${s.resolution === r.val ? "selected" : ""}>${r.label}</option>`).join("")}
+                                ${MediaOptions.video.resolutions.map((r) => `<option value="${r.val}" ${s.resolution === r.val ? "selected" : ""}>${getOptionLabel(r.val, r.label)}</option>`).join("")}
                             </select>
                         </div>`
                             : `
                         <div>
                             <label>Audio-Qualität:</label>
                             <select onchange="updateStageSetting(${idx}, 'audioQuality', this.value)">
-                                ${MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}" ${s.audioQuality === q.val ? "selected" : ""}>${q.label}</option>`).join("")}
+                                ${MediaOptions.audio.bitrates.map((q) => `<option value="${q.val}" ${s.audioQuality === q.val ? "selected" : ""}>${getOptionLabel(q.val, q.label)}</option>`).join("")}
                             </select>
                         </div>`
                         }
@@ -208,7 +208,7 @@ async function openTagsEditor(relPath) {
                         <div>
                             <label>Bitrate:</label>
                             <select onchange="updateStageSetting(${idx}, 'bitrate', this.value)">
-                                ${MediaOptions.audio.bitrates.map((b) => `<option value="${b.val}" ${s.bitrate === b.val ? "selected" : ""}>${b.label}</option>`).join("")}
+                                ${MediaOptions.audio.bitrates.map((b) => `<option value="${b.val}" ${s.bitrate === b.val ? "selected" : ""}>${getOptionLabel(b.val, b.label)}</option>`).join("")}
                             </select>
                         </div>
                     </div>
@@ -263,7 +263,7 @@ async function openTagsEditor(relPath) {
                         <div>
                             <label>Video-Codec:</label>
                             <select onchange="updateStageSetting(${idx}, 'vcodec', this.value)">
-                                ${MediaOptions.video.codecs.map((c) => `<option value="${c.val}" ${s.vcodec === c.val ? "selected" : ""}>${c.label}</option>`).join("")}
+                                ${MediaOptions.video.codecs.map((c) => `<option value="${c.val}" ${s.vcodec === c.val ? "selected" : ""}>${getOptionLabel(c.val, c.label)}</option>`).join("")}
                             </select>
                         </div>
                     </div>

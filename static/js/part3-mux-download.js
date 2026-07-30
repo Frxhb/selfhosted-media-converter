@@ -604,7 +604,7 @@ function tokenizeCliFlags(str) {
 
         const container = document.getElementById("playlist-items-list");
         container.innerHTML =
-          '<p style="text-align: center; color: var(--ink-dim); font-size: 0.75rem; margin-top: 3.5rem;">Lade Playlist-Titel vom Server...</p>';
+          `<p style="text-align: center; color: var(--ink-dim); font-size: 0.75rem; margin-top: 3.5rem;">${t('modals.loading_titles', 'Lade Playlist-Titel vom Server...')}</p>`;
 
         try {
           const userLang = (window.navigator?.language || "de").split("-")[0];
@@ -621,7 +621,7 @@ function tokenizeCliFlags(str) {
 
           if (items.length === 0) {
             container.innerHTML =
-              '<p style="text-align:center; color:var(--danger); font-size:0.75rem; margin-top:3rem;">Keine Titel gefunden.</p>';
+              `<p style="text-align:center; color:var(--danger); font-size:0.75rem; margin-top:3rem;">${t('modals.no_titles_found', 'Keine Titel gefunden.')}</p>`;
             return;
           }
 

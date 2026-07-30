@@ -53,7 +53,7 @@
         const totalCount = serverJobsCache.length + allClientJobs.length;
 
         document.getElementById("queue-count").textContent =
-          `${totalCount} Jobs`;
+          `${totalCount} ${t('queue.jobs', 'Jobs')}`;
 
         const q = jobSearchQuery;
         const matches = (title) => !q || title.toLowerCase().includes(q);
@@ -63,12 +63,12 @@
 
         if (totalCount === 0) {
           container.innerHTML =
-            '<p style="text-align: center; color: var(--ink-dim); font-size: 0.8rem; margin-top: 3rem;">Warteschlange leer</p>';
+            `<p style="text-align: center; color: var(--ink-dim); font-size: 0.8rem; margin-top: 3rem;">${t('queue.empty', 'Warteschlange leer')}</p>`;
           return;
         }
         if (visibleClient.length === 0 && visibleServer.length === 0) {
           container.innerHTML =
-            '<p style="text-align: center; color: var(--ink-dim); font-size: 0.8rem; margin-top: 3rem;">Keine Jobs gefunden.</p>';
+            `<p style="text-align: center; color: var(--ink-dim); font-size: 0.8rem; margin-top: 3rem;">${t('queue.no_jobs_found', 'Keine Jobs gefunden.')}</p>`;
           return;
         }
 
@@ -162,9 +162,9 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.68rem; color: var(--ink-dim); font-family:var(--font-mono); min-width: 0;">
                         <span id="eta-${j.id}" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;">${j.eta}</span>
                         <div style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
-                            <button onclick="openJobDetails('${j.id}')" class="btn btn-secondary btn-sm">Details</button>
-                            ${canRetry ? `<button onclick="retryJob('${j.id}')" class="btn btn-primary btn-sm">Wiederholen</button>` : ""}
-                            ${canCancel ? `<button onclick="${cancelFn}('${j.id}')" class="btn btn-danger btn-sm">Abbrechen</button>` : ""}
+                            <button onclick="openJobDetails('${j.id}')" class="btn btn-secondary btn-sm">${t('common.details', 'Details')}</button>
+                            ${canRetry ? `<button onclick="retryJob('${j.id}')" class="btn btn-primary btn-sm">${t('common.retry', 'Wiederholen')}</button>` : ""}
+                            ${canCancel ? `<button onclick="${cancelFn}('${j.id}')" class="btn btn-danger btn-sm">${t('common.cancel', 'Abbrechen')}</button>` : ""}
                         </div>
                     </div>
                 </div>

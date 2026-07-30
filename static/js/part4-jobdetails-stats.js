@@ -499,7 +499,7 @@ async function fetchYtDlpInfo() {
         const list = tabQueues[tab];
         if (list.length === 0) {
           container.innerHTML =
-            '<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin-top:2rem;">Noch keine Dateien in dieser Warteschlange.</p>';
+            `<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin-top:2rem;">${t('queue.tab_empty', 'Noch keine Dateien in dieser Warteschlange.')}</p>`;
           return;
         }
         container.innerHTML = "";

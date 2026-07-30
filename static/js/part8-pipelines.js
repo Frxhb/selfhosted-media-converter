@@ -17,7 +17,7 @@
         const container = document.getElementById("pipeline-list");
         if (!container) return;
         if (pipelinesCache.length === 0) {
-          container.innerHTML = `<div style="color:var(--ink-dim); font-size:0.85rem;">Noch keine Pipelines angelegt.</div>`;
+          container.innerHTML = `<div style="color:var(--ink-dim); font-size:0.85rem;">${t('pipelines.no_pipelines_yet', 'Noch keine Pipelines angelegt.')}</div>`;
           return;
         }
         container.innerHTML = pipelinesCache
@@ -42,8 +42,8 @@
                         ${p.description ? `<div style="font-size:0.72rem; color:var(--ink-dim); margin-top:0.35rem;">${escapeHtml(p.description)}</div>` : ""}
                     </div>
                     <div style="display:flex; gap:0.4rem;">
-                        <button onclick="openPipelineEditor('${p.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">Bearbeiten</button>
-                        <button onclick="deletePipeline('${p.id}')" class="btn btn-danger" style="padding:0.3rem 0.7rem;">Löschen</button>
+                        <button onclick="openPipelineEditor('${p.id}')" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">${t('common.edit', 'Bearbeiten')}</button>
+                        <button onclick="deletePipeline('${p.id}')" class="btn btn-danger" style="padding:0.3rem 0.7rem;">${t('common.delete', 'Löschen')}</button>
                     </div>
                 </div>`;
           })
@@ -74,11 +74,11 @@
         if (!label || !fileSel || !urlInput) return;
 
         if (isDownloadStart) {
-          label.textContent = "Video/Playlist-URL:";
+          label.textContent = t('pipelines.url_input_label', 'Video/Playlist-URL:');
           fileSel.style.display = "none";
           urlInput.style.display = "";
         } else {
-          label.textContent = "Eingabedatei:";
+          label.textContent = t('pipelines.input_file', 'Eingabedatei:');
           fileSel.style.display = "";
           urlInput.style.display = "none";
           fileSel.innerHTML = (
@@ -181,8 +181,8 @@
           : null;
 
         document.getElementById("pipeline-editor-title").textContent = existing
-          ? "Pipeline bearbeiten"
-          : "Neue Pipeline";
+          ? t('pipelines.modal_edit_title', 'Pipeline bearbeiten')
+          : t('pipelines.modal_new_title', 'Neue Pipeline');
         document.getElementById("pl-edit-name").value = existing
           ? existing.name
           : "";
@@ -280,35 +280,35 @@
                 <div class="card" style="padding:0.8rem 0.9rem; border:1px solid var(--line);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
                         <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <span class="status-badge" style="background:var(--surface-sunken); border:1px solid var(--line);">Stufe ${idx + 1}</span>
+                            <span class="status-badge" style="background:var(--surface-sunken); border:1px solid var(--line);">${t('pipelines.stage_num', 'Stufe')} ${idx + 1}</span>
                             <span style="font-size:0.7rem; color:var(--ink-dim);">
                                 ${
                                   idx === 0
                                     ? stage.job_type === "download"
-                                      ? "Startet die Pipeline mit einer URL"
-                                      : "Startet die Pipeline mit einer Eingabedatei"
-                                    : `Eingabe = Ausgabe von Stufe ${idx}`
+                                      ? t('pipelines.stage_start_url', 'Startet die Pipeline mit einer URL')
+                                      : t('pipelines.stage_start_file', 'Startet die Pipeline mit einer Eingabedatei')
+                                    : `${t('pipelines.stage_input_prev', 'Eingabe = Ausgabe von Stufe')} ${idx}`
                                 }
                             </span>
                         </div>
                         <div style="display:flex; gap:0.3rem;">
-                            <button onclick="moveStage(${idx}, -1)" class="icon-btn" title="Nach oben" ${idx === 0 ? "disabled" : ""}>↑</button>
-                            <button onclick="moveStage(${idx}, 1)" class="icon-btn" title="Nach unten" ${idx === pipelineEditorStages.length - 1 ? "disabled" : ""}>↓</button>
-                            <button onclick="removePipelineStageRow(${idx})" class="icon-btn" title="Stufe entfernen">✕</button>
+                            <button onclick="moveStage(${idx}, -1)" class="icon-btn" title="${t('pipelines.move_up', 'Nach oben')}" ${idx === 0 ? "disabled" : ""}>↑</button>
+                            <button onclick="moveStage(${idx}, 1)" class="icon-btn" title="${t('pipelines.move_down', 'Nach unten')}" ${idx === pipelineEditorStages.length - 1 ? "disabled" : ""}>↓</button>
+                            <button onclick="removePipelineStageRow(${idx})" class="icon-btn" title="${t('pipelines.stage_remove_title', 'Stufe entfernen')}">✕</button>
                         </div>
                     </div>
                     <div class="grid-2">
                         <div>
-                            <label>Aktion:</label>
+                            <label>${t('pipelines.action_label', 'Aktion:')}</label>
                             <select onchange="updateStageType(${idx}, this.value)">
                                 ${availableTypes.map((t) => `<option value="${t}" ${stage.job_type === t ? "selected" : ""}>${STAGE_TYPES[t].label}</option>`).join("")}
                             </select>
                         </div>
                         <div>
-                            <label>Label (optional):</label>
+                            <label>${t('pipelines.stage_label', 'Label (optional):')}</label>
                             <input type="text" value="${escapeHtml(stage.label || "")}"
                                    onchange="updatePipelineStageField(${idx}, 'label', this.value)"
-                                   placeholder="z. B. Vorschau-Thumbnail">
+                                   placeholder="${t('pipelines.stage_label_ph', 'z. B. Vorschau-Thumbnail')}">
                         </div>
                     </div>
                     <div style="margin-top:0.6rem;">

@@ -42,20 +42,39 @@ const MediaOptions = {
     }
 };
 
+function getOptionLabel(val, defaultLabel) {
+    if (typeof t !== 'function') return defaultLabel;
+    if (val === "best") return t("options.best_quality", defaultLabel);
+    if (val === "copy") return t("options.copy_stream", defaultLabel);
+    if (val === "15") return t("options.crf_15", defaultLabel);
+    if (val === "18") return t("options.crf_18", defaultLabel);
+    if (val === "23") return t("options.crf_23", defaultLabel);
+    if (val === "28") return t("options.crf_28", defaultLabel);
+    if (val === "32") return t("options.crf_32", defaultLabel);
+    if (val === "320k") return t("options.br_320", defaultLabel);
+    if (val === "192k") return t("options.br_192", defaultLabel);
+    if (val === "96k") return t("options.br_96", defaultLabel);
+    if (val === "64k") return t("options.br_64", defaultLabel);
+    return defaultLabel;
+}
+
 // Automatische Initialisierung der statischen HTML-Selects (Converter Tab)
-document.addEventListener('DOMContentLoaded', () => {
+function initConverterSelects() {
     const vContainer = document.getElementById('v-container');
     if(vContainer) vContainer.innerHTML = MediaOptions.video.containers.map(c => `<option value="${c}">${c.toUpperCase()}</option>`).join('');
 
     const vCodec = document.getElementById('v-vcodec');
-    if(vCodec) vCodec.innerHTML = MediaOptions.video.codecs.map(c => `<option value="${c.val}">${c.label}</option>`).join('');
+    if(vCodec) vCodec.innerHTML = MediaOptions.video.codecs.map(c => `<option value="${c.val}">${getOptionLabel(c.val, c.label)}</option>`).join('');
 
     const vCrf = document.getElementById('v-crf');
-    if(vCrf) vCrf.innerHTML = MediaOptions.video.crf.map(c => `<option value="${c.val}" ${c.default ? 'selected' : ''}>${c.label}</option>`).join('');
+    if(vCrf) vCrf.innerHTML = MediaOptions.video.crf.map(c => `<option value="${c.val}" ${c.default ? 'selected' : ''}>${getOptionLabel(c.val, c.label)}</option>`).join('');
 
     const aFormat = document.getElementById('a-format');
     if(aFormat) aFormat.innerHTML = MediaOptions.audio.formats.map(c => `<option value="${c}">${c.toUpperCase()}</option>`).join('');
 
     const aBitrate = document.getElementById('a-bitrate');
-    if(aBitrate) aBitrate.innerHTML = MediaOptions.audio.bitrates.map(c => `<option value="${c.val}" ${c.default ? 'selected' : ''}>${c.label}</option>`).join('');
-});
+    if(aBitrate) aBitrate.innerHTML = MediaOptions.audio.bitrates.map(c => `<option value="${c.val}" ${c.default ? 'selected' : ''}>${getOptionLabel(c.val, c.label)}</option>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded', initConverterSelects);
+window.addEventListener('mcp_i18n_changed', initConverterSelects);
