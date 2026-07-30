@@ -48,7 +48,7 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
 <br>
 
 <p align="center">
-  <img src="pictures/Abonnement-2.png" alt="YouTube Abonnements in Action" width="85%">
+  <img src="pictures/Abonnement-2.png?v=2" alt="YouTube Abonnements in Action" width="85%">
 </p>
 
 <br>
