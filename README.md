@@ -42,13 +42,13 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
 <br>
 
 <p align="center">
-  <img src="pictures/Abonnement-Settings" alt="YouTube Abonnements Settings" width="85%">
+  <img src="pictures/Abonnement-Settings.png" alt="YouTube Abonnements Settings" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/Abonnement-Action" alt="YouTube Abonnements in Action" width="85%">
+  <img src="pictures/Abonnement-Action.png" alt="YouTube Abonnements in Action" width="85%">
 </p>
 
 <br>
