@@ -4,7 +4,7 @@ import shutil
 import zipfile
 import subprocess
 import logging
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, Request, Query
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, Request, Query, File
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 

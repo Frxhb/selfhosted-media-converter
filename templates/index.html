@@ -3,17 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Selfhosted media platform for downloading, converting, transcribing and managing audio, video and image files."
+    />
     <title>Media Converter Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script src="/static/vendor/ffmpeg/ffmpeg.js"></script>
-    <script src="/static/vendor/ffmpeg/util.js"></script>
+    <script src="/static/vendor/ffmpeg/ffmpeg.js" defer></script>
+    <script src="/static/vendor/ffmpeg/util.js" defer></script>
     <link rel="stylesheet" href="/static/css/base.css" />
     <link rel="stylesheet" href="/static/css/layout.css" />
     <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/utilities.css" />
   </head>
 
   <body>
@@ -336,7 +341,7 @@
         <!-- Left Column -->
         <div style="display: flex; flex-direction: column; gap: 1.1rem">
           <!-- FILE IMPORT MANAGER -->
-          <div id="file-import-card" class="card" style="display: none">
+          <div id="file-import-card" class="card u-hidden" >
             <div class="card-title">
               <div style="display: flex; align-items: center; gap: 0.5rem">
                 <span>Datei-Import</span>
@@ -411,11 +416,9 @@
                     >Klicken oder Datei hierher ziehen</span
                   >
                   <input
-                    type="file"
-                    id="global-file-upload"
-                    style="display: none"
-                    onchange="uploadSelectedFileWithProgress()"
-                  />
+ type="file"
+ id="global-file-upload"
+ onchange="uploadSelectedFileWithProgress()" class="u-hidden" />
                 </div>
                 <div
                   id="upload-progress-wrapper"
@@ -423,10 +426,10 @@
                   style="display: none; margin-top: 0.4rem"
                 >
                   <div
-                    id="upload-progress-fill"
-                    class="meter-fill"
-                    style="width: 0%"
-                  ></div>
+ id="upload-progress-fill"
+ class="meter-fill u-w0"
+ 
+ ></div>
                 </div>
                 <div
                   style="
@@ -499,17 +502,10 @@
 
             <div class="card">
               <div class="card-title">System-Last</div>
-              <div style="display: flex; flex-direction: column; gap: 1rem">
+              <div class="u-col-gap-1">
                 <div>
-                  <div
-                    style="
-                      display: flex;
-                      justify-content: space-between;
-                      font-size: 0.78rem;
-                      margin-bottom: 0.3rem;
-                    "
-                  >
-                    <span style="font-weight: 600">CPU Auslastung</span>
+                  <div class="u-row-between-sm">
+                    <span class="u-fw-600">CPU Auslastung</span>
                     <span
                       id="st-cpu-val-meter"
                       style="
@@ -521,37 +517,25 @@
                   </div>
                   <div class="meter-bar">
                     <div
-                      id="st-cpu-bar"
-                      class="meter-fill"
-                      style="width: 0%"
-                    ></div>
+ id="st-cpu-bar"
+ class="meter-fill u-w0"
+ 
+ ></div>
                   </div>
                 </div>
                 <div>
-                  <div
-                    style="
-                      display: flex;
-                      justify-content: space-between;
-                      font-size: 0.78rem;
-                      margin-bottom: 0.3rem;
-                    "
-                  >
-                    <span style="font-weight: 600">RAM Belegung</span>
+                  <div class="u-row-between-sm">
+                    <span class="u-fw-600">RAM Belegung</span>
                     <span
-                      id="st-ram-val"
-                      style="
-                        color: var(--ink-dim);
-                        font-family: var(--font-mono);
-                      "
-                      >0 GB / 0 GB</span
+ id="st-ram-val" class="u-mono-dim">0 GB / 0 GB</span
                     >
                   </div>
                   <div class="meter-bar">
                     <div
-                      id="st-ram-bar"
-                      class="meter-fill"
-                      style="width: 0%"
-                    ></div>
+ id="st-ram-bar"
+ class="meter-fill u-w0"
+ 
+ ></div>
                   </div>
                 </div>
                 <div>
@@ -565,25 +549,25 @@
                     Load Average
                   </div>
                   <div style="display: flex; gap: 0.6rem">
-                    <div class="stat-card" style="flex: 1">
+                    <div class="stat-card u-flex-1" >
                       <span class="lbl">1 Min</span>
-                      <span id="st-load1" class="val" style="font-size: 0.95rem"
-                        >0.00</span
+                      <span id="st-load1" class="val u-fs-95" 
+ >0.00</span
                       >
                     </div>
-                    <div class="stat-card" style="flex: 1">
+                    <div class="stat-card u-flex-1" >
                       <span class="lbl">5 Min</span>
-                      <span id="st-load5" class="val" style="font-size: 0.95rem"
-                        >0.00</span
+                      <span id="st-load5" class="val u-fs-95" 
+ >0.00</span
                       >
                     </div>
-                    <div class="stat-card" style="flex: 1">
+                    <div class="stat-card u-flex-1" >
                       <span class="lbl">15 Min</span>
                       <span
-                        id="st-load15"
-                        class="val"
-                        style="font-size: 0.95rem"
-                        >0.00</span
+ id="st-load15"
+ class="val u-fs-95"
+ 
+ >0.00</span
                       >
                     </div>
                   </div>
@@ -594,27 +578,18 @@
             <div class="grid-2" style="margin-top: 1.1rem">
               <div class="card">
                 <div class="card-title">/media/inputs</div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 0.78rem;
-                    margin-bottom: 0.3rem;
-                  "
-                >
+                <div class="u-row-between-sm">
                   <span
-                    id="st-disk-in-val"
-                    style="color: var(--ink-dim); font-family: var(--font-mono)"
-                    >0 GB / 0 GB</span
+ id="st-disk-in-val" class="u-mono-dim">0 GB / 0 GB</span
                   >
-                  <span id="st-disk-in-pct" style="font-weight: 600">0%</span>
+                  <span id="st-disk-in-pct" class="u-fw-600">0%</span>
                 </div>
                 <div class="meter-bar">
                   <div
-                    id="st-disk-in-bar"
-                    class="meter-fill"
-                    style="width: 0%"
-                  ></div>
+ id="st-disk-in-bar"
+ class="meter-fill u-w0"
+ 
+ ></div>
                 </div>
                 <div
                   style="
@@ -629,27 +604,18 @@
 
               <div class="card">
                 <div class="card-title">/media/outputs</div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 0.78rem;
-                    margin-bottom: 0.3rem;
-                  "
-                >
+                <div class="u-row-between-sm">
                   <span
-                    id="st-disk-out-val"
-                    style="color: var(--ink-dim); font-family: var(--font-mono)"
-                    >0 GB / 0 GB</span
+ id="st-disk-out-val" class="u-mono-dim">0 GB / 0 GB</span
                   >
-                  <span id="st-disk-out-pct" style="font-weight: 600">0%</span>
+                  <span id="st-disk-out-pct" class="u-fw-600">0%</span>
                 </div>
                 <div class="meter-bar">
                   <div
-                    id="st-disk-out-bar"
-                    class="meter-fill"
-                    style="width: 0%"
-                  ></div>
+ id="st-disk-out-bar"
+ class="meter-fill u-w0"
+ 
+ ></div>
                 </div>
                 <div
                   style="
@@ -701,13 +667,13 @@
             </div>
 
             <div
-              id="subtab-dl-single"
-              class="subtab-content subtab-dl-content active card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-dl-single"
+ class="subtab-content subtab-dl-content active card u-col-gap-1"
+ 
+ >
               <div>
                 <label id="d-url-label">Video / Playlist URL:</label>
-                <div style="display: flex; gap: 0.5rem">
+                <div class="u-row-gap-05">
                   <input
                     type="url"
                     id="d-url"
@@ -799,6 +765,7 @@
                   <img
                     id="d-info-thumb"
                     src=""
+                    alt="Video-Thumbnail"
                     style="
                       width: 100px;
                       height: 56px;
@@ -851,20 +818,14 @@
             </div>
 
             <div
-              id="subtab-dl-batch"
-              class="subtab-content subtab-dl-content card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-dl-batch"
+ class="subtab-content subtab-dl-content card u-col-gap-1"
+ 
+ >
               <div class="grid-2">
                 <div
-                  id="d-batch-optA"
-                  style="
-                    border: 1px solid var(--line);
-                    padding: 0.6rem;
-                    border-radius: var(--radius-md);
-                  "
-                >
-                  <label>Option A: Neue .txt Datei hochladen</label>
+ id="d-batch-optA" class="u-box">
+                  <label for="d-batch-upload">Option A: Neue .txt Datei hochladen</label>
                   <input
                     type="file"
                     id="d-batch-upload"
@@ -873,14 +834,8 @@
                   />
                 </div>
                 <div
-                  id="d-batch-optB"
-                  style="
-                    border: 1px solid var(--line);
-                    padding: 0.6rem;
-                    border-radius: var(--radius-md);
-                  "
-                >
-                  <label>Option B: .txt aus Eingabe-Ordner wählen</label>
+ id="d-batch-optB" class="u-box">
+                  <label for="d-batch-select">Option B: .txt aus Eingabe-Ordner wählen</label>
                   <select
                     id="d-batch-select"
                     onchange="updateDownloadPreview()"
@@ -888,13 +843,7 @@
                 </div>
               </div>
               <div
-                id="d-batch-optC"
-                style="
-                  border: 1px solid var(--line);
-                  padding: 0.6rem;
-                  border-radius: var(--radius-md);
-                "
-              >
+ id="d-batch-optC" class="u-box">
                 <label
                   >Option C: Links direkt hier einfügen (ein Link pro
                   Zeile)</label
@@ -922,7 +871,7 @@
 
               <div class="grid-3">
                 <div>
-                  <label>Typ:</label>
+                  <label for="d-type">Typ:</label>
                   <select
                     id="d-type"
                     onchange="
@@ -948,7 +897,7 @@
               </div>
 
               <div>
-                <label>Eigene yt-dlp Zusatz-Parameter:</label>
+                <label for="d-custom-flags">Eigene yt-dlp Zusatz-Parameter:</label>
                 <input
                   type="text"
                   id="d-custom-flags"
@@ -959,26 +908,19 @@
 
               <div>
                 <label>Befehlsvorschau:</label>
-                <div style="position: relative">
+                <div class="u-relative">
                   <div
-                    id="d-cmd-preview"
-                    class="code-box"
-                    style="padding-right: 3.2rem"
-                  >
+ id="d-cmd-preview"
+ class="code-box u-pr-32"
+ 
+ >
                     yt-dlp ...
                   </div>
                   <button
-                    onclick="copyCommandToClipboard('d-cmd-preview')"
-                    class="icon-btn"
-                    style="
-                      position: absolute;
-                      top: 0.3rem;
-                      right: 0.3rem;
-                      width: 26px;
-                      height: 26px;
-                    "
-                    title="Befehl kopieren"
-                  >
+ onclick="copyCommandToClipboard('d-cmd-preview')"
+ class="icon-btn u-corner-btn"
+ title="Befehl kopieren"
+ >
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -1016,14 +958,14 @@
 
               <div class="grid-2">
                 <div>
-                  <label>Zielordner:</label>
+                  <label for="g-dest">Zielordner:</label>
                   <select id="g-dest" onchange="updateGalleryDlPreview()">
                     <option value="/media/outputs/images">/media/outputs/images</option>
                     <option value="/media/outputs/videos">/media/outputs/videos</option>
                   </select>
                 </div>
                 <div>
-                  <label>Bilder-Auswahl / Range:</label>
+                  <label for="g-range-mode">Bilder-Auswahl / Range:</label>
                   <select id="g-range-mode" onchange="toggleGalleryRangeInput(); updateGalleryDlPreview()">
                     <option value="all">Alle Bilder der Galerie/Seite herunterladen</option>
                     <option value="first">Nur 1. Bild / Hauptbild herunterladen (--range 1)</option>
@@ -1040,7 +982,7 @@
               </div>
 
               <div>
-                <label>Eigene gallery-dl Zusatz-Parameter:</label>
+                <label for="g-custom-flags">Eigene gallery-dl Zusatz-Parameter:</label>
                 <input
                   type="text"
                   id="g-custom-flags"
@@ -1051,26 +993,19 @@
 
               <div>
                 <label>Befehlsvorschau:</label>
-                <div style="position: relative">
+                <div class="u-relative">
                   <div
-                    id="g-cmd-preview"
-                    class="code-box"
-                    style="padding-right: 3.2rem"
-                  >
+ id="g-cmd-preview"
+ class="code-box u-pr-32"
+ 
+ >
                     gallery-dl ...
                   </div>
                   <button
-                    onclick="copyCommandToClipboard('g-cmd-preview')"
-                    class="icon-btn"
-                    style="
-                      position: absolute;
-                      top: 0.3rem;
-                      right: 0.3rem;
-                      width: 26px;
-                      height: 26px;
-                    "
-                    title="Befehl kopieren"
-                  >
+ onclick="copyCommandToClipboard('g-cmd-preview')"
+ class="icon-btn u-corner-btn"
+ title="Befehl kopieren"
+ >
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -1138,10 +1073,10 @@
 
             <!-- Video Subtab -->
             <div
-              id="subtab-conv-video"
-              class="subtab-content subtab-conv-content active card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-conv-video"
+ class="subtab-content subtab-conv-content active card u-col-gap-1"
+ 
+ >
               <div class="card-title">
                 <span>Video-Warteschlange</span>
                 <button
@@ -1168,15 +1103,15 @@
 
               <div class="grid-2">
                 <div>
-                  <label>Container:</label>
+                  <label for="v-container">Container:</label>
                   <select id="v-container" onchange="updateVideoPreview()"></select>
                 </div>
                 <div>
-                  <label>Video Codec:</label>
+                  <label for="v-vcodec">Video Codec:</label>
                   <select id="v-vcodec" onchange="updateVideoPreview()"></select>
                 </div>
                 <div>
-                  <label>Audio Codec:</label>
+                  <label for="v-acodec">Audio Codec:</label>
                   <select id="v-acodec" onchange="updateVideoPreview()">
                     <option value="aac">AAC</option>
                     <option value="ac3">AC3</option>
@@ -1184,7 +1119,7 @@
                   </select>
                 </div>
                 <div>
-                  <label>Qualität (CRF, niedriger = besser):</label>
+                  <label for="v-crf">Qualität (CRF, niedriger = besser):</label>
                   <select id="v-crf" onchange="updateVideoPreview()"></select>
                 </div>
               </div>
@@ -1199,7 +1134,7 @@
                 class="grid-2"
               >
                 <div>
-                  <label>Trim Startzeit (HH:MM:SS):</label>
+                  <label for="v-trim-start">Trim Startzeit (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="v-trim-start"
@@ -1208,7 +1143,7 @@
                   />
                 </div>
                 <div>
-                  <label>Trim Endzeit (HH:MM:SS):</label>
+                  <label for="v-trim-end">Trim Endzeit (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="v-trim-end"
@@ -1220,26 +1155,19 @@
 
               <div>
                 <label>Befehlsvorschau:</label>
-                <div style="position: relative">
+                <div class="u-relative">
                   <div
-                    id="v-cmd-preview"
-                    class="code-box"
-                    style="padding-right: 3.2rem"
-                  >
+ id="v-cmd-preview"
+ class="code-box u-pr-32"
+ 
+ >
                     ffmpeg -hide_banner -y ...
                   </div>
                   <button
-                    onclick="copyCommandToClipboard('v-cmd-preview')"
-                    class="icon-btn"
-                    style="
-                      position: absolute;
-                      top: 0.3rem;
-                      right: 0.3rem;
-                      width: 26px;
-                      height: 26px;
-                    "
-                    title="Befehl kopieren"
-                  >
+ onclick="copyCommandToClipboard('v-cmd-preview')"
+ class="icon-btn u-corner-btn"
+ title="Befehl kopieren"
+ >
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -1265,10 +1193,10 @@
 
             <!-- Audio Subtab -->
             <div
-              id="subtab-conv-audio"
-              class="subtab-content subtab-conv-content card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-conv-audio"
+ class="subtab-content subtab-conv-content card u-col-gap-1"
+ 
+ >
               <div class="card-title">
                 <span>Audio-Warteschlange</span>
                 <button
@@ -1281,7 +1209,7 @@
               <div id="audio-queue" class="queue-listbox"></div>
 
               <div>
-                <label>Ausgabename (optional, Standard: [Originalname]):</label>
+                <label for="a-custom-title">Ausgabename (optional, Standard: [Originalname]):</label>
                 <input
                   type="text"
                   id="a-custom-title"
@@ -1292,15 +1220,15 @@
 
               <div class="grid-3">
                 <div>
-                  <label>Format:</label>
+                  <label for="a-format">Format:</label>
                   <select id="a-format" onchange="updateAudioPreview()"></select>
                 </div>
                 <div>
-                  <label>Bitrate:</label>
+                  <label for="a-bitrate">Bitrate:</label>
                   <select id="a-bitrate" onchange="updateAudioPreview()"></select>
                 </div>
                 <div>
-                  <label>Lautstärke / Normalisierung:</label>
+                  <label for="a-volume">Lautstärke / Normalisierung:</label>
                   <select id="a-volume" onchange="updateAudioPreview()">
                     <option value="none">Normal (100%)</option>
                     <option value="boost_150">+50% Verstärkung (1.5x)</option>
@@ -1312,26 +1240,19 @@
 
               <div>
                 <label>Befehlsvorschau:</label>
-                <div style="position: relative">
+                <div class="u-relative">
                   <div
-                    id="a-cmd-preview"
-                    class="code-box"
-                    style="padding-right: 3.2rem"
-                  >
+ id="a-cmd-preview"
+ class="code-box u-pr-32"
+ 
+ >
                     ffmpeg -hide_banner -y ...
                   </div>
                   <button
-                    onclick="copyCommandToClipboard('a-cmd-preview')"
-                    class="icon-btn"
-                    style="
-                      position: absolute;
-                      top: 0.3rem;
-                      right: 0.3rem;
-                      width: 26px;
-                      height: 26px;
-                    "
-                    title="Befehl kopieren"
-                  >
+ onclick="copyCommandToClipboard('a-cmd-preview')"
+ class="icon-btn u-corner-btn"
+ title="Befehl kopieren"
+ >
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -1357,10 +1278,10 @@
 
             <!-- Tools Subtab -->
             <div
-              id="subtab-conv-tools"
-              class="subtab-content subtab-conv-content card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-conv-tools"
+ class="subtab-content subtab-conv-content card u-col-gap-1"
+ 
+ >
               <div class="card-title">
                 <span>Schnitt &amp; Tools Warteschlange</span>
                 <button
@@ -1391,7 +1312,7 @@
                   <h4 style="font-size: 0.8rem; font-weight: 700">
                     Wiedergabegeschwindigkeit
                   </h4>
-                  <label>Geschwindigkeit ändern:</label>
+                  <label for="tool-speed-val">Geschwindigkeit ändern:</label>
                   <select id="tool-speed-val">
                     <option value="0.5">0.5x (Zeitlupe)</option>
                     <option value="0.75">0.75x</option>
@@ -1421,7 +1342,7 @@
                   <h4 style="font-size: 0.8rem; font-weight: 700">
                     Frame / Thumbnail Extraktor
                   </h4>
-                  <label>Zeitpunkt (HH:MM:SS):</label>
+                  <label for="tool-thumb-time">Zeitpunkt (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="tool-thumb-time"
@@ -1440,10 +1361,10 @@
 
             <!-- Images Subtab -->
             <div
-              id="subtab-conv-images"
-              class="subtab-content subtab-conv-content card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-conv-images"
+ class="subtab-content subtab-conv-content card u-col-gap-1"
+ 
+ >
               <div class="card-title">
                 <span>Bild-Warteschlange</span>
                 <button
@@ -1457,7 +1378,7 @@
 
               <div class="grid-2">
                 <div>
-                  <label>Format:</label>
+                  <label for="i-format">Format:</label>
                   <select id="i-format">
                     <option value="jpg">JPG</option>
                     <option value="png">PNG</option>
@@ -1468,7 +1389,7 @@
                   </select>
                 </div>
                 <div>
-                  <label>Max Breite:</label>
+                  <label for="i-res">Max Breite:</label>
                   <select id="i-res">
                     <option value="orig">Original</option>
                     <option value="3840">3840px (4K)</option>
@@ -1492,10 +1413,10 @@
 
             <!-- Muxing Subtab -->
             <div
-              id="subtab-conv-muxing"
-              class="subtab-content subtab-conv-content card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ id="subtab-conv-muxing"
+ class="subtab-content subtab-conv-content card u-col-gap-1"
+ 
+ >
               <h3 style="font-size: 0.9rem; font-weight: 700">Stream Muxing</h3>
               <div>
                 <label>Video-Datei wählen:</label
@@ -1514,9 +1435,9 @@
           <!-- VIEW 3: AI SUITE -->
           <div id="group-special" class="group-view">
             <div
-              class="card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ class="card u-col-gap-1"
+ 
+ >
               <h3
                 style="
                   color: var(--signal);
@@ -1527,12 +1448,12 @@
                 Whisper KI-Transkription
               </h3>
               <div>
-                <label>Datei wählen:</label>
+                <label for="sp-whisper-file">Datei wählen:</label>
                 <select id="sp-whisper-file"></select>
               </div>
               <div class="grid-3">
                 <div>
-                  <label>Modell:</label>
+                  <label for="sp-whisper-model">Modell:</label>
                   <select id="sp-whisper-model">
                     <option value="tiny">tiny (Sehr schnell)</option>
                     <option value="base" selected>
@@ -1543,7 +1464,7 @@
                   </select>
                 </div>
                 <div>
-                  <label>Ausgabe-Format:</label>
+                  <label for="sp-whisper-fmt">Ausgabe-Format:</label>
                   <select id="sp-whisper-fmt">
                     <option value="srt">Untertitel (.srt)</option>
                     <option value="txt">Text (.txt)</option>
@@ -1606,7 +1527,7 @@
                   margin-bottom: 0.9rem;
                 "
               >
-                <h3 style="margin: 0">Pipelines</h3>
+                <h3 class="u-m0">Pipelines</h3>
                 <button
                   onclick="openPipelineEditor(null)"
                   class="btn btn-secondary"
@@ -1631,30 +1552,26 @@
                 dann startest du die Pipeline mit einer URL statt einer Datei.
               </p>
               <div
-                id="pipeline-list"
-                style="display: flex; flex-direction: column; gap: 0.6rem"
-              ></div>
+ id="pipeline-list" class="u-col-gap-06"></div>
             </div>
 
             <div class="card" style="margin-top: 1rem">
               <h4 style="margin-top: 0">Pipeline ausführen</h4>
               <div class="grid-2">
                 <div>
-                  <label>Pipeline wählen:</label>
+                  <label for="pl-run-select">Pipeline wählen:</label>
                   <select
                     id="pl-run-select"
                     onchange="onPipelineRunSelectChange()"
                   ></select>
                 </div>
                 <div>
-                  <label id="pl-run-input-label">Eingabedatei:</label>
+                  <label for="pl-run-file-select" id="pl-run-input-label">Eingabedatei:</label>
                   <select id="pl-run-file-select"></select>
                   <input
-                    type="text"
-                    id="pl-run-url"
-                    placeholder="https://..."
-                    style="display: none"
-                  />
+ type="text"
+ id="pl-run-url"
+ placeholder="https://..." class="u-hidden" />
                 </div>
               </div>
               <div
@@ -1707,8 +1624,8 @@
                   margin-bottom: 0.9rem;
                 "
               >
-                <h3 style="margin: 0">Abonnements</h3>
-                <div style="display: flex; gap: 0.5rem">
+                <h3 class="u-m0">Abonnements</h3>
+                <div class="u-row-gap-05">
                   <button
                     onclick="checkAllSubscriptionsNow()"
                     class="btn btn-secondary"
@@ -1738,17 +1655,15 @@
                 <strong>outputs/scheduled/&lt;Name&gt;/</strong>.
               </p>
               <div
-                id="subscription-list"
-                style="display: flex; flex-direction: column; gap: 0.6rem"
-              ></div>
+ id="subscription-list" class="u-col-gap-06"></div>
             </div>
           </div>
 
           <div id="group-library" class="group-view">
             <div
-              class="card"
-              style="display: flex; flex-direction: column; gap: 1rem"
-            >
+ class="card u-col-gap-1"
+ 
+ >
               <div class="card-title">
                 <span>Medien-Bibliothek</span>
                 <button
@@ -1795,7 +1710,7 @@
                     oninput="filterOutputLibrary()"
                   />
                 </div>
-                <div class="subtab-nav" style="margin: 0">
+                <div class="subtab-nav u-m0" >
                   <button
                     onclick="filterLibraryCategory('all')"
                     class="subtab-btn lib-cat-btn active"
@@ -1979,7 +1894,7 @@
                 </button>
               </div>
             </div>
-            <pre id="log-console" class="console-box" style="flex: 1"></pre>
+            <pre id="log-console" class="console-box u-flex-1" ></pre>
           </div>
         </div>
       </div>
@@ -2009,14 +1924,12 @@
         </p>
 
         <div
-          id="playlist-actions-view"
-          style="display: flex; flex-direction: column; gap: 0.6rem"
-        >
+ id="playlist-actions-view" class="u-col-gap-06">
           <button
-            onclick="handlePlaylistChoice('single')"
-            class="btn btn-secondary btn-full"
-            style="justify-content: flex-start; text-align: left"
-          >
+ onclick="handlePlaylistChoice('single')"
+ class="btn btn-secondary btn-full u-justify-start-left"
+ 
+ >
             <div>
               <div style="font-weight: 700">
                 Nur einzelnes Video herunterladen
@@ -2028,10 +1941,10 @@
           </button>
 
           <button
-            onclick="confirmFullPlaylistDownload()"
-            class="btn btn-primary btn-full"
-            style="justify-content: flex-start; text-align: left"
-          >
+ onclick="confirmFullPlaylistDownload()"
+ class="btn btn-primary btn-full u-justify-start-left"
+ 
+ >
             <div>
               <div style="font-weight: 700; color: #1a0d03">
                 Gesamte Playlist herunterladen
@@ -2043,10 +1956,10 @@
           </button>
 
           <button
-            onclick="openPlaylistPickerView()"
-            class="btn btn-secondary btn-full"
-            style="justify-content: flex-start; text-align: left"
-          >
+ onclick="openPlaylistPickerView()"
+ class="btn btn-secondary btn-full u-justify-start-left"
+ 
+ >
             <div>
               <div style="font-weight: 700">
                 Spezifische Videos auswählen...
@@ -2081,12 +1994,12 @@
               herunterladen?</span
             >
           </div>
-          <div style="display: flex; gap: 0.5rem">
+          <div class="u-row-gap-05">
             <button
-              onclick="showPlaylistActionsView()"
-              class="btn btn-secondary"
-              style="flex: 1"
-            >
+ onclick="showPlaylistActionsView()"
+ class="btn btn-secondary u-flex-1"
+ 
+ >
               Zurück
             </button>
             <button
@@ -2151,12 +2064,12 @@
             </p>
           </div>
 
-          <div style="display: flex; gap: 0.5rem">
+          <div class="u-row-gap-05">
             <button
-              onclick="showPlaylistActionsView()"
-              class="btn btn-secondary"
-              style="flex: 1"
-            >
+ onclick="showPlaylistActionsView()"
+ class="btn btn-secondary u-flex-1"
+ 
+ >
               Zurück
             </button>
             <button
@@ -2308,32 +2221,32 @@
             </div>
             <div class="stat-card">
               <span class="lbl">Größte Datei</span
-              ><span id="st-biggest" class="val" style="font-size: 0.85rem"
-                >-</span
+              ><span id="st-biggest" class="val u-fs-85" 
+ >-</span
               >
             </div>
             <div class="stat-card">
               <span class="lbl">Kleinstes Video</span
-              ><span id="st-smallest" class="val" style="font-size: 0.85rem"
-                >-</span
+              ><span id="st-smallest" class="val u-fs-85" 
+ >-</span
               >
             </div>
             <div class="stat-card">
               <span class="lbl">Längstes Video</span
-              ><span id="st-longest" class="val" style="font-size: 0.85rem"
-                >-</span
+              ><span id="st-longest" class="val u-fs-85" 
+ >-</span
               >
             </div>
             <div class="stat-card">
               <span class="lbl">Kürzestes Video</span
-              ><span id="st-shortest" class="val" style="font-size: 0.85rem"
-                >-</span
+              ><span id="st-shortest" class="val u-fs-85" 
+ >-</span
               >
             </div>
             <div class="stat-card">
               <span class="lbl">Häufigste Endung</span
-              ><span id="st-common" class="val" style="font-size: 0.95rem"
-                >-</span
+              ><span id="st-common" class="val u-fs-95" 
+ >-</span
               >
             </div>
           </div>
@@ -2408,26 +2321,26 @@
             id="tags-editor-filename"
           ></div>
           <div>
-            <label>Titel:</label>
+            <label for="tags-edit-title">Titel:</label>
             <input type="text" id="tags-edit-title" placeholder="Songtitel" />
           </div>
           <div class="grid-2">
             <div>
-              <label>Künstler:</label>
+              <label for="tags-edit-artist">Künstler:</label>
               <input type="text" id="tags-edit-artist" placeholder="Künstler" />
             </div>
             <div>
-              <label>Album:</label>
+              <label for="tags-edit-album">Album:</label>
               <input type="text" id="tags-edit-album" placeholder="Album" />
             </div>
           </div>
           <div class="grid-2">
             <div>
-              <label>Jahr:</label>
+              <label for="tags-edit-date">Jahr:</label>
               <input type="text" id="tags-edit-date" placeholder="2026" />
             </div>
             <div>
-              <label>Genre:</label>
+              <label for="tags-edit-genre">Genre:</label>
               <input
                 type="text"
                 id="tags-edit-genre"
@@ -2436,7 +2349,7 @@
             </div>
           </div>
           <div>
-            <label>Kommentar:</label>
+            <label for="tags-edit-comment">Kommentar:</label>
             <input
               type="text"
               id="tags-edit-comment"
@@ -2469,9 +2382,9 @@
             ✕
           </button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.8rem">
+        <div class="u-col-gap-08">
           <div>
-            <label>Name:</label>
+            <label for="pl-edit-name">Name:</label>
             <input
               type="text"
               id="pl-edit-name"
@@ -2479,7 +2392,7 @@
             />
           </div>
           <div>
-            <label>Beschreibung (optional):</label>
+            <label for="pl-edit-desc">Beschreibung (optional):</label>
             <input
               type="text"
               id="pl-edit-desc"
@@ -2488,9 +2401,7 @@
           </div>
 
           <div
-            id="pl-edit-stages"
-            style="display: flex; flex-direction: column; gap: 0.6rem"
-          ></div>
+ id="pl-edit-stages" class="u-col-gap-06"></div>
 
           <button
             onclick="addPipelineStageRow()"
@@ -2533,9 +2444,9 @@
             ✕
           </button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.8rem">
+        <div class="u-col-gap-08">
           <div>
-            <label>Name (auch Ordnername):</label>
+            <label for="sub-edit-name">Name (auch Ordnername):</label>
             <input
               type="text"
               id="sub-edit-name"
@@ -2543,7 +2454,7 @@
             />
           </div>
           <div>
-            <label>Kanal- oder Playlist-URL:</label>
+            <label for="sub-edit-url">Kanal- oder Playlist-URL:</label>
             <input
               type="text"
               id="sub-edit-url"
@@ -2552,34 +2463,32 @@
           </div>
           <div class="grid-2">
             <div>
-              <label>Typ:</label>
+              <label for="sub-edit-type">Typ:</label>
               <select id="sub-edit-type" onchange="onSubscriptionTypeChange()">
                 <option value="video">Video</option>
                 <option value="audio">Nur Audio</option>
               </select>
             </div>
             <div>
-              <label id="sub-edit-quality-label">Qualität:</label>
+              <label for="sub-edit-quality" id="sub-edit-quality-label">Qualität:</label>
               <select id="sub-edit-quality"></select>
             </div>
           </div>
           <div class="grid-2">
             <div>
-              <label>Container:</label>
+              <label for="sub-edit-container">Container:</label>
               <select id="sub-edit-container"></select>
             </div>
           </div>
           <div>
             <label>Prüfintervall:</label>
-            <div style="display: flex; gap: 0.5rem">
+            <div class="u-row-gap-05">
               <input
-                type="number"
-                id="sub-edit-interval-value"
-                value="6"
-                min="1"
-                style="flex: 1"
-              />
-              <select id="sub-edit-interval-unit" style="flex: 1">
+ type="number"
+ id="sub-edit-interval-value"
+ value="6"
+ min="1" class="u-flex-1" />
+              <select id="sub-edit-interval-unit" class="u-flex-1">
                 <option value="1">Minute(n)</option>
                 <option value="60" selected>Stunde(n)</option>
                 <option value="1440">Tag(e)</option>
@@ -2587,7 +2496,7 @@
             </div>
           </div>
           <div>
-            <label>Max. neue Videos pro Prüfung:</label>
+            <label for="sub-edit-max-items">Max. neue Videos pro Prüfung:</label>
             <input type="number" id="sub-edit-max-items" value="25" min="1" max="200" />
             <span class="settings-hint"
               >Sicherheitslimit, falls beim ersten Check sehr viele
@@ -2596,7 +2505,7 @@
             >
           </div>
           <div id="sub-edit-backfill-row">
-            <label>Bestehende Videos zusätzlich laden:</label>
+            <label for="sub-edit-backfill">Bestehende Videos zusätzlich laden:</label>
             <input type="number" id="sub-edit-backfill" value="0" min="0" max="200" />
             <span class="settings-hint"
               >0 = nur ab jetzt neu erscheinende Videos laden. Bei einer Zahl
@@ -2605,14 +2514,10 @@
             >
           </div>
           <div
-            class="toggle-row"
-            style="
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            "
-          >
-            <label style="margin-bottom: 0">Aktiv</label>
+ class="toggle-row u-row-between-center"
+ 
+ >
+            <label class="u-mb0">Aktiv</label>
             <label class="switch">
               <input type="checkbox" id="sub-edit-enabled" checked />
               <span class="slider-toggle"></span>
@@ -2654,7 +2559,7 @@
             ✕
           </button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 1rem">
+        <div class="u-col-gap-1">
           <div>
             <label>Akzentfarbe wählen:</label>
             <div style="display: flex; gap: 0.75rem; margin-top: 0.3rem">
@@ -2700,7 +2605,7 @@
                 margin-bottom: 0.6rem;
               "
             >
-              <h4 style="margin-bottom: 0">Jobs &amp; Performance</h4>
+              <h4 class="u-mb0">Jobs &amp; Performance</h4>
               <span
                 id="config-source-badge"
                 class="status-badge"
@@ -2715,7 +2620,7 @@
             </div>
             <div class="grid-2">
               <div>
-                <label>Max. parallele Jobs:</label>
+                <label for="cfg-max-jobs">Max. parallele Jobs:</label>
                 <input
                   type="number"
                   id="cfg-max-jobs"
@@ -2725,7 +2630,7 @@
                 />
               </div>
               <div>
-                <label>Auto-Cleanup Outputs (Tage):</label>
+                <label for="cfg-cleanup-days">Auto-Cleanup Outputs (Tage):</label>
                 <input
                   type="number"
                   id="cfg-cleanup-days"
@@ -2735,7 +2640,7 @@
                 />
               </div>
               <div>
-                <label>ffmpeg Threads:</label>
+                <label for="cfg-ffmpeg-threads">ffmpeg Threads:</label>
                 <select id="cfg-ffmpeg-threads">
                   <option value="Auto">Auto</option>
                   <option value="1">1</option>
@@ -2790,8 +2695,7 @@
               "
             >
               <div>
-                <label style="margin-bottom: 0.1rem"
-                  >Quelldateien nach erfolgreicher Konvertierung löschen</label
+                <label class="u-mb-01">Quelldateien nach erfolgreicher Konvertierung löschen</label
                 >
                 <span class="settings-hint"
                   >Gilt nur für Konvertierungs-Jobs mit lokaler Eingabedatei,
@@ -2807,9 +2711,9 @@
 
           <div class="settings-section">
             <h4>Ausfallsicherheit</h4>
-            <div style="display: flex; flex-direction: column; gap: 0.8rem">
+            <div class="u-col-gap-08">
               <div>
-                <label>Mindest-Speicherplatz für neue Jobs (GB):</label>
+                <label for="cfg-min-disk-gb">Mindest-Speicherplatz für neue Jobs (GB):</label>
                 <input
                   type="number"
                   id="cfg-min-disk-gb"
@@ -2823,7 +2727,7 @@
                 >
               </div>
               <div>
-                <label>Max. gleichzeitige Downloads pro Quelle (Domain):</label>
+                <label for="cfg-max-per-domain">Max. gleichzeitige Downloads pro Quelle (Domain):</label>
                 <input
                   type="number"
                   id="cfg-max-per-domain"
@@ -2838,16 +2742,11 @@
                 >
               </div>
               <div
-                class="toggle-row"
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                "
-              >
+ class="toggle-row u-row-between-center"
+ 
+ >
                 <div>
-                  <label style="margin-bottom: 0.1rem"
-                    >Überschreibschutz für Ausgabedateien</label
+                  <label class="u-mb-01">Überschreibschutz für Ausgabedateien</label
                   >
                   <span class="settings-hint"
                     >Verhindert, dass ein Job eine bereits vorhandene
@@ -2860,16 +2759,11 @@
                 </label>
               </div>
               <div
-                class="toggle-row"
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                "
-              >
+ class="toggle-row u-row-between-center"
+ 
+ >
                 <div>
-                  <label style="margin-bottom: 0.1rem"
-                    >Bestätigung vor komplettem Playlist-Download</label
+                  <label class="u-mb-01">Bestätigung vor komplettem Playlist-Download</label
                   >
                   <span class="settings-hint"
                     >Zeigt eine zusätzliche Warnung, bevor eine ganze Playlist
@@ -2895,8 +2789,7 @@
               "
             >
               <div>
-                <label style="margin-bottom: 0.1rem"
-                  >Client-seitige Verarbeitung (FFmpeg.wasm)</label
+                <label class="u-mb-01">Client-seitige Verarbeitung (FFmpeg.wasm)</label
                 >
                 <span class="settings-hint"
                   >Verarbeitet Video/Audio lokal im Browser.</span
@@ -2920,7 +2813,7 @@
                 margin-bottom: 0.6rem;
               "
             >
-              <label style="margin-bottom: 0">Pushover Aktivieren</label>
+              <label class="u-mb0">Pushover Aktivieren</label>
               <label class="switch">
                 <input type="checkbox" id="cfg-push-enabled" />
                 <span class="slider-toggle"></span>
@@ -2928,7 +2821,7 @@
             </div>
             <div class="grid-2">
               <div>
-                <label>User Key:</label>
+                <label for="cfg-push-user">User Key:</label>
                 <input
                   type="password"
                   id="cfg-push-user"
@@ -2936,7 +2829,7 @@
                 />
               </div>
               <div>
-                <label>API Token:</label>
+                <label for="cfg-push-token">API Token:</label>
                 <input
                   type="password"
                   id="cfg-push-token"
@@ -3002,11 +2895,11 @@
                   >Status wird geladen...</span
                 >
                 <button
-                  onclick="deleteCookiesFile()"
-                  id="btn-cookies-delete"
-                  class="btn btn-danger btn-sm"
-                  style="display: none"
-                >
+ onclick="deleteCookiesFile()"
+ id="btn-cookies-delete"
+ class="btn btn-danger btn-sm u-hidden"
+ 
+ >
                   Entfernen
                 </button>
               </div>
@@ -3029,7 +2922,7 @@
 
           <div class="settings-section">
             <h4>Backup &amp; Wiederherstellung</h4>
-            <div style="display: flex; flex-direction: column; gap: 0.6rem">
+            <div class="u-col-gap-06">
               <a
                 href="/api/config/backup"
                 class="btn btn-secondary btn-full"
@@ -3037,7 +2930,7 @@
                 >Einstellungen &amp; Statistiken exportieren (.zip)</a
               >
               <div>
-                <label>Backup wiederherstellen:</label>
+                <label for="config-restore-input">Backup wiederherstellen:</label>
                 <input
                   type="file"
                   id="config-restore-input"
