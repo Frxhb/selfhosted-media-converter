@@ -27,9 +27,13 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
   <img src="pictures/Dashboard.png" alt="Dashboard Screenshot" width="85%">
 </p>
 
+---
+
 <p align="center">
   <img src="pictures/yt-dlp.png" alt="YouTube-Downloader Screenshot" width="85%">
 </p>
+
+---
 
 <p align="center">
   <img src="pictures/live-log.png" alt="Live Logs Screenshot" width="85%">
