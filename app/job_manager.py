@@ -8,8 +8,8 @@ from typing import Dict, List, Optional, Set
 from fastapi import WebSocket
 import uuid
 from app.models import Job, JobCreateRequest, JobStatus, JobType, Pipeline, PipelineStage
-from app.database import record_job, get_nerd_stats
-from app.core import COOKIES_FILE_PATH
+from app.database import record_job
+from app.core import COOKIES_FILE_PATH, OUTPUT_DIR
 
 logger = logging.getLogger("JobManager")
 
@@ -52,8 +52,8 @@ class JobManager:
             "ytdlp_prog": re.compile(r"\[download\]\s+(\d+\.?\d*)%"),
             "ytdlp_eta": re.compile(r"ETA\s+([\d:]+)"),
             "ytdlp_speed": re.compile(r"at\s+([\d\.]+\s*[kMG]?i?B/s)"),
-            "ytdlp_dest": re.compile(r"\[(?:download|ExtractAudio|Merger)\] Destination:\s*/media/outputs/(.+)"),
-            "ytdlp_already": re.compile(r"\[download\]\s+/media/outputs/(.+?)\s+has already been downloaded"),
+	    "ytdlp_dest": re.compile(r"\[(?:download|ExtractAudio|Merger)\] Destination:\s*" + re.escape(OUTPUT_DIR) + r"/(.+)"),
+            "ytdlp_already": re.compile(r"\[download\]\s+" + re.escape(OUTPUT_DIR) + r"/(.+?)\s+has already been downloaded"),
             "ytdlp_item": re.compile(r"\[download\] Downloading (?:item|video)\s+(\d+)\s+of\s+(\d+)"),
             "whisper_prog": re.compile(r"(\d+)%"),
             "whisper_ts": re.compile(r"\[(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})\]")

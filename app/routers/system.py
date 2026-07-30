@@ -4,7 +4,7 @@ import shutil
 import zipfile
 import subprocess
 import logging
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Request, Query
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, Request, Query
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
@@ -60,13 +60,13 @@ def backup_config():
 
 
 @router.post("/api/config/restore")
-def restore_config(file: UploadFile):
+def restore_config(file: UploadFile = File(...)):
     """
     Importiert ein zuvor über /api/config/backup exportiertes ZIP. Überschreibt die
     aktuelle app_config.json und Stats-Datenbank. Ein Neustart des Containers wird
     danach empfohlen, damit alle Werte sauber neu geladen werden.
     """
-    if not file.filename.endswith(".zip"):
+    if not file.filename or not file.filename.endswith(".zip"):
         raise HTTPException(status_code=400, detail="Bitte eine .zip Backup-Datei hochladen.")
 
     tmp_path = os.path.join(CONFIG_DIR, "_restore_upload.zip")

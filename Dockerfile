@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
 # System-Abhängigkeiten installieren (FFmpeg, HandBrake, Node.js für yt-dlp Engine)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    handbrake-cli \
+   # handbrake-cli \
     curl \
     git \
     unzip \
