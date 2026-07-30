@@ -27,16 +27,34 @@ Disclaimer: Vibe-coding project. The web UI is currently German-only — an Engl
   <img src="pictures/Dashboard.png" alt="Dashboard Screenshot" width="85%">
 </p>
 
----
+<br>
 
 <p align="center">
   <img src="pictures/yt-dlp.png" alt="YouTube-Downloader Screenshot" width="85%">
 </p>
 
----
+<br>
 
 <p align="center">
   <img src="pictures/live-log.png" alt="Live Logs Screenshot" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/Abonnement1.png" alt="YouTube Abonnements Settings" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/Abonnement2.png" alt="YouTube Abonnements in Action" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/Ausgabe.png" alt="Processed files" width="85%">
 </p>
 
 ---
