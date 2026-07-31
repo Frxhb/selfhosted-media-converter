@@ -249,13 +249,13 @@ function removeFromTabQueue(tab, index) {
           const whisperSelect = document.getElementById("sp-whisper-file");
 
           // 3. Dropdowns zurücksetzen
-          select.innerHTML = '<option value="">-- Datei wählen --</option>';
-          muxVid.innerHTML = '<option value="">-- Video wählen --</option>';
-          muxAud.innerHTML = '<option value="">-- Audio wählen --</option>';
+          select.innerHTML = `<option value="">${t("downloader.select_file_default")}</option>`;
+          muxVid.innerHTML = `<option value="">${t("downloader.select_video_default")}</option>`;
+          muxAud.innerHTML = `<option value="">${t("downloader.select_audio_default")}</option>`;
           batchDl.innerHTML =
-            '<option value="">-- .txt Datei wählen --</option>';
+            `<option value="">${t("downloader.select_txt_default")}</option>`;
           whisperSelect.innerHTML =
-            '<option value="">-- Datei wählen --</option>';
+            `<option value="">${t("downloader.select_file_default")}</option>`;
 
           // 4. Dateien verarbeiten und filtern
           allFiles.forEach((f) => {

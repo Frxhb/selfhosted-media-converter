@@ -90,7 +90,11 @@
     "custom_flags_ph": "e.g. --limit-rate 5M --geo-bypass",
     "range_ph": "e.g. 1-5 or 1,3,5",
     "gallery_flags_ph": "e.g. --write-metadata --cookies-from-browser firefox",
-    "thumb_alt": "Video Thumbnail"
+    "thumb_alt": "Video Thumbnail",
+    "select_file_default": "-- Select file --",
+    "select_video_default": "-- Select video --",
+    "select_audio_default": "-- Select audio --",
+    "select_txt_default": "-- Select .txt file --"
   },
   "converter": {
     "video_tab": "Video",
@@ -129,7 +133,8 @@
     "preset": "Preset / Speed",
     "queue_btn": "Add to Queue",
     "image_queue": "Image Queue",
-    "tools_queue": "Trim & Tools Queue"
+    "tools_queue": "Trim & Tools Queue",
+    "output_placeholder": "e.g. My_Video_1080p"
   },
   "tools": {
     "queue_title": "Trim & Tools Queue",
@@ -373,7 +378,8 @@
     "priority_hint_below_normal": "Good middle ground (default). Jobs run promptly without noticeably slowing down the interface.",
     "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers.",
     "config_badge_tooltip": "Shows whether these values come from saved settings or from .env defaults",
-    "disk_warning": "Only {free} GB free on /media/outputs. New jobs will be blocked once the value drops below {threshold} GB. Delete files you no longer need in the library."
+    "disk_warning": "Only {free} GB free on /media/outputs. New jobs will be blocked once the value drops below {threshold} GB. Delete files you no longer need in the library.",
+    "choose_file_btn": "Choose File"
   },
   "modals": {
     "playlist_detected": "Playlist Detected",

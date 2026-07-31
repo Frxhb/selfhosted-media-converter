@@ -925,6 +925,7 @@
                   type="text"
                   id="d-custom-flags"
                   placeholder="z. B. --limit-rate 5M --geo-bypass"
+                  data-i18n-placeholder="downloader.custom_flags_ph"
                   oninput="updateYtdlpPreview()"
                 />
               </div>
@@ -1000,6 +1001,7 @@
                     type="text"
                     id="g-range-val"
                     placeholder="z. B. 1-5 oder 1,3,5"
+                    data-i18n-placeholder="downloader.range_ph"
                     style="display: none; margin-top: 0.4rem"
                     oninput="updateGalleryDlPreview()"
                   />
@@ -1012,6 +1014,7 @@
                   type="text"
                   id="g-custom-flags"
                   placeholder="z. B. --write-metadata --cookies-from-browser firefox"
+                  data-i18n-placeholder="downloader.gallery_flags_ph"
                   oninput="updateGalleryDlPreview()"
                 />
               </div>
@@ -1131,6 +1134,7 @@
                   type="text"
                   id="v-custom-title"
                   placeholder="z. B. Mein_Video_1080p"
+                  data-i18n-placeholder="converter.output_placeholder"
                   oninput="updateVideoPreview()"
                 />
               </div>
@@ -3009,11 +3013,19 @@
                   Entfernen
                 </button>
               </div>
+              <label
+                for="cookies-upload-input"
+                class="btn btn-secondary btn-sm"
+                style="cursor: pointer; display: inline-flex; width: fit-content"
+                data-i18n="settings.choose_file_btn"
+                >Datei auswählen</label
+              >
               <input
                 type="file"
                 id="cookies-upload-input"
                 accept=".txt"
                 onchange="uploadCookiesFile()"
+                style="display: none"
               />
               <span class="settings-hint" data-i18n="settings.cookies_hint"
                 >Als Netscape cookies.txt exportieren (z.B. mit der
@@ -3038,11 +3050,20 @@
               >
               <div>
                 <label for="config-restore-input" data-i18n="settings.restore_backup">Backup wiederherstellen:</label>
+                <br />
+                <label
+                  for="config-restore-input"
+                  class="btn btn-secondary btn-sm"
+                  style="cursor: pointer; display: inline-flex; width: fit-content; margin-top: 0.3rem"
+                  data-i18n="settings.choose_file_btn"
+                  >Datei auswählen</label
+                >
                 <input
                   type="file"
                   id="config-restore-input"
                   accept=".zip"
                   onchange="restoreConfigBackup()"
+                  style="display: none"
                 />
                 <span class="settings-hint" data-i18n="settings.restore_hint"
                   >Überschreibt aktuelle Einstellungen und Job-Historie.

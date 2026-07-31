@@ -90,7 +90,11 @@
     "custom_flags_ph": "z. B. --limit-rate 5M --geo-bypass",
     "range_ph": "z. B. 1-5 oder 1,3,5",
     "gallery_flags_ph": "z. B. --write-metadata --cookies-from-browser firefox",
-    "thumb_alt": "Video-Thumbnail"
+    "thumb_alt": "Video-Thumbnail",
+    "select_file_default": "-- Datei wählen --",
+    "select_video_default": "-- Video wählen --",
+    "select_audio_default": "-- Audio wählen --",
+    "select_txt_default": "-- .txt Datei wählen --"
   },
   "converter": {
     "video_tab": "Video",
@@ -129,7 +133,8 @@
     "preset": "Preset / Geschwindigkeit",
     "queue_btn": "Zur Warteschlange hinzufügen",
     "image_queue": "Bild-Warteschlange",
-    "tools_queue": "Schnitt & Tools Warteschlange"
+    "tools_queue": "Schnitt & Tools Warteschlange",
+    "output_placeholder": "z. B. Mein_Video_1080p"
   },
   "tools": {
     "queue_title": "Schnitt & Tools Warteschlange",
@@ -373,7 +378,8 @@
     "priority_hint_below_normal": "Guter Mittelweg (Standard). Jobs laufen zügig, ohne die Oberfläche spürbar zu bremsen.",
     "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen.",
     "config_badge_tooltip": "Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen",
-    "disk_warning": "Nur noch {free} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter {threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek."
+    "disk_warning": "Nur noch {free} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter {threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek.",
+    "choose_file_btn": "Datei auswählen"
   },
   "modals": {
     "playlist_detected": "Playlist erkannt",
