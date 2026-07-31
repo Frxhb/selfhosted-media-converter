@@ -94,6 +94,36 @@ function applyTranslations() {
   if (typeof updateYtdlpPreview === 'function') {
     updateYtdlpPreview();
   }
+  // Re-render dynamic lists/badges that use t() internally, so they
+  // reflect the new language immediately instead of waiting for the
+  // next natural refresh (websocket update, tab switch, modal open, ...).
+  if (typeof renderTabQueue === 'function') {
+    ['video', 'audio', 'images', 'tools'].forEach(tab => renderTabQueue(tab));
+  }
+  if (typeof refreshOutputFiles === 'function') {
+    refreshOutputFiles();
+  }
+  if (typeof refreshFiles === 'function') {
+    refreshFiles();
+  }
+  if (typeof loadServerConfig === 'function') {
+    loadServerConfig();
+  }
+  if (typeof loadCookiesStatus === 'function') {
+    loadCookiesStatus();
+  }
+  if (typeof loadJobs === 'function') {
+    loadJobs();
+  }
+  if (typeof refreshPipelines === 'function') {
+    refreshPipelines();
+  }
+  if (typeof refreshSubscriptions === 'function') {
+    refreshSubscriptions();
+  }
+  if (typeof fetchStats === 'function') {
+    fetchStats();
+  }
   window.dispatchEvent(new CustomEvent('mcp_i18n_changed', { detail: { lang: currentLang } }));
 }
 

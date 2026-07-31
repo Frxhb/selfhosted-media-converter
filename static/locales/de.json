@@ -7,7 +7,8 @@
     "tooltip_theme": "Design wechseln",
     "tooltip_stats": "Statistiken",
     "tooltip_settings": "Einstellungen",
-    "tooltip_reset": "UI & Warteschlange zurücksetzen"
+    "tooltip_reset": "UI & Warteschlange zurücksetzen",
+    "tooltip_connection": "Server-Verbindung"
   },
   "nav": {
     "overview": "Übersicht",
@@ -16,7 +17,8 @@
     "ai_suite": "KI-Suite",
     "output": "Ausgabe",
     "pipelines": "Pipelines",
-    "subscriptions": "Abos"
+    "subscriptions": "Abos",
+    "automation": "Automatisierung"
   },
   "dashboard": {
     "active_jobs": "Aktive Jobs",
@@ -41,7 +43,9 @@
     "add": "+ Hinzufügen",
     "upload_label": "Neue Datei hochladen (nach /media/inputs):",
     "click_or_drag": "Klicken oder Datei hierher ziehen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "preview_title": "Vorschau ansehen",
+    "info_title": "ffprobe Media Info"
   },
   "downloader": {
     "ytdlp_tab": "yt-dlp (Video & Audio)",
@@ -205,7 +209,9 @@
     "table_type": "Typ",
     "table_size": "Größe",
     "table_date": "Datum",
-    "loading": "Lade Medien-Bibliothek..."
+    "loading": "Lade Medien-Bibliothek...",
+    "refresh_btn": "Aktualisieren",
+    "loading_text": "Lade Medien-Bibliothek..."
   },
   "pipelines": {
     "title": "Pipelines",
@@ -365,7 +371,9 @@
     "restore_btn": "Backup wiederherstellen",
     "priority_hint_low": "Schont System & andere Dienste am meiste. Jobs laufen langsamer, Web-UI bleibt immer flott.",
     "priority_hint_below_normal": "Guter Mittelweg (Standard). Jobs laufen zügig, ohne die Oberfläche spürbar zu bremsen.",
-    "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen."
+    "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen.",
+    "config_badge_tooltip": "Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen",
+    "disk_warning": "Nur noch {free} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter {threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek."
   },
   "modals": {
     "playlist_detected": "Playlist erkannt",
@@ -390,7 +398,22 @@
     "proc_vol": "Verarbeitetes Volumen",
     "total_dur": "Total Dauer",
     "success_rate": "Erfolgsquote",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "confirm_full_playlist_btn": "Ja, gesamte Playlist laden",
+    "load_selected_btn": "Ausgewählte laden",
+    "downloads_total": "Downloads Gesamt",
+    "dl_volume": "Download Volumen",
+    "dl_duration": "Download Dauer",
+    "conv_extremes": "Konvertierungen & Extremwerte",
+    "conversions": "Konvertierungen",
+    "biggest_file": "Größte Datei",
+    "smallest_video": "Kleinstes Video",
+    "longest_video": "Längstes Video",
+    "shortest_video": "Kürzestes Video",
+    "common_ext": "Häufigste Endung",
+    "ffprobe_metadata": "ffprobe Metadaten",
+    "preview_title": "Vorschau",
+    "hours_unit": "Std"
   },
   "common": {
     "save": "Speichern",
@@ -619,5 +642,20 @@
     "lang_it": "Italienisch (it)",
     "lang_manual": "Manuell...",
     "lang_manual_placeholder": "z. B. de, en, it"
+  },
+  "tags": {
+    "edit_title": "Metadaten bearbeiten",
+    "title_label": "Titel:",
+    "title_ph": "Songtitel",
+    "artist_label": "Künstler:",
+    "artist_ph": "Künstler",
+    "album_label": "Album:",
+    "album_ph": "Album",
+    "year_label": "Jahr:",
+    "year_ph": "2026",
+    "genre_label": "Genre:",
+    "genre_ph": "z. B. Podcast",
+    "comment_label": "Kommentar:",
+    "comment_ph": "Optionale Notiz"
   }
 }

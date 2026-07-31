@@ -50,6 +50,7 @@
           id="ws-status"
           class="status-dot-wrap offline"
           title="Server-Verbindung"
+          data-i18n-title="app.tooltip_connection"
         >
           <span id="ws-status-dot" class="status-dot"></span>
           <span id="ws-status-label" class="vu-label">OFFLINE</span>
@@ -298,7 +299,7 @@
         </button>
 
         <div class="stage-rail-divider">
-          <span>Automatisierung</span>
+          <span data-i18n="nav.automation">Automatisierung</span>
         </div>
 
         <button
@@ -390,6 +391,7 @@
                       onclick="previewInputFile()"
                       class="btn btn-secondary btn-sm"
                       title="Vorschau ansehen"
+                      data-i18n-title="import_card.preview_title"
                       data-i18n="import_card.preview"
                     >
                       ▶️ Vorschau
@@ -398,6 +400,7 @@
                       onclick="openMediaInspector()"
                       class="btn btn-secondary btn-sm"
                       title="ffprobe Media Info"
+                      data-i18n-title="import_card.info_title"
                       data-i18n="import_card.info"
                     >
                       Info
@@ -609,7 +612,7 @@
                     margin-top: 0.4rem;
                   "
                 >
-                  <span id="st-disk-in-free">0 GB</span> frei
+                  <span id="st-disk-in-free">0 GB</span> <span data-i18n="dashboard.free">frei</span>
                 </div>
               </div>
 
@@ -635,7 +638,7 @@
                     margin-top: 0.4rem;
                   "
                 >
-                  <span id="st-disk-out-free">0 GB</span> frei
+                  <span id="st-disk-out-free">0 GB</span> <span data-i18n="dashboard.free">frei</span>
                 </div>
               </div>
             </div>
@@ -727,6 +730,7 @@
                       color: var(--ink-dim);
                       white-space: nowrap;
                     "
+                    data-i18n="downloader.or_search_title"
                     >oder nach Titel suchen</span
                   >
                   <div
@@ -742,6 +746,7 @@
                     type="text"
                     id="d-search-query"
                     placeholder="z.B. Titel, Künstler, Thema..."
+                    data-i18n-placeholder="downloader.search_placeholder"
                     onkeydown="if(event.key==='Enter'){event.preventDefault();searchYtDlpByTitle();}"
                   />
                   <button
@@ -1241,37 +1246,37 @@
               <div id="audio-queue" class="queue-listbox"></div>
 
               <div>
-                <label for="a-custom-title">Ausgabename (optional, Standard: [Originalname]):</label>
+                <label for="a-custom-title" data-i18n="converter.audio_output_name_label">Ausgabename (optional, Standard: [Originalname]):</label>
                 <input
                   type="text"
                   id="a-custom-title"
-                  placeholder="z. B. Mein_Song_HQ"
+                  placeholder="z. B. Mein_Song_HQ" data-i18n-placeholder="converter.audio_output_placeholder"
                   oninput="updateAudioPreview()"
                 />
               </div>
 
               <div class="grid-3">
                 <div>
-                  <label for="a-format">Format:</label>
+                  <label for="a-format" data-i18n="converter.format">Format:</label>
                   <select id="a-format" onchange="updateAudioPreview()"></select>
                 </div>
                 <div>
-                  <label for="a-bitrate">Bitrate:</label>
+                  <label for="a-bitrate" data-i18n="converter.bitrate">Bitrate:</label>
                   <select id="a-bitrate" onchange="updateAudioPreview()"></select>
                 </div>
                 <div>
-                  <label for="a-volume">Lautstärke / Normalisierung:</label>
+                  <label for="a-volume" data-i18n="converter.volume_normalization">Lautstärke / Normalisierung:</label>
                   <select id="a-volume" onchange="updateAudioPreview()">
-                    <option value="none">Normal (100%)</option>
-                    <option value="boost_150">+50% Verstärkung (1.5x)</option>
-                    <option value="boost_200">+100% Verstärkung (2.0x)</option>
-                    <option value="ebur128">EBU R128 Loudness Normalize</option>
+                    <option value="none" data-i18n="converter.vol_normal">Normal (100%)</option>
+                    <option value="boost_150" data-i18n="converter.vol_boost_150">+50% Verstärkung (1.5x)</option>
+                    <option value="boost_200" data-i18n="converter.vol_boost_200">+100% Verstärkung (2.0x)</option>
+                    <option value="ebur128" data-i18n="converter.vol_ebur128">EBU R128 Loudness Normalize</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label>Befehlsvorschau:</label>
+                <label data-i18n="converter.cmd_preview">Befehlsvorschau:</label>
                 <div class="u-relative">
                   <div
  id="a-cmd-preview"
@@ -1284,6 +1289,7 @@
  onclick="copyCommandToClipboard('a-cmd-preview')"
  class="icon-btn u-corner-btn"
  title="Befehl kopieren"
+ data-i18n-title="downloader.copy_cmd"
  >
                     <svg
                       viewBox="0 0 24 24"
@@ -1303,6 +1309,7 @@
               <button
                 onclick="submitAudioJob()"
                 class="btn btn-success btn-full"
+                data-i18n="converter.start_audio_btn"
               >
                 Audio-Jobs starten
               </button>
@@ -1326,7 +1333,7 @@
               </div>
               <div id="tools-queue" class="queue-listbox"></div>
 
-              <div class="card-title">
+              <div class="card-title" data-i18n="tools.speed_extract_title">
                 Geschwindigkeit &amp; Standbild-Extraktion
               </div>
 
@@ -1342,20 +1349,21 @@
                     gap: 0.6rem;
                   "
                 >
-                  <h4 style="font-size: 0.8rem; font-weight: 700">
+                  <h4 style="font-size: 0.8rem; font-weight: 700" data-i18n="tools.speed_title">
                     Wiedergabegeschwindigkeit
                   </h4>
-                  <label for="tool-speed-val">Geschwindigkeit ändern:</label>
+                  <label for="tool-speed-val" data-i18n="tools.speed_label">Geschwindigkeit ändern:</label>
                   <select id="tool-speed-val">
-                    <option value="0.5">0.5x (Zeitlupe)</option>
-                    <option value="0.75">0.75x</option>
-                    <option value="1.25">1.25x</option>
-                    <option value="1.5">1.5x (Schneller)</option>
-                    <option value="2.0">2.0x (Doppelt)</option>
+                    <option value="0.5" data-i18n="tools.speed_05">0.5x (Zeitlupe)</option>
+                    <option value="0.75" data-i18n="tools.speed_075">0.75x</option>
+                    <option value="1.25" data-i18n="tools.speed_125">1.25x</option>
+                    <option value="1.5" data-i18n="tools.speed_150">1.5x (Schneller)</option>
+                    <option value="2.0" data-i18n="tools.speed_20">2.0x (Doppelt)</option>
                   </select>
                   <button
                     onclick="submitSpeedJob()"
                     class="btn btn-primary btn-full"
+                    data-i18n="tools.start_speed_btn"
                   >
                     Speed-Job starten
                   </button>
@@ -1372,10 +1380,10 @@
                     gap: 0.6rem;
                   "
                 >
-                  <h4 style="font-size: 0.8rem; font-weight: 700">
+                  <h4 style="font-size: 0.8rem; font-weight: 700" data-i18n="tools.thumb_extractor_title">
                     Frame / Thumbnail Extraktor
                   </h4>
-                  <label for="tool-thumb-time">Zeitpunkt (HH:MM:SS):</label>
+                  <label for="tool-thumb-time" data-i18n="tools.thumb_time_label">Zeitpunkt (HH:MM:SS):</label>
                   <input
                     type="text"
                     id="tool-thumb-time"
@@ -1385,6 +1393,7 @@
                   <button
                     onclick="submitThumbnailJob()"
                     class="btn btn-primary btn-full"
+                    data-i18n="tools.grab_frame_btn"
                   >
                     Frame greifen
                   </button>
@@ -1412,7 +1421,7 @@
 
               <div class="grid-2">
                 <div>
-                  <label for="i-format">Format:</label>
+                  <label for="i-format" data-i18n="converter.format">Format:</label>
                   <select id="i-format">
                     <option value="jpg">JPG</option>
                     <option value="png">PNG</option>
@@ -1423,7 +1432,7 @@
                   </select>
                 </div>
                 <div>
-                  <label for="i-res">Max Breite:</label>
+                  <label for="i-res" data-i18n="images.max_width">Max Breite:</label>
                   <select id="i-res">
                     <option value="orig">Original</option>
                     <option value="3840">3840px (4K)</option>
@@ -1440,6 +1449,7 @@
               <button
                 onclick="submitImageJob()"
                 class="btn btn-success btn-full"
+                data-i18n="images.start_image_btn"
               >
                 Bild-Jobs starten
               </button>
@@ -1451,16 +1461,16 @@
  class="subtab-content subtab-conv-content card u-col-gap-1"
  
  >
-              <h3 style="font-size: 0.9rem; font-weight: 700">Stream Muxing</h3>
+              <h3 style="font-size: 0.9rem; font-weight: 700" data-i18n="muxing.title">Stream Muxing</h3>
               <div>
-                <label>Video-Datei wählen:</label
+                <label data-i18n="muxing.select_video">Video-Datei wählen:</label
                 ><select id="m-video-select"></select>
               </div>
               <div>
-                <label>Audio-Datei wählen:</label
+                <label data-i18n="muxing.select_audio">Audio-Datei wählen:</label
                 ><select id="m-audio-select"></select>
               </div>
-              <button onclick="submitMuxJob()" class="btn btn-success btn-full">
+              <button onclick="submitMuxJob()" class="btn btn-success btn-full" data-i18n="muxing.start_mux_btn">
                 Muxing starten
               </button>
             </div>
@@ -1478,34 +1488,35 @@
                   font-size: 0.95rem;
                   font-weight: 700;
                 "
+                data-i18n="ai.whisper_title"
               >
                 Whisper KI-Transkription
               </h3>
               <div>
-                <label for="sp-whisper-file">Datei wählen:</label>
+                <label for="sp-whisper-file" data-i18n="ai.select_file">Datei wählen:</label>
                 <select id="sp-whisper-file"></select>
               </div>
               <div class="grid-3">
                 <div>
-                  <label for="sp-whisper-model">Modell:</label>
+                  <label for="sp-whisper-model" data-i18n="ai.model_label">Modell:</label>
                   <select id="sp-whisper-model">
-                    <option value="tiny">tiny (Sehr schnell)</option>
-                    <option value="base" selected>
+                    <option value="tiny" data-i18n="ai.model_tiny">tiny (Sehr schnell)</option>
+                    <option value="base" selected data-i18n="ai.model_base">
                       base (Empfohlen für CPU)
                     </option>
-                    <option value="turbo">turbo (Höhere Genauigkeit)</option>
+                    <option value="turbo" data-i18n="ai.model_turbo">turbo (Höhere Genauigkeit)</option>
                     <option value="large-v3">large-v3</option>
                   </select>
                 </div>
                 <div>
-                  <label for="sp-whisper-fmt">Ausgabe-Format:</label>
+                  <label for="sp-whisper-fmt" data-i18n="ai.output_format">Ausgabe-Format:</label>
                   <select id="sp-whisper-fmt">
-                    <option value="srt">Untertitel (.srt)</option>
-                    <option value="txt">Text (.txt)</option>
+                    <option value="srt" data-i18n="ai.fmt_srt">Untertitel (.srt)</option>
+                    <option value="txt" data-i18n="ai.fmt_txt">Text (.txt)</option>
                   </select>
                 </div>
                 <div>
-                  <label>Sprache (--language):</label>
+                  <label data-i18n="ai.language">Sprache (--language):</label>
                   <div style="display: flex; gap: 0.4rem">
                     <select
                       id="sp-whisper-lang-select"
@@ -1516,18 +1527,19 @@
                         )
                       "
                     >
-                      <option value="">Auto (Automatisch)</option>
-                      <option value="de">Deutsch (de)</option>
-                      <option value="en">Englisch (en)</option>
-                      <option value="es">Spanisch (es)</option>
-                      <option value="fr">Französisch (fr)</option>
-                      <option value="it">Italienisch (it)</option>
-                      <option value="custom">Manuell eingeben...</option>
+                      <option value="" data-i18n="ai.lang_auto">Auto (Automatisch)</option>
+                      <option value="de" data-i18n="ai.lang_de">Deutsch (de)</option>
+                      <option value="en" data-i18n="ai.lang_en">Englisch (en)</option>
+                      <option value="es" data-i18n="ai.lang_es">Spanisch (es)</option>
+                      <option value="fr" data-i18n="ai.lang_fr">Französisch (fr)</option>
+                      <option value="it" data-i18n="ai.lang_it">Italienisch (it)</option>
+                      <option value="custom" data-i18n="ai.lang_custom">Manuell eingeben...</option>
                     </select>
                     <input
                       type="text"
                       id="sp-whisper-lang-input"
                       placeholder="z. B. de, en, it"
+                      data-i18n-placeholder="pipeline_stage.lang_manual_placeholder"
                       style="display: none; width: 110px"
                       onfocus="
                         if (!this.dataset.ph)
@@ -1544,6 +1556,7 @@
               <button
                 onclick="submitWhisperJob()"
                 class="btn btn-primary btn-full"
+                data-i18n="ai.start_transcription_btn"
               >
                 Transkription starten
               </button>
@@ -1577,6 +1590,7 @@
                   margin-top: -0.4rem;
                   margin-bottom: 1rem;
                 "
+                data-i18n="pipelines.description"
               >
                 Verkette mehrere Verarbeitungsschritte zu einem automatischen
                 Ablauf, z. B.
@@ -1591,17 +1605,17 @@
             </div>
 
             <div class="card" style="margin-top: 1rem">
-              <h4 style="margin-top: 0">Pipeline ausführen</h4>
+              <h4 style="margin-top: 0" data-i18n="pipelines.run_title">Pipeline ausführen</h4>
               <div class="grid-2">
                 <div>
-                  <label for="pl-run-select">Pipeline wählen:</label>
+                  <label for="pl-run-select" data-i18n="pipelines.select_pipeline">Pipeline wählen:</label>
                   <select
                     id="pl-run-select"
                     onchange="onPipelineRunSelectChange()"
                   ></select>
                 </div>
                 <div>
-                  <label for="pl-run-file-select" id="pl-run-input-label">Eingabedatei:</label>
+                  <label for="pl-run-file-select" id="pl-run-input-label" data-i18n="pipelines.input_file">Eingabedatei:</label>
                   <select id="pl-run-file-select"></select>
                   <input
  type="text"
@@ -1626,9 +1640,10 @@
                   <label
                     for="pl-run-keep-final"
                     style="margin-bottom: 0; cursor: pointer"
+                    data-i18n="pipelines.keep_final_only"
                     >Nur Endergebnis behalten</label
                   >
-                  <span class="settings-hint"
+                  <span class="settings-hint" data-i18n="pipelines.keep_final_hint"
                     >Löscht temporäre Zwischenschritt-Dateien (z.B.
                     Downloads/MP3s) nach erfolgreichem Abschluss
                     automatisch.</span
@@ -1643,6 +1658,7 @@
                 onclick="runSelectedPipeline()"
                 class="btn btn-primary"
                 style="margin-top: 0.8rem"
+                data-i18n="pipelines.start_btn"
               >
                 Pipeline starten
               </button>
@@ -1684,6 +1700,7 @@
                   margin-top: -0.4rem;
                   margin-bottom: 1rem;
                 "
+                data-i18n="subscriptions.description"
               >
                 Abonniere einen Kanal oder eine Playlist. Der Server prüft
                 automatisch in einem eigenen Intervall auf neue Videos und
@@ -1702,10 +1719,11 @@
  
  >
               <div class="card-title">
-                <span>Medien-Bibliothek</span>
+                <span data-i18n="library.title">Medien-Bibliothek</span>
                 <button
                   onclick="refreshOutputFiles()"
                   class="btn btn-secondary btn-sm"
+                  data-i18n="library.refresh_btn"
                 >
                   Aktualisieren
                 </button>
@@ -1726,6 +1744,7 @@
                   onclick="downloadBulkZip()"
                   class="btn btn-primary"
                   id="btn-bulk-zip"
+                  data-i18n="library.bulk_zip"
                 >
                   Ausgewählte als ZIP
                 </button>
@@ -1733,6 +1752,7 @@
                   onclick="deleteBulk()"
                   class="btn btn-danger"
                   id="btn-bulk-del"
+                  data-i18n="library.bulk_delete"
                 >
                   Ausgewählte löschen
                 </button>
@@ -1744,6 +1764,7 @@
                     type="text"
                     id="lib-search"
                     placeholder="Ausgaben durchsuchen..."
+                    data-i18n-placeholder="library.search_outputs"
                     oninput="filterOutputLibrary()"
                   />
                 </div>
@@ -1752,6 +1773,7 @@
                     onclick="filterLibraryCategory('all')"
                     class="subtab-btn lib-cat-btn active"
                     data-cat="all"
+                    data-i18n="library.cat_all"
                   >
                     Alle
                   </button>
@@ -1759,6 +1781,7 @@
                     onclick="filterLibraryCategory('video')"
                     class="subtab-btn lib-cat-btn"
                     data-cat="video"
+                    data-i18n="library.cat_video"
                   >
                     Videos
                   </button>
@@ -1766,6 +1789,7 @@
                     onclick="filterLibraryCategory('audio')"
                     class="subtab-btn lib-cat-btn"
                     data-cat="audio"
+                    data-i18n="library.cat_audio"
                   >
                     Audio
                   </button>
@@ -1773,6 +1797,7 @@
                     onclick="filterLibraryCategory('image')"
                     class="subtab-btn lib-cat-btn"
                     data-cat="image"
+                    data-i18n="library.cat_images"
                   >
                     Bilder
                   </button>
@@ -1780,6 +1805,7 @@
                     onclick="filterLibraryCategory('document')"
                     class="subtab-btn lib-cat-btn"
                     data-cat="document"
+                    data-i18n="library.cat_docs"
                   >
                     Dokumente
                   </button>
@@ -1797,10 +1823,10 @@
                           onchange="toggleSelectAllLibraryItems(this.checked)"
                         />
                       </th>
-                      <th>Titel & Aktionen</th>
-                      <th style="width: 80px">Typ</th>
-                      <th style="width: 90px">Größe</th>
-                      <th style="width: 120px">Datum</th>
+                      <th data-i18n="library.table_title">Titel &amp; Aktionen</th>
+                      <th style="width: 80px" data-i18n="library.table_type">Typ</th>
+                      <th style="width: 90px" data-i18n="library.table_size">Größe</th>
+                      <th style="width: 120px" data-i18n="library.table_date">Datum</th>
                     </tr>
                   </thead>
                   <tbody id="library-tbody">
@@ -1812,6 +1838,7 @@
                           color: var(--ink-dim);
                           padding: 2rem;
                         "
+                        data-i18n="library.loading_text"
                       >
                         Lade Medien-Bibliothek...
                       </td>
@@ -1947,7 +1974,7 @@
     <div id="playlist-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 550px">
         <div class="card-title">
-          <span>Playlist erkannt</span>
+          <span data-i18n="modals.playlist_detected">Playlist erkannt</span>
           <button
             onclick="closeModal('playlist-modal')"
             class="btn btn-secondary btn-sm"
@@ -1961,6 +1988,7 @@
             color: var(--ink-dim);
             margin-bottom: 1.2rem;
           "
+          data-i18n="modals.playlist_detected_msg"
         >
           Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download
           fortfahren?
@@ -1974,10 +2002,10 @@
  
  >
             <div>
-              <div style="font-weight: 700">
+              <div style="font-weight: 700" data-i18n="modals.playlist_single_title">
                 Nur einzelnes Video herunterladen
               </div>
-              <div style="font-size: 0.68rem; color: var(--ink-dim)">
+              <div style="font-size: 0.68rem; color: var(--ink-dim)" data-i18n="modals.playlist_single_desc">
                 Lädt ausschließlich das verlinkte Einzelvideo (--no-playlist)
               </div>
             </div>
@@ -1989,10 +2017,10 @@
  
  >
             <div>
-              <div style="font-weight: 700; color: #1a0d03">
+              <div style="font-weight: 700; color: #1a0d03" data-i18n="modals.playlist_full_title">
                 Gesamte Playlist herunterladen
               </div>
-              <div style="font-size: 0.68rem; color: rgba(26, 13, 3, 0.8)">
+              <div style="font-size: 0.68rem; color: rgba(26, 13, 3, 0.8)" data-i18n="modals.playlist_full_desc">
                 Lädt alle Titel aus der Playlist nacheinander herunter
               </div>
             </div>
@@ -2004,10 +2032,10 @@
  
  >
             <div>
-              <div style="font-weight: 700">
+              <div style="font-weight: 700" data-i18n="modals.playlist_custom_title">
                 Spezifische Videos auswählen...
               </div>
-              <div style="font-size: 0.68rem; color: var(--ink-dim)">
+              <div style="font-size: 0.68rem; color: var(--ink-dim)" data-i18n="modals.playlist_custom_desc">
                 Titelübersicht laden und nur ausgewählte Videos laden
               </div>
             </div>
@@ -2031,7 +2059,7 @@
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <span
+            <span data-i18n="modals.playlist_confirm_warn"
               >Playlists können sehr viele Videos enthalten und den gesamten
               Speicherplatz belegen. Wirklich die komplette Playlist
               herunterladen?</span
@@ -2041,7 +2069,7 @@
             <button
  onclick="showPlaylistActionsView()"
  class="btn btn-secondary u-flex-1"
- 
+ data-i18n="common.back"
  >
               Zurück
             </button>
@@ -2049,6 +2077,7 @@
               onclick="handlePlaylistChoice('full')"
               class="btn btn-primary"
               style="flex: 2"
+              data-i18n="modals.confirm_full_playlist_btn"
             >
               Ja, gesamte Playlist laden
             </button>
@@ -2071,19 +2100,21 @@
               align-items: center;
             "
           >
-            <span style="font-size: 0.75rem; font-weight: 700"
+            <span style="font-size: 0.75rem; font-weight: 700" data-i18n="modals.select_titles"
               >Titel auswählen:</span
             >
             <div style="display: flex; gap: 0.4rem">
               <button
                 onclick="selectAllPlaylistCheckboxes(true)"
                 class="btn btn-secondary btn-sm"
+                data-i18n="modals.select_all"
               >
                 Alle
               </button>
               <button
                 onclick="selectAllPlaylistCheckboxes(false)"
                 class="btn btn-secondary btn-sm"
+                data-i18n="modals.select_none"
               >
                 Keine
               </button>
@@ -2102,6 +2133,7 @@
                 font-size: 0.75rem;
                 margin-top: 3.5rem;
               "
+              data-i18n="modals.loading_titles"
             >
               Lade Playlist-Titel vom Server...
             </p>
@@ -2111,7 +2143,7 @@
             <button
  onclick="showPlaylistActionsView()"
  class="btn btn-secondary u-flex-1"
- 
+ data-i18n="common.back"
  >
               Zurück
             </button>
@@ -2119,6 +2151,7 @@
               onclick="confirmSelectedPlaylistItems()"
               class="btn btn-primary"
               style="flex: 2"
+              data-i18n="modals.load_selected_btn"
             >
               Ausgewählte laden
             </button>
@@ -2131,7 +2164,7 @@
     <div id="job-details-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 650px">
         <div class="card-title">
-          <span id="job-details-header">Job-Details</span>
+          <span id="job-details-header" data-i18n="modals.job_details">Job-Details</span>
           <button
             onclick="closeModal('job-details-modal')"
             class="btn btn-secondary btn-sm"
@@ -2158,6 +2191,7 @@
               font-family: var(--font-mono);
               letter-spacing: 0.05em;
             "
+            data-i18n="modals.extracted_tracks"
           >
             Extrahierte / heruntergeladene Titel:
           </h4>
@@ -2173,6 +2207,7 @@
                 font-size: 0.75rem;
                 margin-top: 2.5rem;
               "
+              data-i18n="modals.no_extracted_tracks"
             >
               Keine extrahierten Einzeltitel gefunden.
             </p>
@@ -2192,6 +2227,7 @@
               font-family: var(--font-mono);
               letter-spacing: 0.05em;
             "
+            data-i18n="modals.job_log"
           >
             Job-Log:
           </h4>
@@ -2208,7 +2244,7 @@
     <div id="stats-modal" class="modal-overlay">
       <div class="modal-card">
         <div class="card-title">
-          <span>Statistiken</span>
+          <span data-i18n="modals.stats_title">Statistiken</span>
           <button
             onclick="closeModal('stats-modal')"
             class="btn btn-secondary btn-sm"
@@ -2219,75 +2255,75 @@
 
         <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr)">
           <div class="stat-card">
-            <span class="lbl">Verarbeitetes Volumen</span
+            <span class="lbl" data-i18n="modals.proc_vol">Verarbeitetes Volumen</span
             ><span id="st-total-gb" class="val" style="color: var(--signal)"
               >0 GB</span
             >
           </div>
           <div class="stat-card">
-            <span class="lbl">Total Dauer</span
+            <span class="lbl" data-i18n="modals.total_dur">Total Dauer</span
             ><span id="st-total-hours" class="val">0 Std</span>
           </div>
           <div class="stat-card">
-            <span class="lbl">Erfolgsquote</span
+            <span class="lbl" data-i18n="modals.success_rate">Erfolgsquote</span
             ><span id="st-rate" class="val" style="color: var(--ok)">100%</span>
           </div>
         </div>
 
         <div class="card" style="margin-top: 0.85rem">
-          <div class="card-title">Downloads</div>
+          <div class="card-title" data-i18n="modals.downloads">Downloads</div>
           <div
             class="stats-grid"
             style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0"
           >
             <div class="stat-card">
-              <span class="lbl">Downloads Gesamt</span
+              <span class="lbl" data-i18n="modals.downloads_total">Downloads Gesamt</span
               ><span id="st-dl-count" class="val">0</span>
             </div>
             <div class="stat-card">
-              <span class="lbl">Download Volumen</span
+              <span class="lbl" data-i18n="modals.dl_volume">Download Volumen</span
               ><span id="st-dl-gb" class="val">0 GB</span>
             </div>
             <div class="stat-card">
-              <span class="lbl">Download Dauer</span
+              <span class="lbl" data-i18n="modals.dl_duration">Download Dauer</span
               ><span id="st-dl-hours" class="val">0 Std</span>
             </div>
           </div>
         </div>
 
         <div class="card" style="margin-top: 0.85rem">
-          <div class="card-title">Konvertierungen &amp; Extremwerte</div>
+          <div class="card-title" data-i18n="modals.conv_extremes">Konvertierungen &amp; Extremwerte</div>
           <div class="grid-3" style="grid-template-columns: repeat(3, 1fr)">
             <div class="stat-card">
-              <span class="lbl">Konvertierungen</span
+              <span class="lbl" data-i18n="modals.conversions">Konvertierungen</span
               ><span id="st-conv-count" class="val">0</span>
             </div>
             <div class="stat-card">
-              <span class="lbl">Größte Datei</span
+              <span class="lbl" data-i18n="modals.biggest_file">Größte Datei</span
               ><span id="st-biggest" class="val u-fs-85" 
  >-</span
               >
             </div>
             <div class="stat-card">
-              <span class="lbl">Kleinstes Video</span
+              <span class="lbl" data-i18n="modals.smallest_video">Kleinstes Video</span
               ><span id="st-smallest" class="val u-fs-85" 
  >-</span
               >
             </div>
             <div class="stat-card">
-              <span class="lbl">Längstes Video</span
+              <span class="lbl" data-i18n="modals.longest_video">Längstes Video</span
               ><span id="st-longest" class="val u-fs-85" 
  >-</span
               >
             </div>
             <div class="stat-card">
-              <span class="lbl">Kürzestes Video</span
+              <span class="lbl" data-i18n="modals.shortest_video">Kürzestes Video</span
               ><span id="st-shortest" class="val u-fs-85" 
  >-</span
               >
             </div>
             <div class="stat-card">
-              <span class="lbl">Häufigste Endung</span
+              <span class="lbl" data-i18n="modals.common_ext">Häufigste Endung</span
               ><span id="st-common" class="val u-fs-95" 
  >-</span
               >
@@ -2301,7 +2337,7 @@
     <div id="media-modal" class="modal-overlay">
       <div class="modal-card">
         <div class="card-title">
-          <span>ffprobe Metadaten</span>
+          <span data-i18n="modals.ffprobe_metadata">ffprobe Metadaten</span>
           <button
             onclick="closeModal('media-modal')"
             class="btn btn-secondary btn-sm"
@@ -2321,7 +2357,7 @@
     <div id="player-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 800px">
         <div class="card-title">
-          <span id="player-modal-title">Vorschau</span>
+          <span id="player-modal-title" data-i18n="modals.preview_title">Vorschau</span>
           <button onclick="closePlayerModal()" class="btn btn-secondary btn-sm">
             ✕
           </button>
@@ -2345,7 +2381,7 @@
     <div id="tags-editor-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 480px">
         <div class="card-title">
-          <span>Metadaten bearbeiten</span>
+          <span data-i18n="tags.edit_title">Metadaten bearbeiten</span>
           <button
             onclick="closeModal('tags-editor-modal')"
             class="btn btn-secondary btn-sm"
@@ -2364,39 +2400,41 @@
             id="tags-editor-filename"
           ></div>
           <div>
-            <label for="tags-edit-title">Titel:</label>
-            <input type="text" id="tags-edit-title" placeholder="Songtitel" />
+            <label for="tags-edit-title" data-i18n="tags.title_label">Titel:</label>
+            <input type="text" id="tags-edit-title" placeholder="Songtitel" data-i18n-placeholder="tags.title_ph" />
           </div>
           <div class="grid-2">
             <div>
-              <label for="tags-edit-artist">Künstler:</label>
-              <input type="text" id="tags-edit-artist" placeholder="Künstler" />
+              <label for="tags-edit-artist" data-i18n="tags.artist_label">Künstler:</label>
+              <input type="text" id="tags-edit-artist" placeholder="Künstler" data-i18n-placeholder="tags.artist_ph" />
             </div>
             <div>
-              <label for="tags-edit-album">Album:</label>
-              <input type="text" id="tags-edit-album" placeholder="Album" />
+              <label for="tags-edit-album" data-i18n="tags.album_label">Album:</label>
+              <input type="text" id="tags-edit-album" placeholder="Album" data-i18n-placeholder="tags.album_ph" />
             </div>
           </div>
           <div class="grid-2">
             <div>
-              <label for="tags-edit-date">Jahr:</label>
-              <input type="text" id="tags-edit-date" placeholder="2026" />
+              <label for="tags-edit-date" data-i18n="tags.year_label">Jahr:</label>
+              <input type="text" id="tags-edit-date" placeholder="2026" data-i18n-placeholder="tags.year_ph" />
             </div>
             <div>
-              <label for="tags-edit-genre">Genre:</label>
+              <label for="tags-edit-genre" data-i18n="tags.genre_label">Genre:</label>
               <input
                 type="text"
                 id="tags-edit-genre"
                 placeholder="z. B. Podcast"
+                data-i18n-placeholder="tags.genre_ph"
               />
             </div>
           </div>
           <div>
-            <label for="tags-edit-comment">Kommentar:</label>
+            <label for="tags-edit-comment" data-i18n="tags.comment_label">Kommentar:</label>
             <input
               type="text"
               id="tags-edit-comment"
               placeholder="Optionale Notiz"
+              data-i18n-placeholder="tags.comment_ph"
             />
           </div>
           <button
@@ -2404,6 +2442,7 @@
             class="btn btn-primary btn-full"
             id="btn-save-tags"
             style="margin-top: 0.4rem"
+            data-i18n="common.save"
           >
             Speichern
           </button>
@@ -2417,7 +2456,7 @@
         style="max-width: 760px; max-height: 90vh; overflow-y: auto"
       >
         <div class="card-title">
-          <span id="pipeline-editor-title">Neue Pipeline</span>
+          <span id="pipeline-editor-title" data-i18n="pipelines.modal_new_title">Neue Pipeline</span>
           <button
             onclick="closeModal('pipeline-editor-modal')"
             class="btn btn-secondary btn-sm"
@@ -2427,19 +2466,21 @@
         </div>
         <div class="u-col-gap-08">
           <div>
-            <label for="pl-edit-name">Name:</label>
+            <label for="pl-edit-name" data-i18n="pipelines.modal_name_label">Name:</label>
             <input
               type="text"
               id="pl-edit-name"
               placeholder="z. B. Download + Transkript"
+              data-i18n-placeholder="pipelines.modal_name_ph"
             />
           </div>
           <div>
-            <label for="pl-edit-desc">Beschreibung (optional):</label>
+            <label for="pl-edit-desc" data-i18n="pipelines.modal_desc_label">Beschreibung (optional):</label>
             <input
               type="text"
               id="pl-edit-desc"
               placeholder="Kurze Notiz, wofür diese Pipeline ist"
+              data-i18n-placeholder="pipelines.modal_desc_ph"
             />
           </div>
 
@@ -2450,6 +2491,7 @@
             onclick="addPipelineStageRow()"
             class="btn btn-secondary"
             style="align-self: flex-start"
+            data-i18n="pipelines.add_stage"
           >
             + Stufe hinzufügen
           </button>
@@ -2465,10 +2507,11 @@
             <button
               onclick="closeModal('pipeline-editor-modal')"
               class="btn btn-secondary"
+              data-i18n="common.cancel"
             >
               Abbrechen
             </button>
-            <button onclick="savePipelineFromEditor()" class="btn btn-primary">
+            <button onclick="savePipelineFromEditor()" class="btn btn-primary" data-i18n="common.save">
               Speichern
             </button>
           </div>
@@ -2479,7 +2522,7 @@
     <div id="subscription-editor-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 560px">
         <div class="card-title">
-          <span id="subscription-editor-title">Neues Abonnement</span>
+          <span id="subscription-editor-title" data-i18n="subscriptions.modal_new_title">Neues Abonnement</span>
           <button
             onclick="closeModal('subscription-editor-modal')"
             class="btn btn-secondary btn-sm"
@@ -2489,42 +2532,44 @@
         </div>
         <div class="u-col-gap-08">
           <div>
-            <label for="sub-edit-name">Name (auch Ordnername):</label>
+            <label for="sub-edit-name" data-i18n="subscriptions.modal_name_label">Name (auch Ordnername):</label>
             <input
               type="text"
               id="sub-edit-name"
               placeholder="z. B. Mein Lieblingskanal"
+              data-i18n-placeholder="subscriptions.modal_name_ph"
             />
           </div>
           <div>
-            <label for="sub-edit-url">Kanal- oder Playlist-URL:</label>
+            <label for="sub-edit-url" data-i18n="subscriptions.modal_url_label">Kanal- oder Playlist-URL:</label>
             <input
               type="text"
               id="sub-edit-url"
               placeholder="https://www.youtube.com/@kanalname"
+              data-i18n-placeholder="subscriptions.modal_url_ph"
             />
           </div>
           <div class="grid-2">
             <div>
-              <label for="sub-edit-type">Typ:</label>
+              <label for="sub-edit-type" data-i18n="subscriptions.type_label">Typ:</label>
               <select id="sub-edit-type" onchange="onSubscriptionTypeChange()">
-                <option value="video">Video</option>
-                <option value="audio">Nur Audio</option>
+                <option value="video" data-i18n="subscriptions.type_video">Video</option>
+                <option value="audio" data-i18n="subscriptions.type_audio">Nur Audio</option>
               </select>
             </div>
             <div>
-              <label for="sub-edit-quality" id="sub-edit-quality-label">Qualität:</label>
+              <label for="sub-edit-quality" id="sub-edit-quality-label" data-i18n="subscriptions.quality_label">Qualität:</label>
               <select id="sub-edit-quality"></select>
             </div>
           </div>
           <div class="grid-2">
             <div>
-              <label for="sub-edit-container">Container:</label>
+              <label for="sub-edit-container" data-i18n="subscriptions.container_label">Container:</label>
               <select id="sub-edit-container"></select>
             </div>
           </div>
           <div>
-            <label>Prüfintervall:</label>
+            <label data-i18n="subscriptions.interval_label">Prüfintervall:</label>
             <div class="u-row-gap-05">
               <input
  type="number"
@@ -2532,25 +2577,25 @@
  value="6"
  min="1" class="u-flex-1" />
               <select id="sub-edit-interval-unit" class="u-flex-1">
-                <option value="1">Minute(n)</option>
-                <option value="60" selected>Stunde(n)</option>
-                <option value="1440">Tag(e)</option>
+                <option value="1" data-i18n="subscriptions.unit_minutes">Minute(n)</option>
+                <option value="60" selected data-i18n="subscriptions.unit_hours">Stunde(n)</option>
+                <option value="1440" data-i18n="subscriptions.unit_days">Tag(e)</option>
               </select>
             </div>
           </div>
           <div>
-            <label for="sub-edit-max-items">Max. neue Videos pro Prüfung:</label>
+            <label for="sub-edit-max-items" data-i18n="subscriptions.max_items_label">Max. neue Videos pro Prüfung:</label>
             <input type="number" id="sub-edit-max-items" value="25" min="1" max="200" />
-            <span class="settings-hint"
+            <span class="settings-hint" data-i18n="subscriptions.max_items_hint"
               >Sicherheitslimit, falls beim ersten Check sehr viele
               "neue" Videos gefunden werden (z.B. großer bestehender
               Kanal).</span
             >
           </div>
           <div id="sub-edit-backfill-row">
-            <label for="sub-edit-backfill">Bestehende Videos zusätzlich laden:</label>
+            <label for="sub-edit-backfill" data-i18n="subscriptions.backfill_label">Bestehende Videos zusätzlich laden:</label>
             <input type="number" id="sub-edit-backfill" value="0" min="0" max="200" />
-            <span class="settings-hint"
+            <span class="settings-hint" data-i18n="subscriptions.backfill_hint"
               >0 = nur ab jetzt neu erscheinende Videos laden. Bei einer Zahl
               &gt; 0 werden beim Anlegen zusätzlich die letzten N bestehenden
               Videos des Kanals heruntergeladen.</span
@@ -2560,7 +2605,7 @@
  class="toggle-row u-row-between-center"
  
  >
-            <label class="u-mb0">Aktiv</label>
+            <label class="u-mb0" data-i18n="subscriptions.active_label">Aktiv</label>
             <label class="switch">
               <input type="checkbox" id="sub-edit-enabled" checked />
               <span class="slider-toggle"></span>
@@ -2577,12 +2622,14 @@
             <button
               onclick="closeModal('subscription-editor-modal')"
               class="btn btn-secondary"
+              data-i18n="common.cancel"
             >
               Abbrechen
             </button>
             <button
               onclick="saveSubscriptionFromEditor()"
               class="btn btn-primary"
+              data-i18n="common.save"
             >
               Speichern
             </button>
@@ -2666,7 +2713,7 @@
                   border: 1px solid var(--line);
                   color: var(--ink-dim);
                 "
-                title="Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen"
+                title="Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen" data-i18n-title="settings.config_badge_tooltip"
                 >–</span
               >
             </div>

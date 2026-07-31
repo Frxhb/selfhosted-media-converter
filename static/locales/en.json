@@ -7,7 +7,8 @@
     "tooltip_theme": "Toggle Theme",
     "tooltip_stats": "Statistics",
     "tooltip_settings": "Settings",
-    "tooltip_reset": "Reset UI & Queue"
+    "tooltip_reset": "Reset UI & Queue",
+    "tooltip_connection": "Server connection"
   },
   "nav": {
     "overview": "Overview",
@@ -16,7 +17,8 @@
     "ai_suite": "AI Suite",
     "output": "Output",
     "pipelines": "Pipelines",
-    "subscriptions": "Subscriptions"
+    "subscriptions": "Subscriptions",
+    "automation": "Automation"
   },
   "dashboard": {
     "active_jobs": "Active Jobs",
@@ -41,7 +43,9 @@
     "add": "+ Add",
     "upload_label": "Upload new file (to /media/inputs):",
     "click_or_drag": "Click or drag file here",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "preview_title": "View preview",
+    "info_title": "ffprobe media info"
   },
   "downloader": {
     "ytdlp_tab": "yt-dlp (Video & Audio)",
@@ -205,7 +209,9 @@
     "table_type": "Type",
     "table_size": "Size",
     "table_date": "Date",
-    "loading": "Loading media library..."
+    "loading": "Loading media library...",
+    "refresh_btn": "Refresh",
+    "loading_text": "Loading media library..."
   },
   "pipelines": {
     "title": "Pipelines",
@@ -365,7 +371,9 @@
     "restore_btn": "Restore Backup",
     "priority_hint_low": "Protects the system & other services the most. Jobs run slower, the web UI always stays snappy.",
     "priority_hint_below_normal": "Good middle ground (default). Jobs run promptly without noticeably slowing down the interface.",
-    "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers."
+    "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers.",
+    "config_badge_tooltip": "Shows whether these values come from saved settings or from .env defaults",
+    "disk_warning": "Only {free} GB free on /media/outputs. New jobs will be blocked once the value drops below {threshold} GB. Delete files you no longer need in the library."
   },
   "modals": {
     "playlist_detected": "Playlist Detected",
@@ -390,7 +398,22 @@
     "proc_vol": "Processed Volume",
     "total_dur": "Total Duration",
     "success_rate": "Success Rate",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "confirm_full_playlist_btn": "Yes, load full playlist",
+    "load_selected_btn": "Load selected",
+    "downloads_total": "Total Downloads",
+    "dl_volume": "Download Volume",
+    "dl_duration": "Download Duration",
+    "conv_extremes": "Conversions & Extremes",
+    "conversions": "Conversions",
+    "biggest_file": "Biggest File",
+    "smallest_video": "Smallest Video",
+    "longest_video": "Longest Video",
+    "shortest_video": "Shortest Video",
+    "common_ext": "Most Common Extension",
+    "ffprobe_metadata": "ffprobe Metadata",
+    "preview_title": "Preview",
+    "hours_unit": "h"
   },
   "common": {
     "save": "Save",
@@ -619,5 +642,20 @@
     "lang_it": "Italian (it)",
     "lang_manual": "Manual...",
     "lang_manual_placeholder": "e.g. de, en, it"
+  },
+  "tags": {
+    "edit_title": "Edit Metadata",
+    "title_label": "Title:",
+    "title_ph": "Song Title",
+    "artist_label": "Artist:",
+    "artist_ph": "Artist",
+    "album_label": "Album:",
+    "album_ph": "Album",
+    "year_label": "Year:",
+    "year_ph": "2026",
+    "genre_label": "Genre:",
+    "genre_ph": "e.g. Podcast",
+    "comment_label": "Comment:",
+    "comment_ph": "Optional note"
   }
 }

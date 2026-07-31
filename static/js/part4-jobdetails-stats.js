@@ -166,14 +166,14 @@ async function fetchYtDlpInfo() {
           document.getElementById("st-total-gb").textContent =
             `${s.total_gb} GB`;
           document.getElementById("st-total-hours").textContent =
-            `${s.total_hours} Std`;
+            `${s.total_hours} ${t("modals.hours_unit")}`;
           document.getElementById("st-rate").textContent = `${s.success_rate}%`;
 
           document.getElementById("st-dl-count").textContent = s.downloads;
           document.getElementById("st-dl-gb").textContent =
             `${s.download_gb} GB`;
           document.getElementById("st-dl-hours").textContent =
-            `${s.download_hours} Std`;
+            `${s.download_hours} ${t("modals.hours_unit")}`;
           document.getElementById("st-conv-count").textContent = s.conversions;
         } catch (e) {}
       }
@@ -197,7 +197,7 @@ async function fetchYtDlpInfo() {
         const isLow = freeGb < threshold || pct >= 95;
 
         if (isLow) {
-          text.textContent = `Nur noch ${freeGb.toFixed(1)} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter ${threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek.`;
+          text.textContent = t("settings.disk_warning").replace("{free}", freeGb.toFixed(1)).replace("{threshold}", threshold);
           banner.style.display = "flex";
         } else {
           banner.style.display = "none";
