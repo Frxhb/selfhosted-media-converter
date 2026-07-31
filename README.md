@@ -1,6 +1,6 @@
 # Media Converter
 
-Disclaimer: Vibe-coding project. The web UI is currently German-only — an English version is planned.
+Disclaimer: Vibe-coding project. 
 
 <p align="center">
   <img src="pictures/banner.svg" alt="Media Converter Banner" width="100%">
