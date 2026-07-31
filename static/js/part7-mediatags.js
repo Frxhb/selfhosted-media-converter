@@ -76,7 +76,7 @@ async function openTagsEditor(relPath) {
       /* ---------- PIPELINES ---------- */
       const STAGE_TYPES = {
         download: {
-          label: t("pipeline_stage.stage_download"),
+          get label() { return t("pipeline_stage.stage_download"); },
           tool: "yt-dlp",
           defaults: {
             mode: "video",
@@ -171,7 +171,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         audio: {
-          label: t("pipeline_stage.stage_audio"),
+          get label() { return t("pipeline_stage.stage_audio"); },
           tool: "ffmpeg",
           defaults: { format: "mp3", bitrate: "192k", volume: "none" },
           describe: (s) => `${s.format.toUpperCase()} · ${s.bitrate}`,
@@ -224,7 +224,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         video: {
-          label: t("pipeline_stage.stage_video"),
+          get label() { return t("pipeline_stage.stage_video"); },
           tool: "ffmpeg",
           defaults: {
             container: "mp4",
@@ -282,7 +282,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         image: {
-          label: t("pipeline_stage.stage_image"),
+          get label() { return t("pipeline_stage.stage_image"); },
           tool: "ffmpeg",
           defaults: { format: "jpg", resolution: "orig" },
           describe: (s) =>
@@ -331,7 +331,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         thumbnail: {
-          label: t("pipeline_stage.stage_thumbnail"),
+          get label() { return t("pipeline_stage.stage_thumbnail"); },
           tool: "ffmpeg",
           defaults: { timestamp: "00:00:05" },
           describe: (s) => t("pipeline_stage.desc_thumbnail_at").replace("{timestamp}", s.timestamp),
@@ -364,7 +364,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         speed: {
-          label: t("pipeline_stage.stage_speed"),
+          get label() { return t("pipeline_stage.stage_speed"); },
           tool: "ffmpeg",
           defaults: { factor: "1.5" },
           describe: (s) => `${s.factor}x`,
@@ -400,7 +400,7 @@ async function openTagsEditor(relPath) {
                 `,
         },
         whisper: {
-          label: t("pipeline_stage.stage_whisper"),
+          get label() { return t("pipeline_stage.stage_whisper"); },
           tool: "whisper",
           defaults: {
             model: "base",
