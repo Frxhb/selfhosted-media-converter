@@ -179,7 +179,7 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         const job = clientJobs[jobId];
         if (job) {
           job.status = "cancelled";
-          job.eta = "Abgebrochen";
+          job.eta = t("label.cancelled");
           appendLog(
             `[Client-FFmpeg] Job ${jobId} (${job.title}) manuell abgebrochen.`,
           );
@@ -234,7 +234,7 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
           );
 
           await ffmpegWasm.load({ coreURL, wasmURL });
-          appendLog("[WASM] ✅ Client FFmpeg einsatzbereit!");
+          appendLog(`[WASM] ${t("label.wasm_ready")}`);
         } catch (e) {
           appendLog(`[WASM ERROR] ${e.message}`);
         }
@@ -246,10 +246,9 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
 
       /* ---------- PRIORITY SLIDER ---------- */
       const PRIORITY_HINTS = {
-        low: "Schont System & andere Dienste am meiste. Jobs laufen langsamer, Web-UI bleibt immer flott.",
-        below_normal:
-          "Guter Mittelweg (Standard). Jobs laufen zügig, ohne die Oberfläche spürbar zu bremsen.",
-        high: "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen.",
+        low: t("settings.priority_hint_low"),
+        below_normal: t("settings.priority_hint_below_normal"),
+        high: t("settings.priority_hint_high"),
       };
       const PRIORITY_SLOT_INDEX = { low: 0, below_normal: 1, high: 2 };
 
@@ -319,11 +318,11 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         if (btn) {
           btn.innerHTML = themeIcons[mode];
           const labels = {
-            dark: "Dunkel",
-            light: "Hell",
-            system: "Systemeinstellung",
+            dark: t("label.theme_dark"),
+            light: t("label.theme_light"),
+            system: t("label.theme_system"),
           };
-          btn.title = `Design: ${labels[mode]} (klicken zum Wechseln)`;
+          btn.title = t("label.theme_toggle_hint").replace("{mode}", labels[mode]);
         }
       }
 
@@ -369,10 +368,10 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         el.classList.add(state);
         label.textContent =
           state === "busy"
-            ? "ÜBERLASTET"
+            ? t("label.overloaded")
             : state === "online"
-              ? "ONLINE"
-              : "OFFLINE";
+              ? t("app.status_online")
+              : t("app.status_offline");
       }
 
       const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
@@ -509,10 +508,10 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
       async function copyLogToClipboard() {
         const consoleEl = document.getElementById("log-console");
         const text = consoleEl ? consoleEl.textContent : "";
-        if (!text) return showToast("Log ist leer.", "warn");
+        if (!text) return showToast(t("toast.log_empty"), "warn");
         try {
           await navigator.clipboard.writeText(text);
-          showToast("Log in Zwischenablage kopiert.", "success");
+          showToast(t("toast.log_copied"), "success");
         } catch (e) {
           try {
             const ta = document.createElement("textarea");
@@ -523,9 +522,9 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
             ta.select();
             document.execCommand("copy");
             document.body.removeChild(ta);
-            showToast("Log in Zwischenablage kopiert.", "success");
+            showToast(t("toast.log_copied"), "success");
           } catch (e2) {
-            showToast("Kopieren nicht möglich in diesem Browser.", "warn");
+            showToast(t("toast.copy_not_supported"), "warn");
           }
         }
       }
@@ -547,7 +546,7 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
 
         const toast = document.createElement("div");
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span class="toast-msg"></span><button class="toast-close" aria-label="Schließen">✕</button>`;
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span class="toast-msg"></span><button class="toast-close" aria-label="${t('common.close')}">✕</button>`;
         toast.querySelector(".toast-msg").textContent = message;
         toast.querySelector(".toast-close").onclick = () => dismissToast(toast);
 

@@ -228,9 +228,9 @@
             body: JSON.stringify({ order: newOrder }),
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          showToast("Warteschlange neu sortiert.", "success", 2200);
+          showToast(t("toast.queue_resorted"), "success", 2200);
         } catch (e) {
-          showToast("Sortierung konnte nicht gespeichert werden.", "warn");
+          showToast(t("toast.sort_save_failed"), "warn");
           loadJobs();
         }
       }
@@ -245,10 +245,10 @@
             throw new Error(err.detail || `HTTP ${res.status}`);
           }
           const job = await res.json();
-          showToast(`Job "${job.title}" wird erneut versucht.`, "success");
+          showToast(t("toast.job_retrying").replace("{title}", job.title), "success");
           loadJobs();
         } catch (e) {
-          showToast("Wiederholen fehlgeschlagen: " + e.message, "warn");
+          showToast(t("toast.retry_failed") + e.message, "warn");
         }
       }
 
@@ -291,13 +291,13 @@
             throw new Error(err.detail || `HTTP ${res.status}`);
           }
         } catch (e) {
-          showToast("Abbrechen fehlgeschlagen: " + e.message, "warn");
+          showToast(t("toast.cancel_failed") + e.message, "warn");
         }
         loadJobs();
       }
 
       async function cancelAllJobs() {
-        if (!confirm("Möchtest du wirklich alle aktiven und wartenden Jobs abbrechen?")) return;
+        if (!confirm(t("confirm.cancel_all_jobs"))) return;
         try {
           const res = await fetch("/api/jobs/cancel-all", { method: "POST" });
           if (!res.ok) {
@@ -305,9 +305,9 @@
             throw new Error(err.detail || `HTTP ${res.status}`);
           }
           const data = await res.json();
-          showToast(`${data.count || 0} Jobs wurden abgebrochen.`, "info");
+          showToast(t("toast.jobs_cancelled").replace("{count}", data.count || 0), "info");
         } catch (e) {
-          showToast("Abbrechen fehlgeschlagen: " + e.message, "warn");
+          showToast(t("toast.cancel_failed") + e.message, "warn");
         }
         loadJobs();
       }

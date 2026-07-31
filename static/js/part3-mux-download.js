@@ -12,7 +12,7 @@ function tokenizeCliFlags(str) {
         const videoPath = document.getElementById("m-video-select").value;
         const audioPath = document.getElementById("m-audio-select").value;
         if (!videoPath || !audioPath)
-          return showToast("Bitte Video- und Audiodatei wählen.", "warn");
+          return showToast(t("toast.select_video_audio_file"), "warn");
 
         const videoName = videoPath
           .split("/")
@@ -50,7 +50,7 @@ function tokenizeCliFlags(str) {
       function submitWhisperJob() {
         const filePath = document.getElementById("sp-whisper-file").value;
         if (!filePath)
-          return showToast("Bitte zuerst eine Datei wählen.", "warn");
+          return showToast(t("toast.select_file_first"), "warn");
 
         const model = document.getElementById("sp-whisper-model").value;
         const fmt = document.getElementById("sp-whisper-fmt").value;
@@ -138,25 +138,22 @@ function tokenizeCliFlags(str) {
         if (engine === "gallerydl") {
           if (ytdlpOpts) ytdlpOpts.style.display = "none";
           if (gallerydlOpts) gallerydlOpts.style.display = "flex";
-          if (urlLabel) urlLabel.textContent = "Galerie / Bild URL:";
+          if (urlLabel) urlLabel.textContent = t("downloader.gallery_url_label");
           if (urlInput)
-            urlInput.placeholder =
-              "https://www.instagram.com/p/... oder https://... (Instagram, Pinterest, Reddit, Wiki...)";
+            urlInput.placeholder = t("downloader.gallery_url_ph");
           if (batchTextarea)
-            batchTextarea.placeholder =
-              "https://www.instagram.com/p/...\nhttps://www.pinterest.com/pin/...";
+            batchTextarea.placeholder = t("downloader.batch_gallery_ph");
           if (fetchBtn) fetchBtn.style.display = "none";
           if (searchSection) searchSection.style.display = "none";
           updateGalleryDlPreview();
         } else {
           if (gallerydlOpts) gallerydlOpts.style.display = "none";
           if (ytdlpOpts) ytdlpOpts.style.display = "flex";
-          if (urlLabel) urlLabel.textContent = "Video / Playlist URL:";
+          if (urlLabel) urlLabel.textContent = t("downloader.url_label");
           if (urlInput)
-            urlInput.placeholder = "https://www.youtube.com/watch?v=...";
+            urlInput.placeholder = t("downloader.url_placeholder");
           if (batchTextarea)
-            batchTextarea.placeholder =
-              "https://youtube.com/watch?v=1\nhttps://youtube.com/watch?v=2";
+            batchTextarea.placeholder = t("downloader.batch_ph");
           if (fetchBtn) fetchBtn.style.display = "inline-block";
           if (searchSection) searchSection.style.display = "block";
           if (typeof updateYtdlpPreview === "function") updateYtdlpPreview();
@@ -256,7 +253,7 @@ function tokenizeCliFlags(str) {
 
         if (activeDlSubTab === "single") {
           const url = sanitizeUrl(document.getElementById("d-url").value);
-          if (!url) return showToast("Bitte URL eingeben.", "warn");
+          if (!url) return showToast(t("toast.enter_url"), "warn");
 
           if (url.includes("list=") || url.includes("playlist?")) {
             pendingDownloadContext = { baseArgs, targetUrl: url };
@@ -269,7 +266,7 @@ function tokenizeCliFlags(str) {
           const rawPreview =
             document.getElementById("d-info-title")?.textContent || "";
           if (rawPreview.trim() === "-" || !rawPreview.trim()) {
-            showToast("Hole Video-Informationen...", "info", 2000);
+            showToast(t("toast.fetching_video_info"), "info", 2000);
             try {
               // WICHTIG: Auch hier die Sprache an den Backend-Endpunkt übergeben!
               const infoRes = await fetch(
@@ -330,7 +327,7 @@ function tokenizeCliFlags(str) {
 
             if (links.length > 1) {
               showToast(
-                `${links.length} Links werden nacheinander gestartet...`,
+                t("toast.starting_links").replace("{count}", links.length),
                 "info",
                 3000,
               );
@@ -361,10 +358,7 @@ function tokenizeCliFlags(str) {
               }
             }
           } else {
-            showToast(
-              "Bitte eine .txt Datei hochladen/wählen oder Links einfügen.",
-              "warn",
-            );
+            showToast(t("toast.upload_or_select_txt_or_paste"), "warn");
           }
         }
       }
@@ -394,7 +388,7 @@ function tokenizeCliFlags(str) {
         if (activeDlSubTab === "single") {
           const rawUrl = document.getElementById("d-url").value;
           const url = preprocessGalleryUrl(sanitizeUrl(rawUrl));
-          if (!url) return showToast("Bitte URL eingeben.", "warn");
+          if (!url) return showToast(t("toast.enter_url"), "warn");
           const shortUrl = url.length > 35 ? url.slice(0, 35) + "…" : url;
 
           clearDuplicateWarning();
@@ -427,7 +421,7 @@ function tokenizeCliFlags(str) {
 
             if (links.length > 1) {
               showToast(
-                `${links.length} Gallery-Links werden nacheinander gestartet...`,
+                t("toast.starting_gallery_links").replace("{count}", links.length),
                 "info",
                 3000,
               );
@@ -449,10 +443,7 @@ function tokenizeCliFlags(str) {
               }
             }
           } else {
-            showToast(
-              "Bitte eine .txt Datei hochladen/wählen oder Links einfügen.",
-              "warn",
-            );
+            showToast(t("toast.upload_or_select_txt_or_paste"), "warn");
           }
         }
       }
@@ -530,15 +521,15 @@ function tokenizeCliFlags(str) {
       async function searchYtDlpByTitle() {
         const query = document.getElementById("d-search-query").value.trim();
         const resultsContainer = document.getElementById("d-search-results");
-        if (!query) return showToast("Bitte einen Suchbegriff eingeben.", "warn");
+        if (!query) return showToast(t("downloader.toast_enter_query"), "warn");
 
         const btn = document.getElementById("d-search-btn");
         const originalText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Suche...";
+        btn.textContent = t("downloader.searching");
         resultsContainer.style.display = "flex";
         resultsContainer.innerHTML =
-          '<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin:0.5rem 0;">Suche läuft...</p>';
+          `<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin:0.5rem 0;">${t("downloader.search_running")}</p>`;
         clearDuplicateWarning();
 
         try {
@@ -550,13 +541,13 @@ function tokenizeCliFlags(str) {
           );
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.detail || "Suche fehlgeschlagen.");
+            throw new Error(err.detail || t("toast.search_failed"));
           }
           const items = await res.json();
 
           if (items.length === 0) {
             resultsContainer.innerHTML =
-              '<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin:0.5rem 0;">Keine Ergebnisse gefunden.</p>';
+              `<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin:0.5rem 0;">${t("downloader.no_results")}</p>`;
             return;
           }
 
@@ -587,7 +578,7 @@ function tokenizeCliFlags(str) {
         document.getElementById("d-url").value = url;
         document.getElementById("d-search-results").style.display = "none";
         document.getElementById("d-search-query").value = "";
-        showToast(`Ausgewählt: ${title}`, "success");
+        showToast(t("toast.selected_title").replace("{title}", title), "success");
         
         // WICHTIG: Vorschau & GUI updaten, da JavaScript-Wertänderungen kein "oninput" auslösen
         if (typeof updateYtdlpPreview === "function") updateYtdlpPreview();
@@ -614,7 +605,7 @@ function tokenizeCliFlags(str) {
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             throw new Error(
-              err.detail || "Fehler beim Abrufen der Playlist-Einträge",
+              err.detail || t("toast.playlist_fetch_error"),
             );
           }
           const items = await res.json();
@@ -650,7 +641,7 @@ function tokenizeCliFlags(str) {
         if (!pendingDownloadContext) return;
         const checked = document.querySelectorAll(".pl-item-check:checked");
         if (checked.length === 0)
-          return showToast("Bitte wähle mindestens ein Video aus.", "warn");
+          return showToast(t("toast.select_at_least_one_video"), "warn");
 
         const selectedIndices = Array.from(checked)
           .map((cb) => cb.getAttribute("data-index"))
@@ -690,8 +681,8 @@ function tokenizeCliFlags(str) {
         if (extractedTitles.length > minVisible) {
           expandBtn.style.display = "inline-flex";
           expandBtn.textContent = expanded
-            ? "Weniger anzeigen"
-            : `Alle ${extractedTitles.length} anzeigen`;
+            ? t("label.expand_less")
+            : t("label.expand_all_count").replace("{count}", extractedTitles.length);
         } else {
           expandBtn.style.display = "none";
         }
@@ -724,7 +715,7 @@ function tokenizeCliFlags(str) {
         }
 
         const processingMode =
-          job.id && job.id.startsWith("local_") ? "Client (WASM)" : "Server";
+          job.id && job.id.startsWith("local_") ? t("label.mode_client_wasm") : t("label.mode_server");
 
         document.getElementById("job-details-meta").innerHTML = `
                 <strong>ID:</strong> ${job.id} | <strong>Modus:</strong> ${processingMode} | <strong>Tool:</strong> ${job.tool} | <strong>Status:</strong> ${job.status.toUpperCase()} | <strong>Fortschritt:</strong> ${job.progress}%${plInfo}
@@ -765,14 +756,14 @@ function tokenizeCliFlags(str) {
 
         if (extractedTitles.length > 0) {
           if (headerEl)
-            headerEl.textContent = "Extrahierte / heruntergeladene Titel:";
+            headerEl.textContent = t("modals.extracted_tracks");
           renderJobDetailsFiles(extractedTitles, MIN_VISIBLE_TITLES);
         } else if (job.current_item_title) {
-          if (headerEl) headerEl.textContent = "Aktuell ladender Titel:";
+          if (headerEl) headerEl.textContent = t("label.current_loading_title");
           expandBtn.style.display = "none";
           filesContainer.innerHTML = `<div class="queue-item"><span style="font-weight:700;">🎵 ${escapeHtml(job.current_item_title)}</span></div>`;
         } else {
-          if (headerEl) headerEl.textContent = "Verarbeitete Datei:";
+          if (headerEl) headerEl.textContent = t("label.processed_file");
           expandBtn.style.display = "none";
           filesContainer.innerHTML = `<div class="queue-item"><span style="font-weight:700;">📄 ${escapeHtml(job.title)}</span></div>`;
         }
@@ -780,6 +771,6 @@ function tokenizeCliFlags(str) {
         document.getElementById("job-details-logs").textContent =
           job.logs && job.logs.length > 0
             ? job.logs.join("\n")
-            : "Keine Log-Einträge vorhanden.";
+            : t("toast.no_log_entries");
         openModal("job-details-modal");
       }

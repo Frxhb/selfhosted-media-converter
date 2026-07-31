@@ -1,6 +1,6 @@
 async function fetchYtDlpInfo() {
         const url = sanitizeUrl(document.getElementById("d-url").value);
-        if (!url) return showToast("Bitte URL eingeben.", "warn");
+        if (!url) return showToast(t("toast.enter_url"), "warn");
 
         const btn = document.getElementById("d-fetch-btn");
         btn.disabled = true;
@@ -18,11 +18,11 @@ async function fetchYtDlpInfo() {
           
           const info = await res.json();
           document.getElementById("d-info-title").textContent =
-            info.title || "Unbekannt";
+            info.title || t("label.unknown");
           document.getElementById("d-info-uploader").textContent =
-            info.uploader || "Unbekannt";
+            info.uploader || t("label.unknown");
           document.getElementById("d-info-duration").textContent =
-            info.duration || "Unbekannt";
+            info.duration || t("label.unknown");
           document.getElementById("d-info-thumb").src = info.thumbnail || "";
           document.getElementById("d-info-preview").style.display = "flex";
 
@@ -32,7 +32,7 @@ async function fetchYtDlpInfo() {
           showToast(e.message, "warn");
         } finally {
           btn.disabled = false;
-          btn.textContent = "🔍 Fetch Info";
+          btn.textContent = `🔍 ${t("downloader.fetch_info")}`;
         }
       }
 
@@ -206,7 +206,7 @@ async function fetchYtDlpInfo() {
       }
 
       async function resetStatsDatabase() {
-        if (!confirm("Alle Statistiken zurücksetzen?")) return;
+        if (!confirm(t("confirm.reset_stats"))) return;
         await fetch("/api/stats/reset", { method: "POST" });
         fetchStats();
         closeModal("settings-modal");
@@ -277,10 +277,10 @@ async function fetchYtDlpInfo() {
                     <div class="lib-title-cell">
                         <span class="lib-title-text" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</span>
                         <div class="lib-actions-row">
-                            ${isPlayable ? `<button onclick="playMediaPreview('${encPath}', '${encCat}', '${encName}')" class="btn btn-secondary btn-sm" title="Abspielen">▶️</button>` : ""}
-                            ${isPlayable ? `<button onclick="openTagsEditor('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-secondary btn-sm" title="Metadaten bearbeiten">🏷️</button>` : ""}
-                            <a href="/api/files/download/${encodeURIComponent(f.rel_path)}" download class="btn btn-secondary btn-sm" title="Herunterladen">💾</a>
-                            <button onclick="deleteOutputFile('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-danger btn-sm" title="Löschen">
+                            ${isPlayable ? `<button onclick="playMediaPreview('${encPath}', '${encCat}', '${encName}')" class="btn btn-secondary btn-sm" title="${t('label.play')}">▶️</button>` : ""}
+                            ${isPlayable ? `<button onclick="openTagsEditor('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-secondary btn-sm" title="${t('label.edit_metadata')}">🏷️</button>` : ""}
+                            <a href="/api/files/download/${encodeURIComponent(f.rel_path)}" download class="btn btn-secondary btn-sm" title="${t('label.download')}">💾</a>
+                            <button onclick="deleteOutputFile('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-danger btn-sm" title="${t('common.delete')}">
                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                             </button>
                         </div>
@@ -328,7 +328,7 @@ async function fetchYtDlpInfo() {
       function previewInputFile() {
         const select = document.getElementById("global-file-select");
         const path = select.value;
-        if (!path) return showToast("Wähle zuerst eine Datei aus.", "warn");
+        if (!path) return showToast(t("toast.choose_file_first"), "warn");
 
         const name = path.split("/").pop();
         const ext = name.split(".").pop().toLowerCase();
@@ -365,10 +365,10 @@ async function fetchYtDlpInfo() {
 
         if (zipBtn)
           zipBtn.textContent =
-            count > 0 ? `${count} Ausgewählte als ZIP` : "Ausgewählte als ZIP";
+            count > 0 ? `${count} ${t("library.bulk_zip")}` : t("library.bulk_zip");
         if (delBtn)
           delBtn.textContent =
-            count > 0 ? `${count} Ausgewählte löschen` : "Ausgewählte löschen";
+            count > 0 ? `${count} ${t("library.bulk_delete")}` : t("library.bulk_delete");
       }
 
       function toggleSelectAllLibraryItems(checked) {
@@ -381,10 +381,10 @@ async function fetchYtDlpInfo() {
       async function deleteBulk() {
         const checks = document.querySelectorAll(".lib-file-check:checked");
         if (checks.length === 0)
-          return showToast("Bitte wähle Dateien aus.", "warn");
+          return showToast(t("toast.select_files"), "warn");
         if (
           !confirm(
-            `Wirklich ${checks.length} Datei(en) unwiderruflich löschen?`,
+            t("confirm.delete_files_count").replace("{count}", checks.length),
           )
         )
           return;
@@ -428,11 +428,11 @@ async function fetchYtDlpInfo() {
       async function downloadBulkZip() {
         const checks = document.querySelectorAll(".lib-file-check:checked");
         if (checks.length === 0)
-          return showToast("Bitte wähle Dateien aus.", "warn");
+          return showToast(t("toast.select_files"), "warn");
 
         const btn = document.getElementById("btn-bulk-zip");
         const originalText = btn.textContent;
-        btn.textContent = "⏳ Erstelle ZIP...";
+        btn.textContent = t("label.creating_zip");
         btn.disabled = true;
 
         const selectedFiles = Array.from(checks).map((c) =>
@@ -445,7 +445,7 @@ async function fetchYtDlpInfo() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(selectedFiles),
           });
-          if (!res.ok) throw new Error("ZIP Fehlschlag");
+          if (!res.ok) throw new Error(t("label.zip_creation_failed"));
           const blob = await res.blob();
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
@@ -465,7 +465,7 @@ async function fetchYtDlpInfo() {
       async function deleteOutputFile(relPath) {
         if (
           !confirm(
-            `"${relPath}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`,
+            t("confirm.delete_file_named").replace("{name}", relPath),
           )
         )
           return;
@@ -480,7 +480,7 @@ async function fetchYtDlpInfo() {
           }
           await refreshOutputFiles();
         } catch (e) {
-          alert("Löschen fehlgeschlagen: " + e.message);
+          alert(t("toast.delete_failed_detail") + e.message);
         }
       }
 

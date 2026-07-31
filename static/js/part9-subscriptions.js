@@ -6,16 +6,16 @@ let subscriptionsCache = [];
           const res = await fetch("/api/subscriptions");
           subscriptionsCache = await res.json();
         } catch (e) {
-          showToast("Abonnements konnten nicht geladen werden.", "warn");
+          showToast(t("toast.subs_load_failed"), "warn");
           subscriptionsCache = [];
         }
         renderSubscriptionList();
       }
 
       function formatSubscriptionInterval(minutes) {
-        if (minutes % 1440 === 0) return `Every ${minutes / 1440} day(s)`;
-        if (minutes % 60 === 0) return `Every ${minutes / 60} hour(s)`;
-        return `Every ${minutes} min.`;
+        if (minutes % 1440 === 0) return t("subscriptions.interval_days").replace("{n}", minutes / 1440);
+        if (minutes % 60 === 0) return t("subscriptions.interval_hours").replace("{n}", minutes / 60);
+        return t("subscriptions.interval_minutes").replace("{n}", minutes);
       }
 
       function formatSubscriptionLastCheck(sub) {
@@ -28,7 +28,7 @@ let subscriptionsCache = [];
           minute: "2-digit",
         });
         if (sub.last_check_status === "error") {
-          return `⚠️ Error during last check (${date})`;
+          return t("subscriptions.error_last_check").replace("{date}", date);
         }
         return `${t('subscriptions.last_checked', 'Zuletzt geprüft:')} ${date} · ${sub.last_check_new_count} ${t('subscriptions.new_count', 'neu')}`;
       }
@@ -144,8 +144,8 @@ let subscriptionsCache = [];
       async function saveSubscriptionFromEditor() {
         const name = document.getElementById("sub-edit-name").value.trim();
         const url = document.getElementById("sub-edit-url").value.trim();
-        if (!name) return showToast("Bitte einen Namen angeben.", "warn");
-        if (!url) return showToast("Bitte eine URL angeben.", "warn");
+        if (!name) return showToast(t("toast.name_required"), "warn");
+        if (!url) return showToast(t("toast.url_required"), "warn");
 
         const intervalValue = parseInt(
           document.getElementById("sub-edit-interval-value").value,
@@ -156,14 +156,11 @@ let subscriptionsCache = [];
           10,
         );
         if (!intervalValue || intervalValue < 1) {
-          return showToast("Bitte ein gültiges Prüfintervall angeben.", "warn");
+          return showToast(t("toast.interval_invalid"), "warn");
         }
         const checkIntervalMinutes = intervalValue * intervalUnit;
         if (checkIntervalMinutes < 5) {
-          return showToast(
-            "Prüfintervall muss mindestens 5 Minuten betragen.",
-            "warn",
-          );
+          return showToast(t("toast.interval_min_5"), "warn");
         }
 
         const payload = {
@@ -197,80 +194,80 @@ let subscriptionsCache = [];
           );
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            showToast(err.detail || "Speichern fehlgeschlagen.", "warn");
+            showToast(err.detail || t("toast.save_failed_generic"), "warn");
             return;
           }
-          showToast("Abonnement gespeichert.", "success");
+          showToast(t("toast.sub_saved"), "success");
           closeModal("subscription-editor-modal");
           refreshSubscriptions();
         } catch (e) {
-          showToast("Fehler beim Speichern des Abonnements.", "warn");
+          showToast(t("toast.sub_save_failed"), "warn");
         }
       }
 
       async function deleteSubscription(subId) {
-        if (!confirm("Dieses Abonnement wirklich löschen? Bereits heruntergeladene Videos bleiben erhalten.")) return;
+        if (!confirm(t("confirm.delete_subscription"))) return;
         try {
           const res = await fetch(`/api/subscriptions/${subId}`, {
             method: "DELETE",
           });
           if (!res.ok) {
-            showToast("Löschen fehlgeschlagen.", "warn");
+            showToast(t("toast.delete_failed"), "warn");
             return;
           }
-          showToast("Abonnement gelöscht.", "success");
+          showToast(t("toast.sub_deleted"), "success");
           refreshSubscriptions();
         } catch (e) {
-          showToast("Fehler beim Löschen.", "warn");
+          showToast(t("toast.delete_error"), "warn");
         }
       }
 
       async function checkSubscriptionNow(subId) {
-        showToast("Prüfe auf neue Videos...", "info");
+        showToast(t("toast.checking_new_videos"), "info");
         try {
           const res = await fetch(`/api/subscriptions/${subId}/check-now`, {
             method: "POST",
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) {
-            showToast(data.detail || "Prüfung fehlgeschlagen.", "warn");
+            showToast(data.detail || t("toast.check_failed_generic"), "warn");
             return;
           }
           if (data.status === "error") {
-            showToast(`Fehler bei der Prüfung: ${data.detail}`, "warn", 7000);
+            showToast(t("toast.check_error_detail").replace("{detail}", data.detail), "warn", 7000);
           } else if (data.status === "skipped") {
-            showToast("Eine Prüfung läuft bereits.", "info");
+            showToast(t("toast.check_already_running"), "info");
           } else if (data.seeded !== undefined) {
             showToast(
-              `Erster Check: ${data.seeded} bestehende Video(s) als bekannt markiert (kein Download). Ab jetzt werden nur neue Uploads geladen.`,
+              t("toast.seed_result").replace("{count}", data.seeded),
               "info",
               8000,
             );
           } else {
             showToast(
               data.queued > 0
-                ? `${data.queued} neue(s) Video(s) werden heruntergeladen.`
-                : "Keine neuen Videos gefunden.",
+                ? t("toast.new_videos_downloading").replace("{count}", data.queued)
+                : t("toast.no_new_videos"),
               "success",
             );
           }
           refreshSubscriptions();
         } catch (e) {
-          showToast("Fehler bei der Prüfung.", "warn");
+          showToast(t("toast.check_error"), "warn");
         }
       }
 
       async function checkAllSubscriptionsNow() {
         if (subscriptionsCache.length === 0) {
-          return showToast("Keine Abonnements vorhanden.", "warn");
+          return showToast(t("toast.no_subs"), "warn");
         }
         const enabledSubs = subscriptionsCache.filter((s) => s.enabled);
         if (enabledSubs.length === 0) {
-          return showToast("Keine aktiven Abonnements vorhanden.", "warn");
+          return showToast(t("toast.no_active_subs"), "warn");
         }
 
         showToast(
-          `Prüfe ${enabledSubs.length} Abonnement(s)...`,
+          t("toast.checking_subs_count").replace("{count}", enabledSubs.length),
           "info",
           3000,
         );
@@ -302,15 +299,15 @@ let subscriptionsCache = [];
 
         if (totalErrors > 0) {
           showToast(
-            `Prüfung abgeschlossen: ${totalQueued} neue(s) Video(s), ${totalErrors} Fehler.`,
+            t("toast.check_complete").replace("{queued}", totalQueued).replace("{errors}", totalErrors),
             "warn",
             6000,
           );
         } else {
           showToast(
             totalQueued > 0
-              ? `Prüfung abgeschlossen: ${totalQueued} neue(s) Video(s) werden heruntergeladen.`
-              : "Prüfung abgeschlossen: keine neuen Videos gefunden.",
+              ? t("toast.check_complete_success").replace("{count}", totalQueued)
+              : t("toast.check_complete_none"),
             "success",
           );
         }

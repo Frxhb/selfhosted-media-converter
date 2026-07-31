@@ -22,9 +22,9 @@ function dismissToast(toast) {
             document.execCommand("copy");
             document.body.removeChild(ta);
           }
-          showToast("Befehl in Zwischenablage kopiert.", "success", 2200);
+          showToast(t("toast.cmd_copied"), "success", 2200);
         } catch (e) {
-          showToast("Kopieren fehlgeschlagen.", "warn");
+          showToast(t("toast.copy_failed"), "warn");
         }
       }
 
@@ -196,7 +196,7 @@ function dismissToast(toast) {
       async function submitVideoJob() {
         const files = tabQueues["video"];
         if (files.length === 0)
-          return showToast("Die Video-Warteschlange ist leer.", "warn");
+          return showToast(t("toast.video_queue_empty"), "warn");
 
         if (useClientFFmpeg) {
           const fallbackServerFiles = [];
@@ -209,7 +209,7 @@ function dismissToast(toast) {
               title: f.name,
               status: "running",
               progress: 0.0,
-              eta: "Prüfe Codec...",
+              eta: t("label.checking_codec"),
             };
             renderJobsCombined();
 
@@ -291,7 +291,7 @@ function dismissToast(toast) {
           ?.value.trim();
 
         if (files.length > 1) {
-          showToast(`${files.length} Video-Job(s) werden gestartet...`, "info", 2500);
+          showToast(t("toast.starting_video_jobs").replace("{count}", files.length), "info", 2500);
         }
 
         for (let idx = 0; idx < files.length; idx++) {
@@ -330,7 +330,7 @@ function dismissToast(toast) {
       async function submitAudioJob() {
         const files = tabQueues["audio"];
         if (files.length === 0)
-          return showToast("Die Audio-Warteschlange ist leer.", "warn");
+          return showToast(t("toast.audio_queue_empty"), "warn");
 
         const fmt = document.getElementById("a-format").value;
         const bitrate = document.getElementById("a-bitrate").value;
@@ -340,7 +340,7 @@ function dismissToast(toast) {
           ?.value.trim();
 
         if (files.length > 1) {
-          showToast(`${files.length} Audio-Job(s) werden gestartet...`, "info", 2500);
+          showToast(t("toast.starting_audio_jobs").replace("{count}", files.length), "info", 2500);
         }
 
         for (let idx = 0; idx < files.length; idx++) {
@@ -386,10 +386,7 @@ function dismissToast(toast) {
           const select = document.getElementById("global-file-select");
           const filePath = select.value;
           if (!filePath)
-            return showToast(
-              "Bitte eine Datei im File Import Manager auswählen oder zur Warteschlange hinzufügen.",
-              "warn",
-            );
+            return showToast(t("toast.select_file_import_manager"), "warn");
           const fileName = filePath.split("/").pop();
           filesToProcess.push({ name: fileName, path: filePath });
         }
@@ -463,10 +460,7 @@ function dismissToast(toast) {
           const select = document.getElementById("global-file-select");
           const filePath = select.value;
           if (!filePath)
-            return showToast(
-              "Bitte eine Datei im File Import Manager auswählen oder zur Warteschlange hinzufügen.",
-              "warn",
-            );
+            return showToast(t("toast.select_file_import_manager"), "warn");
           const fileName = filePath.split("/").pop();
           filesToProcess.push({ name: fileName, path: filePath });
         }
@@ -512,7 +506,7 @@ function dismissToast(toast) {
       function submitImageJob() {
         const files = tabQueues["images"];
         if (files.length === 0)
-          return showToast("Die Bild-Warteschlange ist leer.", "warn");
+          return showToast(t("toast.image_queue_empty"), "warn");
 
         const fmt = document.getElementById("i-format").value;
         const res = document.getElementById("i-res").value;

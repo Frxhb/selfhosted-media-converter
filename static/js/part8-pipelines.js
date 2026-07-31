@@ -3,7 +3,7 @@
           const res = await fetch("/api/pipelines");
           pipelinesCache = await res.json();
         } catch (e) {
-          showToast("Pipelines konnten nicht geladen werden.", "warn");
+          showToast(t("toast.pipelines_load_failed"), "warn");
           pipelinesCache = [];
         }
         if (outputLibraryFiles.length === 0) {
@@ -108,8 +108,8 @@
         if (!pipelineId || !inputValue) {
           showToast(
             isDownloadStart
-              ? "Bitte Pipeline und URL angeben."
-              : "Bitte Pipeline und Eingabedatei wählen.",
+              ? t("toast.select_pipeline_and_url")
+              : t("toast.select_pipeline_and_file"),
             "warn",
           );
           return;
@@ -128,7 +128,7 @@
 
         // Falls es eine Download-Pipeline ist und kein Titel vorhanden ist: Automatisch ermitteln
         if (isDownloadStart && !extractedTitle) {
-          showToast("Hole Video-Titel für Pipeline...", "info", 3000);
+          showToast(t("toast.fetching_pipeline_titles"), "info", 3000);
           try {
             const infoRes = await fetch(
               `/api/ytdlp-info?url=${encodeURIComponent(inputValue)}`,
@@ -161,16 +161,16 @@
           if (!res.ok) {
             const err = await res.json();
             showToast(
-              err.detail || "Pipeline konnte nicht gestartet werden.",
+              err.detail || t("toast.pipeline_could_not_start"),
               "warn",
             );
             return;
           }
-          showToast("Pipeline gestartet.", "success");
+          showToast(t("toast.pipeline_started"), "success");
           if (isDownloadStart) document.getElementById("pl-run-url").value = "";
           loadJobs();
         } catch (e) {
-          showToast("Fehler beim Starten der Pipeline.", "warn");
+          showToast(t("toast.pipeline_start_failed"), "warn");
         }
       }
 
@@ -227,7 +227,7 @@
 
       function removePipelineStageRow(index) {
         if (pipelineEditorStages.length <= 1) {
-          showToast("Eine Pipeline benötigt mindestens eine Stufe.", "warn");
+          showToast(t("toast.pipeline_needs_stage"), "warn");
           return;
         }
         pipelineEditorStages.splice(index, 1);
@@ -323,11 +323,11 @@
       async function savePipelineFromEditor() {
         const name = document.getElementById("pl-edit-name").value.trim();
         if (!name) {
-          showToast("Bitte einen Namen für die Pipeline angeben.", "warn");
+          showToast(t("toast.pipeline_name_required"), "warn");
           return;
         }
         if (pipelineEditorStages.length === 0) {
-          showToast("Mindestens eine Stufe wird benötigt.", "warn");
+          showToast(t("toast.pipeline_stage_required"), "warn");
           return;
         }
 
@@ -365,30 +365,30 @@
           );
           if (!res.ok) {
             const err = await res.json();
-            showToast(err.detail || "Speichern fehlgeschlagen.", "warn");
+            showToast(err.detail || t("toast.save_failed_generic"), "warn");
             return;
           }
-          showToast("Pipeline gespeichert.", "success");
+          showToast(t("toast.pipeline_saved"), "success");
           closeModal("pipeline-editor-modal");
           refreshPipelines();
         } catch (e) {
-          showToast("Fehler beim Speichern der Pipeline.", "warn");
+          showToast(t("toast.pipeline_save_failed"), "warn");
         }
       }
 
       async function deletePipeline(pipelineId) {
-        if (!confirm("Diese Pipeline wirklich löschen?")) return;
+        if (!confirm(t("confirm.delete_pipeline"))) return;
         try {
           const res = await fetch(`/api/pipelines/${pipelineId}`, {
             method: "DELETE",
           });
           if (!res.ok) {
-            showToast("Löschen fehlgeschlagen.", "warn");
+            showToast(t("toast.delete_failed"), "warn");
             return;
           }
-          showToast("Pipeline gelöscht.", "success");
+          showToast(t("toast.pipeline_deleted"), "success");
           refreshPipelines();
         } catch (e) {
-          showToast("Fehler beim Löschen.", "warn");
+          showToast(t("toast.delete_error"), "warn");
         }
       }

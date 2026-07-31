@@ -13,7 +13,7 @@ function removeFromTabQueue(tab, index) {
       async function addSelectedFileToActiveQueue() {
         const select = document.getElementById("global-file-select");
         const path = select.value;
-        if (!path) return showToast("Wähle eine Datei aus.", "warn");
+        if (!path) return showToast(t("toast.select_a_file"), "warn");
 
         // Bestimme den erwarteten Typ für den aktuellen Tab
         let expectedType = "video"; // Default
@@ -21,7 +21,7 @@ function removeFromTabQueue(tab, index) {
         if (activeConvSubTab === "images") expectedType = "image";
         if (activeConvSubTab === "tools") expectedType = "tools";
 
-        showToast("Prüfe Datei-Integrität...", "info", 1500);
+        showToast(t("toast.checking_file_integrity"), "info", 1500);
 
         // Strikte Validierung
         const isValid = await validateFileStrict(path, expectedType);
@@ -29,7 +29,7 @@ function removeFromTabQueue(tab, index) {
         if (!isValid) {
           // Hier geben wir dem User die Info, dass es am Format liegt
           showToast(
-            `⚠️ Datei abgelehnt: Datei ist kein valider ${expectedType.toUpperCase()}-Typ oder beschädigt.`,
+            t("toast.file_rejected").replace("{type}", expectedType.toUpperCase()),
             "danger",
             6000,
           );
@@ -50,7 +50,7 @@ function removeFromTabQueue(tab, index) {
           path: path,
           size_mb: "",
         });
-        showToast("Datei hinzugefügt.", "success");
+        showToast(t("toast.file_added"), "success");
       }
 
       let currentUploadXhr = null;
@@ -79,7 +79,7 @@ function removeFromTabQueue(tab, index) {
         fill.style.width = "0%";
         fill.className = "meter-fill";
         statusText.style.color = "var(--ink-dim)";
-        statusText.textContent = `Starte Upload (${fileSizeMb} MB)...`;
+        statusText.textContent = t("label.upload_starting").replace("{size}", fileSizeMb);
 
         const formData = new FormData();
         formData.append("file", file);
@@ -94,7 +94,7 @@ function removeFromTabQueue(tab, index) {
             const pct = Math.round((e.loaded / e.total) * 100);
             const loadedMb = (e.loaded / (1024 * 1024)).toFixed(2);
             fill.style.width = `${pct}%`;
-            statusText.textContent = `Upload läuft: ${pct}% (${loadedMb} / ${fileSizeMb} MB)`;
+            statusText.textContent = t("label.upload_progress").replace("{pct}", pct).replace("{loaded}", loadedMb).replace("{total}", fileSizeMb);
           }
         };
 
@@ -103,8 +103,8 @@ function removeFromTabQueue(tab, index) {
           if (cancelBtn) cancelBtn.style.display = "none";
           fill.classList.add("warn-fill");
           statusText.style.color = "var(--warn)";
-          statusText.textContent = "⚠️ Upload abgebrochen.";
-          showToast("Upload abgebrochen.", "info");
+          statusText.textContent = t("label.upload_cancelled_icon");
+          showToast(t("toast.upload_cancelled"), "info");
 
           setTimeout(() => {
             wrapper.style.display = "none";
@@ -121,8 +121,8 @@ function removeFromTabQueue(tab, index) {
           if (xhr.status === 200) {
             fill.style.width = "100%";
             fill.classList.add("ok-fill");
-            statusText.textContent = "✅ Upload erfolgreich!";
-            showToast(`Datei "${file.name}" hochgeladen.`, "success");
+            statusText.textContent = t("label.upload_success_icon");
+            showToast(t("toast.file_uploaded").replace("{name}", file.name), "success");
 
             const res = JSON.parse(xhr.responseText);
             await refreshFiles();
@@ -148,7 +148,7 @@ function removeFromTabQueue(tab, index) {
             fill.classList.add("danger-fill");
             statusText.style.color = "var(--danger)";
             statusText.textContent = `❌ ${errDetail}`;
-            showToast(`Upload fehlgeschlagen: ${errDetail}`, "warn", 7000);
+            showToast(t("toast.upload_failed").replace("{detail}", errDetail), "warn", 7000);
 
             setTimeout(() => {
               wrapper.style.display = "none";
@@ -162,8 +162,8 @@ function removeFromTabQueue(tab, index) {
           if (cancelBtn) cancelBtn.style.display = "none";
           fill.classList.add("danger-fill");
           statusText.style.color = "var(--danger)";
-          statusText.textContent = "❌ Netzwerkfehler beim Upload.";
-          showToast("Netzwerkfehler beim Upload.", "warn");
+          statusText.textContent = t("label.network_error_icon");
+          showToast(t("toast.network_error_upload"), "warn");
         };
 
         xhr.send(formData);
@@ -213,7 +213,7 @@ function removeFromTabQueue(tab, index) {
         await fetchStats();
         await loadJobs();
 
-        showToast("UI & Warteschlange zurückgesetzt.", "success", 2000);
+        showToast(t("toast.ui_queue_reset"), "success", 2000);
       }
 
       async function refreshFiles() {
@@ -278,8 +278,8 @@ function removeFromTabQueue(tab, index) {
 
           refreshOutputFiles();
         } catch (e) {
-          console.error("Fehler beim Laden der Dateien:", e);
-          showToast("Fehler beim Laden der Dateiliste.", "warn");
+          console.error("Error loading files:", e);
+          showToast(t("toast.error_loading_file_list"), "warn");
         }
       }
 
@@ -305,7 +305,7 @@ function removeFromTabQueue(tab, index) {
               .map((m) => `• ${m.title} (${m.size_mb} MB)`)
               .join("\n");
             const proceed = confirm(
-              `Möglicherweise bereits verarbeitet - ähnliche Datei(en) in der Historie gefunden:\n\n${names}\n\nTrotzdem fortfahren?`,
+              t("confirm.similar_files_found").replace("{names}", names),
             );
             if (!proceed) return;
           }
@@ -327,24 +327,24 @@ function removeFromTabQueue(tab, index) {
               detail.includes("Ein identischer Job") &&
               !force
             ) {
-              if (confirm(`${detail}\n\nTrotzdem erneut starten?`)) {
+              if (confirm(t("confirm.job_failed_retry").replace("{detail}", detail))) {
                 return submitJob(payload, true);
               }
               return;
             }
-            showToast(`Job nicht gestartet: ${detail}`, "warn", 7000);
+            showToast(t("toast.job_not_started").replace("{detail}", detail), "warn", 7000);
             appendLog(
-              `[FEHLER] Job "${payload.title || payload.job_type}" nicht gestartet: ${detail}`,
+              `[${t("label.tag_error")}] ${t("label.log_job_not_started").replace("{title}", payload.title || payload.job_type).replace("{detail}", detail)}`,
             );
             return;
           }
 
           const job = await res.json();
-          appendLog(`[SYSTEM] Job ${job.id} gestartet.`);
-          showToast(`Job "${job.title}" gestartet.`, "success");
+          appendLog(`[SYSTEM] ${t("label.system_job_started").replace("{id}", job.id)}`);
+          showToast(t("toast.job_started").replace("{title}", job.title), "success");
           loadJobs();
         } catch (e) {
-          showToast("Fehler: " + e.message, "warn");
+          showToast(t("toast.error_prefix") + e.message, "warn");
         }
       }
 
@@ -384,13 +384,11 @@ function removeFromTabQueue(tab, index) {
           const badge = document.getElementById("config-source-badge");
           if (badge) {
             if (cfg.config_source === "saved") {
-              badge.textContent = "Gespeicherte Einstellungen aktiv";
-              badge.title =
-                "Diese Werte kommen aus der gespeicherten Konfiguration und überschreiben .env bei jedem Start.";
+              badge.textContent = t("label.saved_settings_active");
+              badge.title = t("label.saved_settings_active_hint");
             } else {
-              badge.textContent = ".env Defaults (noch nicht gespeichert)";
-              badge.title =
-                "Noch keine gespeicherte Konfiguration vorhanden - diese Werte stammen aus der .env. Sobald du speicherst, gewinnt ab dann immer die gespeicherte Version, auch nach Neustarts.";
+              badge.textContent = t("label.env_defaults_not_saved");
+              badge.title = t("label.env_defaults_hint");
             }
           }
 
@@ -443,7 +441,7 @@ function removeFromTabQueue(tab, index) {
         const btn = document.getElementById("btn-save-settings");
         const originalText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Speichere...";
+        btn.textContent = t("label.saving");
 
         try {
           const res = await fetch("/api/config", {
@@ -455,18 +453,18 @@ function removeFromTabQueue(tab, index) {
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             throw new Error(
-              err.detail || `Fehler beim Speichern (HTTP ${res.status})`,
+              err.detail || t("toast.save_error_http").replace("{status}", res.status),
             );
           }
 
           configuredMinDiskGb = payload.min_free_disk_gb;
           configuredConfirmPlaylist = payload.confirm_full_playlist_downloads;
 
-          showToast("Einstellungen gespeichert.", "success");
+          showToast(t("toast.settings_saved"), "success");
           closeModal("settings-modal");
         } catch (e) {
           showToast(
-            "Einstellungen konnten nicht gespeichert werden: " + e.message,
+            t("toast.settings_save_failed") + e.message,
             "warn",
             7000,
           );
@@ -479,14 +477,14 @@ function removeFromTabQueue(tab, index) {
       async function loadYtDlpVersion() {
         const el = document.getElementById("ytdlp-version-display");
         if (!el) return;
-        el.textContent = "wird geladen...";
+        el.textContent = t("label.loading_ellipsis");
         try {
           const res = await fetch("/api/system/ytdlp-version");
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          el.textContent = data.version || "unbekannt";
+          el.textContent = data.version || t("label.unknown");
         } catch (e) {
-          el.textContent = "Fehler: " + e.message;
+          el.textContent = t("toast.error_prefix") + e.message;
         }
       }
 
@@ -494,7 +492,7 @@ function removeFromTabQueue(tab, index) {
         const btn = document.getElementById("btn-ytdlp-update");
         const originalText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Prüfe & aktualisiere...";
+        btn.textContent = t("label.checking_updating");
         try {
           const res = await fetch("/api/system/ytdlp-update", {
             method: "POST",
@@ -502,13 +500,13 @@ function removeFromTabQueue(tab, index) {
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
           document.getElementById("ytdlp-version-display").textContent =
-            data.version || "unbekannt";
+            data.version || t("label.unknown");
           showToast(
-            `yt-dlp aktualisiert: ${data.version || ""}`.trim(),
+            t("toast.ytdlp_updated").replace("{version}", data.version || "").trim(),
             "success",
           );
         } catch (e) {
-          showToast("yt-dlp Update fehlgeschlagen: " + e.message, "warn", 7000);
+          showToast(t("toast.ytdlp_update_failed") + e.message, "warn", 7000);
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
@@ -519,11 +517,7 @@ function removeFromTabQueue(tab, index) {
         const input = document.getElementById("config-restore-input");
         const file = input.files[0];
         if (!file) return;
-        if (
-          !confirm(
-            "Aktuelle Einstellungen und Job-Historie werden überschrieben. Fortfahren?",
-          )
-        ) {
+        if (!confirm(t("confirm.restore_overwrite"))) {
           input.value = "";
           return;
         }
@@ -539,7 +533,7 @@ function removeFromTabQueue(tab, index) {
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
           showToast(
-            data.detail || "Backup wiederhergestellt.",
+            data.detail || t("toast.backup_restored"),
             "success",
             7000,
           );
@@ -547,7 +541,7 @@ function removeFromTabQueue(tab, index) {
           fetchStats();
         } catch (e) {
           showToast(
-            "Wiederherstellung fehlgeschlagen: " + e.message,
+            t("toast.restore_failed") + e.message,
             "warn",
             7000,
           );
@@ -572,17 +566,17 @@ function removeFromTabQueue(tab, index) {
                   hour: "2-digit",
                   minute: "2-digit",
                 })
-              : "unbekannt";
-            textEl.textContent = `✅ Aktiv (hochgeladen am ${uploaded})`;
+              : t("label.unknown");
+            textEl.textContent = t("label.cookies_active").replace("{date}", uploaded);
             textEl.style.color = "var(--ok)";
             if (delBtn) delBtn.style.display = "";
           } else {
-            textEl.textContent = "Keine Cookies hinterlegt.";
+            textEl.textContent = t("toast.no_cookies_stored");
             textEl.style.color = "var(--ink-dim)";
             if (delBtn) delBtn.style.display = "none";
           }
         } catch (e) {
-          textEl.textContent = "Status konnte nicht geladen werden.";
+          textEl.textContent = t("toast.cookies_status_load_failed");
           textEl.style.color = "var(--ink-dim)";
         }
       }
@@ -602,17 +596,17 @@ function removeFromTabQueue(tab, index) {
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
-          showToast("Cookies erfolgreich hinterlegt.", "success");
+          showToast(t("toast.cookies_uploaded"), "success");
           loadCookiesStatus();
         } catch (e) {
-          showToast("Cookies-Upload fehlgeschlagen: " + e.message, "warn", 7000);
+          showToast(t("toast.cookies_upload_failed") + e.message, "warn", 7000);
         } finally {
           input.value = "";
         }
       }
 
       async function deleteCookiesFile() {
-        if (!confirm("Hinterlegte Cookies wirklich entfernen? Downloads laufen danach ohne Anmeldung."))
+        if (!confirm(t("confirm.remove_cookies")))
           return;
         try {
           const res = await fetch("/api/config/cookies", { method: "DELETE" });
@@ -620,17 +614,17 @@ function removeFromTabQueue(tab, index) {
             const err = await res.json().catch(() => ({}));
             throw new Error(err.detail || `HTTP ${res.status}`);
           }
-          showToast("Cookies entfernt.", "success");
+          showToast(t("toast.cookies_removed"), "success");
           loadCookiesStatus();
         } catch (e) {
-          showToast("Entfernen fehlgeschlagen: " + e.message, "warn");
+          showToast(t("toast.remove_failed") + e.message, "warn");
         }
       }
 
       function openMediaInspector() {
         const select = document.getElementById("global-file-select");
         const input = select.value;
-        if (!input) return showToast("Wähle zuerst eine Datei aus.", "warn");
+        if (!input) return showToast(t("toast.choose_file_first"), "warn");
         fetch(`/api/media-info?file_path=${encodeURIComponent(input)}`)
           .then((r) => r.json())
           .then((d) => {
