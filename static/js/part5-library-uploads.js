@@ -202,6 +202,9 @@ function removeFromTabQueue(tab, index) {
         const previewEl = document.getElementById("d-info-preview");
         if (previewEl) previewEl.style.display = "none";
 
+        const liveCheckbox = document.getElementById("d-is-livestream");
+        if (liveCheckbox) liveCheckbox.checked = false;
+
         const libSelectAll = document.getElementById("lib-select-all");
         if (libSelectAll) {
           libSelectAll.checked = false;
