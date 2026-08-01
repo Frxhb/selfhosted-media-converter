@@ -356,6 +356,9 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         document.body.style.setProperty("--signal", color);
         document.body.style.setProperty("--signal-dim", color + "24");
         localStorage.setItem("mcp_accent", color);
+        document.querySelectorAll(".color-dot").forEach((dot) => {
+          dot.classList.toggle("active", dot.dataset.accent === color);
+        });
       }
       const savedAccent = localStorage.getItem("mcp_accent");
       if (savedAccent) setThemeAccent(savedAccent);
