@@ -175,7 +175,41 @@ async function fetchYtDlpInfo() {
           document.getElementById("st-dl-hours").textContent =
             `${s.download_hours} ${t("modals.hours_unit")}`;
           document.getElementById("st-conv-count").textContent = s.conversions;
-        } catch (e) {}
+
+          formatStatSizeEntry("st-biggest", s.biggest);
+          formatStatSizeEntry("st-smallest", s.smallest);
+          formatStatDurationEntry("st-longest", s.longest);
+          formatStatDurationEntry("st-shortest", s.shortest);
+
+          const commonEl = document.getElementById("st-common");
+          if (commonEl) {
+            commonEl.textContent = s.common_ext && s.common_ext !== "-" ? s.common_ext : "-";
+          }
+        } catch (e) {
+          console.error("fetchStats failed:", e);
+        }
+      }
+
+      function formatStatSizeEntry(elId, entry) {
+        const el = document.getElementById(elId);
+        if (!el || !entry) return;
+        if (!entry.name || entry.name === "-") {
+          el.textContent = "-";
+          return;
+        }
+        const mb = entry.val || 0;
+        const sizeText = mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${Math.round(mb)} MB`;
+        el.textContent = `${entry.name} (${sizeText})`;
+      }
+
+      function formatStatDurationEntry(elId, entry) {
+        const el = document.getElementById(elId);
+        if (!el || !entry) return;
+        if (!entry.name || entry.name === "-") {
+          el.textContent = "-";
+          return;
+        }
+        el.textContent = `${entry.name} (${entry.val} min)`;
       }
 
       function colorizeMeter(elId, pct) {
