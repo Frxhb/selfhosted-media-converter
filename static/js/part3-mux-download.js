@@ -291,7 +291,9 @@ function tokenizeCliFlags(str) {
             } catch (e) {}
           }
 
-          executeDownloadJob(baseArgs, url, ["--no-playlist"]);
+          const isLiveStream =
+            document.getElementById("d-is-livestream")?.checked || false;
+          executeDownloadJob(baseArgs, url, ["--no-playlist"], null, isLiveStream);
         } else {
           const isAudio = baseArgs.includes("-x");
           const batchOutputSubdir = isAudio ? "audio" : "videos";
@@ -448,23 +450,56 @@ function tokenizeCliFlags(str) {
         }
       }
 
+      function stripFlagWithValue(args, flagNames) {
+        const result = [];
+        for (let i = 0; i < args.length; i++) {
+          if (flagNames.includes(args[i])) {
+            i++; // skip this flag's value too
+            continue;
+          }
+          result.push(args[i]);
+        }
+        return result;
+      }
+
       function executeDownloadJob(
         baseArgs,
         targetUrl,
         extraFlags = [],
         customTitle = null,
+        isLiveStream = false,
       ) {
         clearDuplicateWarning();
         const isAudio = baseArgs.includes("-x");
         const outputSubdir = isAudio ? "audio" : "videos";
+        const filePrefix = isLiveStream ? "live_record_" : "";
+
+        let effectiveBaseArgs = baseArgs;
+        const liveFlags = isLiveStream
+          ? ["--hls-use-mpegts", "--no-part"]
+          : [];
+
+        if (isLiveStream && !isAudio) {
+          // Bei laufenden Livestreams darf es KEIN nachträgliches Merging von separaten
+          // Video-/Audio-Spuren geben: wird die Aufnahme mittendrin gestoppt, läuft dieser
+          // Merge-Schritt nie und die Datei bleibt unspielbar (falscher Container/MIME-Typ).
+          // Daher: vorhandene -f / --merge-output-format entfernen und stattdessen ein
+          // bereits fertig gemuxtes Einzel-Format ("b" = best, kein Merge nötig) erzwingen.
+          effectiveBaseArgs = stripFlagWithValue(baseArgs, [
+            "-f",
+            "--merge-output-format",
+          ]);
+          effectiveBaseArgs.push("-f", "b");
+        }
 
         let finalArgs = [
-          ...baseArgs,
+          ...effectiveBaseArgs,
           ...extraFlags,
+          ...liveFlags,
           "--paths",
           `temp:/tmp/ytdlp_staging`,
           "-o",
-          `/media/outputs/${outputSubdir}/%(title)s.%(ext)s`,
+          `/media/outputs/${outputSubdir}/${filePrefix}%(title)s.%(ext)s`,
           targetUrl,
         ];
 
@@ -475,14 +510,17 @@ function tokenizeCliFlags(str) {
         if (!jobTitle && previewTitle && previewTitle !== "-") {
           jobTitle = previewTitle;
         }
+        jobTitle = jobTitle || "Web Download";
+        if (isLiveStream) jobTitle = `${filePrefix}${jobTitle}`;
 
         submitJob({
           job_type: "download",
           tool: "yt-dlp",
-          title: jobTitle || "Web Download",
+          title: jobTitle,
           command_args: finalArgs,
           input_file: targetUrl,
           is_playlist: targetUrl.includes("list="),
+          is_live_stream: isLiveStream,
         });
       }
 

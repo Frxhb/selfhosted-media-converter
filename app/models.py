@@ -48,6 +48,9 @@ class Job(BaseModel):
     pipeline_stage_index: Optional[int] = None
     pipeline_stage_count: Optional[int] = None
     subscription_id: Optional[str] = None  # gesetzt, wenn dieser Job von einem Kanal-Abonnement automatisch angelegt wurde
+    is_live_stream: bool = False  # markiert einen laufenden yt-dlp Download als Livestream-Mitschnitt;
+                                    # erlaubt ein geordnetes Beenden (statt hartem Abbruch), das die bisher
+                                    # aufgezeichnete Datei als abgeschlossen speichert statt sie zu verwerfen
 
 class JobCreateRequest(BaseModel):
     job_type: JobType
@@ -59,6 +62,7 @@ class JobCreateRequest(BaseModel):
     output_file: Optional[str] = None
     is_playlist: bool = False
     subscription_id: Optional[str] = None
+    is_live_stream: bool = False
 
 class PipelineStage(BaseModel):
     """Eine einzelne Stufe innerhalb einer Pipeline. Referenziert denselben Job-Typ/Tool

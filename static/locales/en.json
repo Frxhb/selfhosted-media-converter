@@ -94,7 +94,9 @@
     "select_file_default": "-- Select file --",
     "select_video_default": "-- Select video --",
     "select_audio_default": "-- Select audio --",
-    "select_txt_default": "-- Select .txt file --"
+    "select_txt_default": "-- Select .txt file --",
+    "livestream_checkbox": "🔴 This is a livestream",
+    "livestream_hint": "Records the stream starting now. The filename begins with \"live_record_\". A button then appears in the job queue to gracefully stop the recording at any time and save everything captured so far."
   },
   "converter": {
     "video_tab": "Video",
@@ -308,7 +310,9 @@
     "live_output": "Live Output",
     "autoscroll": "Auto-Scroll",
     "copy_logs": "Copy",
-    "clear_logs": "Clear"
+    "clear_logs": "Clear",
+    "stop_live_btn": "Stop Recording",
+    "live_badge": "LIVE"
   },
   "logs": {
     "title": "Live Output",
@@ -549,7 +553,9 @@
     "no_new_videos": "No new videos found.",
     "check_complete_success": "Check complete: {count} new video(s) will be downloaded.",
     "check_complete_none": "Check complete: no new videos found.",
-    "delete_failed_detail": "Deletion failed: "
+    "delete_failed_detail": "Deletion failed: ",
+    "live_stopping": "Stopping recording, saving file...",
+    "live_stop_failed": "Could not stop recording: "
   },
   "confirm": {
     "reset_stats": "Reset all statistics?",

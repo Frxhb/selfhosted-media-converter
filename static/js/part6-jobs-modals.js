@@ -139,6 +139,11 @@
           playlistBadge = `<span style="font-size:0.6rem; background:var(--signal-dim); color:var(--signal); padding:0.1rem 0.35rem; border-radius:0.2rem; font-family:var(--font-mono); flex-shrink:0;">📋 ${idxText}</span>`;
         }
 
+        const isLiveRunning = j.is_live_stream && j.status === "running";
+        const liveBadge = j.is_live_stream
+          ? `<span style="font-size:0.6rem; background:#dc2626; color:#fff; padding:0.1rem 0.35rem; border-radius:0.2rem; font-family:var(--font-mono); flex-shrink:0;">🔴 ${t("queue.live_badge", "LIVE")}</span>`
+          : "";
+
         return `
                 <div class="job-card" data-job-id="${j.id}" ${draggable ? 'draggable="true"' : ""} style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 0.65rem; display: flex; flex-direction: column; gap: 0.35rem; ${draggable ? "cursor: grab;" : ""}; min-width: 0;">
                     <div style="display:flex; align-items:flex-start; gap: 0.4rem; min-width: 0;">
@@ -150,6 +155,7 @@
                         ${stageBadge}
                         ${modeBadge}
                         ${playlistBadge}
+                        ${liveBadge}
                         ${speedDisplay ? `<span id="speed-${j.id}" style="font-size:0.65rem; color:var(--signal); font-weight:700; font-family:var(--font-mono); flex-shrink:0;">${speedDisplay}</span>` : `<span id="speed-${j.id}" style="display:none;"></span>`}
                         ${retryBadge}
                     </div>
@@ -164,6 +170,7 @@
                         <div style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
                             <button onclick="openJobDetails('${j.id}')" class="btn btn-secondary btn-sm">${t('common.details', 'Details')}</button>
                             ${canRetry ? `<button onclick="retryJob('${j.id}')" class="btn btn-primary btn-sm">${t('common.retry', 'Wiederholen')}</button>` : ""}
+                            ${isLiveRunning ? `<button onclick="stopLiveRecording('${j.id}')" class="btn btn-primary btn-sm">⏹ ${t('queue.stop_live_btn', 'Aufnahme beenden')}</button>` : ""}
                             ${canCancel ? `<button onclick="${cancelFn}('${j.id}')" class="btn btn-danger btn-sm">${t('common.cancel', 'Abbrechen')}</button>` : ""}
                         </div>
                     </div>
@@ -281,6 +288,20 @@
             speedEl.style.display = "";
           }
         }
+      }
+
+      async function stopLiveRecording(jobId) {
+        try {
+          showToast(t("toast.live_stopping"), "info", 4000);
+          const res = await fetch(`/api/jobs/${jobId}/stop-live`, { method: "POST" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+        } catch (e) {
+          showToast(t("toast.live_stop_failed") + e.message, "warn");
+        }
+        loadJobs();
       }
 
       async function cancelJob(jobId) {

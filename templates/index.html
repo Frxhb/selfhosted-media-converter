@@ -15,10 +15,10 @@
     />
     <script src="/static/vendor/ffmpeg/ffmpeg.js" defer></script>
     <script src="/static/vendor/ffmpeg/util.js" defer></script>
-    <link rel="stylesheet" href="/static/css/base.css" />
-    <link rel="stylesheet" href="/static/css/layout.css" />
-    <link rel="stylesheet" href="/static/css/components.css" />
-    <link rel="stylesheet" href="/static/css/utilities.css" />
+    <link rel="stylesheet" href="/static/css/base.css?v={{ asset_version }}" />
+    <link rel="stylesheet" href="/static/css/layout.css?v={{ asset_version }}" />
+    <link rel="stylesheet" href="/static/css/components.css?v={{ asset_version }}" />
+    <link rel="stylesheet" href="/static/css/utilities.css?v={{ asset_version }}" />
   </head>
 
   <body>
@@ -708,6 +708,30 @@
                     Info abrufen
                   </button>
                 </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    margin-top: 0.5rem;
+                  "
+                >
+                  <input type="checkbox" id="d-is-livestream" style="width: auto; margin: 0;" />
+                  <label
+                    for="d-is-livestream"
+                    class="u-mb0"
+                    style="cursor: pointer; font-weight: 400"
+                    data-i18n="downloader.livestream_checkbox"
+                    >🔴 Dies ist ein Livestream</label
+                  >
+                </div>
+                <span
+                  class="settings-hint"
+                  data-i18n="downloader.livestream_hint"
+                  >Zeichnet den Stream ab jetzt auf. Der Dateiname beginnt mit "live_record_". In der
+                  Job-Warteschlange erscheint dann ein Button, um die Aufnahme jederzeit geordnet zu
+                  beenden und das bis dahin Aufgezeichnete zu speichern.</span
+                >
                 <div id="d-ytdlp-search-section">
                 <div
                   style="
@@ -784,7 +808,7 @@
                   align-items: center;
                 "
               >
-                <div style="display: flex; gap: 0.75rem; align-items: center">
+                <div style="display: flex; gap: 0.75rem; align-items: center; min-width: 0; width: 100%;">
                   <img
                     id="d-info-thumb"
                     src=""
@@ -798,7 +822,7 @@
                       flex-shrink: 0;
                     "
                   />
-                  <div style="min-width: 0">
+                  <div style="min-width: 0; flex: 1;">
                     <div
                       id="d-info-title"
                       style="
@@ -3097,16 +3121,16 @@
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
-    <script src="/static/js/i18n.js"></script>
-    <script src="/static/js/part0-config.js"></script>
-    <script src="/static/js/part1-core-utils.js"></script>
-    <script src="/static/js/part2-conversion-jobs.js"></script>
-    <script src="/static/js/part3-mux-download.js"></script>
-    <script src="/static/js/part4-jobdetails-stats.js"></script>
-    <script src="/static/js/part5-library-uploads.js"></script>
-    <script src="/static/js/part6-jobs-modals.js"></script>
-    <script src="/static/js/part7-mediatags.js"></script>
-    <script src="/static/js/part8-pipelines.js"></script>
-    <script src="/static/js/part9-subscriptions.js"></script>
+    <script src="/static/js/i18n.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part0-config.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part1-core-utils.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part2-conversion-jobs.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part3-mux-download.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part4-jobdetails-stats.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part5-library-uploads.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part6-jobs-modals.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part7-mediatags.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part8-pipelines.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part9-subscriptions.js?v={{ asset_version }}"></script>
   </body>
 </html>

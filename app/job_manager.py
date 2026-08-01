@@ -1,5 +1,6 @@
 import os
 import re
+import signal
 import asyncio
 import logging
 import urllib.request
@@ -13,6 +14,40 @@ from app.core import COOKIES_FILE_PATH, OUTPUT_DIR
 
 logger = logging.getLogger("JobManager")
 
+# Flags, die bei yt-dlp/gallery-dl beliebige Programme/Shell-Kommandos auf dem Host ausführen
+# oder Plugins von beliebigen Pfaden nachladen können. Da "Extra Flags" von Nutzern frei
+# eingegeben werden können (Downloader-Tab und Pipeline-Editor), werden diese Flags serverseitig
+# grundsätzlich blockiert - unabhängig davon, was das Frontend anzeigt oder validiert.
+_DANGEROUS_FLAGS_BY_TOOL = {
+    "yt-dlp": {
+        "--exec", "--exec-before-download",
+        "--external-downloader", "--external-downloader-args",
+        "--plugin-dirs", "--use-postprocessor",
+        "--postprocessor-args", "--ppa",
+    },
+    "gallery-dl": {
+        "--exec", "-e", "--postprocessor", "-p", "--pp",
+    },
+}
+
+
+class DangerousArgError(ValueError):
+    """Wird geworfen, wenn ein Kommando ein verbotenes Flag enthält (siehe _DANGEROUS_FLAGS_BY_TOOL)."""
+    pass
+
+
+def _find_dangerous_flag(tool: str, args: List[str]) -> Optional[str]:
+    banned = _DANGEROUS_FLAGS_BY_TOOL.get(tool)
+    if not banned:
+        return None
+    for a in args:
+        if not isinstance(a, str):
+            continue
+        token = a.split("=", 1)[0].strip().lower()
+        if token in banned:
+            return a
+    return None
+
 class JobManager:
     def __init__(self):
         self.jobs: Dict[str, Job] = {}
@@ -25,6 +60,8 @@ class JobManager:
         self.min_free_disk_gb = float(os.getenv("MIN_FREE_DISK_GB", 2.0))
         self.prevent_output_overwrite = os.getenv("PREVENT_OUTPUT_OVERWRITE", "true").lower() == "true"
         self.running_processes: Dict[str, asyncio.subprocess.Process] = {}
+        self.live_stop_requested: Set[str] = set()  # Job-IDs, deren Livestream-Aufnahme gerade
+                                                       # geordnet beendet wird (siehe stop_live_recording)
         self.active_websockets: Set[WebSocket] = set()
         self.workers: List[asyncio.Task] = []
         self.max_auto_retries = 2  # total attempts = 1 + this
@@ -100,7 +137,7 @@ class JobManager:
         logger.info(f"JobManager gestartet ({self.max_concurrent_jobs} Workers).")
 
     @staticmethod
-    def _sanitize_args(args: List[str]) -> List[str]:
+    def _sanitize_args(tool: str, args: List[str]) -> List[str]:
         cleaned = []
         for a in args:
             if isinstance(a, str):
@@ -108,6 +145,12 @@ class JobManager:
                 if a.lower().startswith(("http://", "https://")) or "://" in a:
                     a = re.sub(r"\s+", "", a)
             cleaned.append(a)
+        dangerous = _find_dangerous_flag(tool, cleaned)
+        if dangerous:
+            raise DangerousArgError(
+                f"Das Flag '{dangerous}' ist aus Sicherheitsgründen nicht erlaubt "
+                f"(kann beliebige Programme/Kommandos auf dem Server ausführen)."
+            )
         return cleaned
 
     # Flag, mit dem jedes unterstützte Tool eine Cookies-Datei entgegennimmt.
@@ -177,12 +220,13 @@ class JobManager:
             job_type=request.job_type,
             tool=request.tool,
             title=display_title or request.job_type.value.upper(),
-            command_args=self._inject_cookies_if_needed(request.tool, self._sanitize_args(request.command_args)),
-            second_pass_args=self._sanitize_args(request.second_pass_args) if request.second_pass_args else None,
+            command_args=self._inject_cookies_if_needed(request.tool, self._sanitize_args(request.tool, request.command_args)),
+            second_pass_args=self._sanitize_args(request.tool, request.second_pass_args) if request.second_pass_args else None,
             input_file=clean_input_file,
             output_file=request.output_file,
             is_playlist=request.is_playlist,
-            subscription_id=request.subscription_id
+            subscription_id=request.subscription_id,
+            is_live_stream=request.is_live_stream
         )
         self.jobs[job.id] = job
         async with self.queue_lock:
@@ -351,8 +395,8 @@ class JobManager:
             job_type=stage.job_type,
             tool=stage.tool,
             title=f"{run['title']} [{stage_label}]",
-            command_args=self._inject_cookies_if_needed(stage.tool, self._sanitize_args(resolved_args)),
-            second_pass_args=self._sanitize_args(resolved_second_pass) if resolved_second_pass else None,
+            command_args=self._inject_cookies_if_needed(stage.tool, self._sanitize_args(stage.tool, resolved_args)),
+            second_pass_args=self._sanitize_args(stage.tool, resolved_second_pass) if resolved_second_pass else None,
             input_file=stage_input_file,
             output_file=output_path,
             pipeline_run_id=run_id,
@@ -470,6 +514,47 @@ class JobManager:
         for jid in to_delete:
             del self.jobs[jid]
 
+    async def stop_live_recording(self, job_id: str) -> bool:
+        """Beendet die Aufnahme eines als Livestream markierten, laufenden yt-dlp-Jobs geordnet:
+        sendet zuerst SIGINT (wie Strg+C), damit yt-dlp die bisher aufgezeichnete Datei sauber
+        abschließt/remuxt, statt sie durch einen harten kill() zu beschädigen oder zu verwerfen.
+        Reagiert der Prozess nach STOP_LIVE_GRACE_SECONDS nicht, wird er hart beendet - die bis
+        dahin geschriebene Datei bleibt in beiden Fällen erhalten und wird als abgeschlossener
+        Job gespeichert (siehe Erfolgs-Override in _execute_job_pipeline)."""
+        STOP_LIVE_GRACE_SECONDS = 20.0
+
+        job = self.jobs.get(job_id)
+        if not job or job.status != JobStatus.RUNNING or not job.is_live_stream:
+            return False
+        proc = self.running_processes.get(job_id)
+        if not proc:
+            return False
+
+        self.live_stop_requested.add(job_id)
+        stop_msg = "[SYSTEM] Livestream-Aufnahme wird geordnet beendet - bisherige Aufnahme wird gesichert..."
+        self._append_log(job, stop_msg)
+        await self.broadcast({"type": "log", "job_id": job_id, "line": stop_msg})
+
+        try:
+            if os.name == "posix":
+                proc.send_signal(signal.SIGINT)
+            else:
+                proc.terminate()
+        except Exception:
+            pass
+
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=STOP_LIVE_GRACE_SECONDS)
+        except asyncio.TimeoutError:
+            timeout_msg = "[SYSTEM] Geordnetes Beenden hat zu lange gedauert, erzwinge Abbruch."
+            self._append_log(job, timeout_msg)
+            await self.broadcast({"type": "log", "job_id": job_id, "line": timeout_msg})
+            try:
+                proc.kill()
+            except Exception:
+                pass
+        return True
+
     async def cancel_job(self, job_id: str) -> bool:
         job = self.jobs.get(job_id)
         if not job:
@@ -477,6 +562,7 @@ class JobManager:
 
         if job.status == JobStatus.RUNNING and job_id in self.running_processes:
             proc = self.running_processes[job_id]
+            self.live_stop_requested.discard(job_id)
             try:
                 proc.kill()
             except Exception:
@@ -636,6 +722,18 @@ class JobManager:
                     if match:
                         resolved_output = os.path.join(root, match)
                         break
+
+        if not success and job.id in self.live_stop_requested:
+            self.live_stop_requested.discard(job.id)
+            if resolved_output and os.path.exists(resolved_output) and os.path.getsize(resolved_output) > 0:
+                success = True
+                override_msg = "[SYSTEM] Live-Aufnahme wurde vom Nutzer beendet - bisher aufgezeichnete Datei wird als abgeschlossener Job gespeichert."
+                self._append_log(job, override_msg)
+                await self.broadcast({"type": "log", "job_id": job.id, "line": override_msg})
+            else:
+                no_file_msg = "[SYSTEM] Live-Aufnahme wurde beendet, es konnte aber keine Ausgabedatei gefunden werden."
+                self._append_log(job, no_file_msg)
+                await self.broadcast({"type": "log", "job_id": job.id, "line": no_file_msg})
 
         if success and resolved_output and os.path.exists(resolved_output):
             size_mb = round(os.path.getsize(resolved_output) / (1024 * 1024), 2)

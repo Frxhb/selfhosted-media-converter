@@ -2,7 +2,7 @@
 import os
 from fastapi import APIRouter, HTTPException, Body, Query
 
-from app.job_manager import job_manager
+from app.job_manager import job_manager, DangerousArgError
 from app.models import Job, JobCreateRequest
 from app.core import OUTPUT_DIR, get_free_disk_gb
 
@@ -39,7 +39,10 @@ async def create_job(request: JobCreateRequest, force: bool = Query(False)):
                        f"Benenne die Ausgabe um oder deaktiviere den Überschreibschutz in den Einstellungen."
             )
 
-    return await job_manager.add_job(request)
+    try:
+        return await job_manager.add_job(request)
+    except DangerousArgError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/api/jobs", response_model=list[Job])
@@ -59,6 +62,19 @@ async def cancel_job(job_id: str):
     if not success:
         raise HTTPException(status_code=400, detail="Job konnte nicht abgebrochen werden")
     return {"status": "cancelled", "job_id": job_id}
+
+
+@router.post("/api/jobs/{job_id}/stop-live")
+async def stop_live_job(job_id: str):
+    """Beendet eine als Livestream markierte, laufende Aufnahme geordnet (statt hartem Abbruch)
+    und behält die bisher aufgezeichnete Datei als abgeschlossenen Job."""
+    success = await job_manager.stop_live_recording(job_id)
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Aufnahme konnte nicht beendet werden (Job nicht gefunden, nicht aktiv oder keine Livestream-Aufnahme)."
+        )
+    return {"status": "stopping", "job_id": job_id}
 
 
 @router.post("/api/jobs/cancel-all")
