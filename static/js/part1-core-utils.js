@@ -363,6 +363,61 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
       const savedAccent = localStorage.getItem("mcp_accent");
       if (savedAccent) setThemeAccent(savedAccent);
 
+      /* ---------- FULL THEME PRESETS (Hintergrund/Oberflächen, unabhängig von der Akzentfarbe) ---------- */
+      const THEME_PRESETS = {
+        nord: {
+          bg: "#2e3440", surface: "#3b4252", surfaceRaised: "#434c5e", surfaceSunken: "#272c36",
+          line: "#4c566a", lineSoft: "#434c5e", ink: "#eceff4", inkDim: "#9aa5b1", inkFaint: "#616e81",
+        },
+        solarized: {
+          bg: "#002b36", surface: "#073642", surfaceRaised: "#0a3f4d", surfaceSunken: "#00212b",
+          line: "#0d4956", lineSoft: "#0a3f4d", ink: "#eee8d5", inkDim: "#93a1a1", inkFaint: "#586e75",
+        },
+        sepia: {
+          bg: "#f4ecd8", surface: "#fbf6ea", surfaceRaised: "#fffdf8", surfaceSunken: "#ece0c4",
+          line: "#ddccA0", lineSoft: "#e6d9b8", ink: "#3b2f1e", inkDim: "#6b5c42", inkFaint: "#a08e68",
+        },
+        midnight: {
+          bg: "#0a0e1a", surface: "#121828", surfaceRaised: "#1a2236", surfaceSunken: "#070a12",
+          line: "#232c42", lineSoft: "#1c2338", ink: "#e6eaf5", inkDim: "#8891a8", inkFaint: "#4d5670",
+        },
+        forest: {
+          bg: "#0d1512", surface: "#16211c", surfaceRaised: "#1d2b24", surfaceSunken: "#0a100d",
+          line: "#2a3a32", lineSoft: "#223129", ink: "#e8f0ea", inkDim: "#8ba398", inkFaint: "#4f6358",
+        },
+        oled: {
+          bg: "#000000", surface: "#0a0a0a", surfaceRaised: "#131313", surfaceSunken: "#000000",
+          line: "#232323", lineSoft: "#1a1a1a", ink: "#f5f5f5", inkDim: "#969696", inkFaint: "#555555",
+        },
+      };
+      const THEME_PRESET_VAR_MAP = {
+        bg: "--bg", surface: "--surface", surfaceRaised: "--surface-raised", surfaceSunken: "--surface-sunken",
+        line: "--line", lineSoft: "--line-soft", ink: "--ink", inkDim: "--ink-dim", inkFaint: "--ink-faint",
+      };
+
+      function setThemePreset(name) {
+        if (name === "default" || !THEME_PRESETS[name]) {
+          Object.values(THEME_PRESET_VAR_MAP).forEach((cssVar) =>
+            document.body.style.removeProperty(cssVar),
+          );
+          localStorage.removeItem("mcp_theme_preset");
+        } else {
+          const preset = THEME_PRESETS[name];
+          Object.entries(THEME_PRESET_VAR_MAP).forEach(([key, cssVar]) =>
+            document.body.style.setProperty(cssVar, preset[key]),
+          );
+          localStorage.setItem("mcp_theme_preset", name);
+        }
+        document.querySelectorAll(".theme-swatch").forEach((swatch) => {
+          swatch.classList.toggle(
+            "active",
+            swatch.dataset.themePreset === (name || "default"),
+          );
+        });
+      }
+      const savedThemePreset = localStorage.getItem("mcp_theme_preset");
+      setThemePreset(savedThemePreset || "default");
+
       function setConnectionStatus(state) {
         const el = document.getElementById("ws-status");
         const label = document.getElementById("ws-status-label");

@@ -103,6 +103,24 @@
         box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 3px var(--ink);
       }
 
+      .theme-swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        border: 2px solid var(--line);
+        transition: transform 0.15s;
+      }
+
+      .theme-swatch:hover {
+        transform: scale(1.08);
+      }
+
+      .theme-swatch.active {
+        border-color: var(--signal);
+        box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 3px var(--signal);
+      }
+
       .settings-section {
         border-top: 1px solid var(--line);
         padding-top: 0.85rem;

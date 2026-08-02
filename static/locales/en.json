@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Overview",
-    "import": "Download",
+    "import": "Import",
     "process": "Process",
     "ai_suite": "AI Suite",
     "output": "Output",
@@ -383,7 +383,15 @@
     "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers.",
     "config_badge_tooltip": "Shows whether these values come from saved settings or from .env defaults",
     "disk_warning": "Only {free} GB free on /media/outputs. New jobs will be blocked once the value drops below {threshold} GB. Delete files you no longer need in the library.",
-    "choose_file_btn": "Choose File"
+    "choose_file_btn": "Choose File",
+    "choose_theme": "Choose Theme:",
+    "theme_hint": "The theme controls background and surface colors; the accent color above stays independently selectable.",
+    "theme_default": "Default",
+    "theme_solarized": "Solarized Dark",
+    "theme_sepia": "Sepia",
+    "theme_midnight": "Midnight Blue",
+    "theme_forest": "Forest",
+    "theme_oled": "OLED Black"
   },
   "modals": {
     "playlist_detected": "Playlist Detected",

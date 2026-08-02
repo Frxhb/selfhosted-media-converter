@@ -2765,6 +2765,71 @@
             </div>
           </div>
 
+          <div>
+            <label data-i18n="settings.choose_theme">Farbschema wählen:</label>
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.3rem; flex-wrap: wrap">
+              <div
+                class="theme-swatch"
+                data-theme-preset="default"
+                onclick="setThemePreset('default')"
+                title="Standard"
+                data-i18n-title="settings.theme_default"
+                style="background: linear-gradient(135deg, #0b0c0e 50%, #f2f1ee 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="nord"
+                onclick="setThemePreset('nord')"
+                title="Nord"
+                style="background: linear-gradient(135deg, #2e3440 50%, #3b4252 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="solarized"
+                onclick="setThemePreset('solarized')"
+                title="Solarized Dark"
+                data-i18n-title="settings.theme_solarized"
+                style="background: linear-gradient(135deg, #002b36 50%, #073642 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="sepia"
+                onclick="setThemePreset('sepia')"
+                title="Sepia"
+                data-i18n-title="settings.theme_sepia"
+                style="background: linear-gradient(135deg, #f4ecd8 50%, #fbf6ea 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="midnight"
+                onclick="setThemePreset('midnight')"
+                title="Midnight Blue"
+                data-i18n-title="settings.theme_midnight"
+                style="background: linear-gradient(135deg, #0a0e1a 50%, #121828 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="forest"
+                onclick="setThemePreset('forest')"
+                title="Forest"
+                data-i18n-title="settings.theme_forest"
+                style="background: linear-gradient(135deg, #0d1512 50%, #16211c 50%)"
+              ></div>
+              <div
+                class="theme-swatch"
+                data-theme-preset="oled"
+                onclick="setThemePreset('oled')"
+                title="OLED Black"
+                data-i18n-title="settings.theme_oled"
+                style="background: linear-gradient(135deg, #000000 50%, #131313 50%)"
+              ></div>
+            </div>
+            <span class="settings-hint" data-i18n="settings.theme_hint"
+              >Das Farbschema bestimmt Hintergrund und Oberflächen; die Akzentfarbe oben bleibt davon
+              unabhängig wählbar.</span
+            >
+          </div>
+
           <div class="settings-section">
             <div
               style="

@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Übersicht",
-    "import": "Download",
+    "import": "Import",
     "process": "Verarbeiten",
     "ai_suite": "KI-Suite",
     "output": "Ausgabe",
@@ -383,7 +383,15 @@
     "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen.",
     "config_badge_tooltip": "Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen",
     "disk_warning": "Nur noch {free} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter {threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek.",
-    "choose_file_btn": "Datei auswählen"
+    "choose_file_btn": "Datei auswählen",
+    "choose_theme": "Farbschema wählen:",
+    "theme_hint": "Das Farbschema bestimmt Hintergrund und Oberflächen; die Akzentfarbe oben bleibt davon unabhängig wählbar.",
+    "theme_default": "Standard",
+    "theme_solarized": "Solarized Dark",
+    "theme_sepia": "Sepia",
+    "theme_midnight": "Midnight Blue",
+    "theme_forest": "Forest",
+    "theme_oled": "OLED Black"
   },
   "modals": {
     "playlist_detected": "Playlist erkannt",
