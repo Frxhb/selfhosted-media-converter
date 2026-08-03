@@ -293,7 +293,8 @@
     "interval_days": "Alle {n} Tag(e)",
     "interval_hours": "Alle {n} Stunde(n)",
     "interval_minutes": "Alle {n} Min.",
-    "error_last_check": "⚠️ Fehler bei letzter Prüfung ({date})"
+    "error_last_check": "⚠️ Fehler bei letzter Prüfung ({date})",
+    "exclude_shorts_label": "Keine YouTube Shorts herunterladen"
   },
   "queue": {
     "title": "Warteschlange",

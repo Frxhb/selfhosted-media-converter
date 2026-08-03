@@ -137,6 +137,9 @@ let subscriptionsCache = [];
           backfillRow.style.display = sub && sub.last_checked_at ? "none" : "";
         }
         document.getElementById("sub-edit-enabled").checked = sub ? sub.enabled : true;
+        document.getElementById("sub-edit-exclude-shorts").checked = sub
+          ? !!sub.exclude_shorts
+          : false;
 
         openModal("subscription-editor-modal");
       }
@@ -179,6 +182,7 @@ let subscriptionsCache = [];
             10,
           ) || 0,
           enabled: document.getElementById("sub-edit-enabled").checked,
+          exclude_shorts: document.getElementById("sub-edit-exclude-shorts").checked,
         };
 
         try {

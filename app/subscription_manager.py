@@ -289,6 +289,7 @@ class SubscriptionManager:
         import json
         new_ids = []
         skipped_upcoming = 0
+        skipped_shorts = 0
         for line in stdout.decode("utf-8", errors="replace").splitlines():
             line = line.strip()
             if not line:
@@ -308,12 +309,22 @@ class SubscriptionManager:
                 if live_status in ("is_upcoming", "upcoming") or data.get("is_upcoming"):
                     skipped_upcoming += 1
                     continue
+                # YouTube Shorts erkennt yt-dlp im flat-playlist Dump eines Kanals über die
+                # URL des Eintrags ("/shorts/<id>" statt "/watch?v=<id>") - zuverlässiger als
+                # z.B. über die Videolänge, da auch reguläre Videos kurz sein können.
+                if sub.exclude_shorts:
+                    entry_url = (data.get("url") or data.get("webpage_url") or "")
+                    if "/shorts/" in entry_url:
+                        skipped_shorts += 1
+                        continue
                 new_ids.append(vid)
             except Exception:
                 pass
 
         if skipped_upcoming:
             logger.info(f"{skipped_upcoming} angekündigte(r)/noch nicht gestartete(r) Livestream(s) übersprungen (Subscription: {sub.name}).")
+        if skipped_shorts:
+            logger.info(f"{skipped_shorts} YouTube Short(s) übersprungen (Subscription: {sub.name}, exclude_shorts aktiv).")
 
         if not new_ids and proc.returncode != 0:
             err_msg = stderr.decode("utf-8", errors="replace").strip() or "Unbekannter yt-dlp Fehler"

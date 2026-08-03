@@ -297,6 +297,114 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         }
       }
 
+      /* ---------- FULL THEME PRESETS (Hintergrund/Oberflächen, unabhängig von der Akzentfarbe) ----------
+         Jedes Preset hat eine dark- und eine light-Variante, damit der Dunkel/Hell-Umschalter
+         oben auch bei aktivem Farbschema weiterhin sichtbar etwas bewirkt. */
+      const THEME_PRESETS = {
+        nord: {
+          dark: {
+            bg: "#2e3440", surface: "#3b4252", surfaceRaised: "#434c5e", surfaceSunken: "#272c36",
+            line: "#4c566a", lineSoft: "#434c5e", ink: "#eceff4", inkDim: "#9aa5b1", inkFaint: "#616e81",
+          },
+          light: {
+            bg: "#e5e9f0", surface: "#eceff4", surfaceRaised: "#f7f9fc", surfaceSunken: "#d8dee9",
+            line: "#c8d0e0", lineSoft: "#d8dee9", ink: "#2e3440", inkDim: "#4c566a", inkFaint: "#8390a8",
+          },
+        },
+        solarized: {
+          dark: {
+            bg: "#002b36", surface: "#073642", surfaceRaised: "#0a3f4d", surfaceSunken: "#00212b",
+            line: "#0d4956", lineSoft: "#0a3f4d", ink: "#eee8d5", inkDim: "#93a1a1", inkFaint: "#586e75",
+          },
+          light: {
+            bg: "#fdf6e3", surface: "#eee8d5", surfaceRaised: "#fffaf0", surfaceSunken: "#e5decc",
+            line: "#d3cbb7", lineSoft: "#e0d8c3", ink: "#073642", inkDim: "#586e75", inkFaint: "#93a1a1",
+          },
+        },
+        sepia: {
+          dark: {
+            bg: "#2b2318", surface: "#372d1e", surfaceRaised: "#413524", surfaceSunken: "#231c13",
+            line: "#4a3d29", lineSoft: "#3f331f", ink: "#f0e6cf", inkDim: "#c2b193", inkFaint: "#8a795c",
+          },
+          light: {
+            bg: "#f4ecd8", surface: "#fbf6ea", surfaceRaised: "#fffdf8", surfaceSunken: "#ece0c4",
+            line: "#ddccA0", lineSoft: "#e6d9b8", ink: "#3b2f1e", inkDim: "#6b5c42", inkFaint: "#a08e68",
+          },
+        },
+        midnight: {
+          dark: {
+            bg: "#0a0e1a", surface: "#121828", surfaceRaised: "#1a2236", surfaceSunken: "#070a12",
+            line: "#232c42", lineSoft: "#1c2338", ink: "#e6eaf5", inkDim: "#8891a8", inkFaint: "#4d5670",
+          },
+          light: {
+            bg: "#eef1f8", surface: "#f7f9fd", surfaceRaised: "#ffffff", surfaceSunken: "#e2e7f2",
+            line: "#cbd4e6", lineSoft: "#dde3f0", ink: "#141a2c", inkDim: "#3f4a68", inkFaint: "#7885a3",
+          },
+        },
+        forest: {
+          dark: {
+            bg: "#0d1512", surface: "#16211c", surfaceRaised: "#1d2b24", surfaceSunken: "#0a100d",
+            line: "#2a3a32", lineSoft: "#223129", ink: "#e8f0ea", inkDim: "#8ba398", inkFaint: "#4f6358",
+          },
+          light: {
+            bg: "#eef3ee", surface: "#f6faf6", surfaceRaised: "#ffffff", surfaceSunken: "#e2ebe2",
+            line: "#c9d8c9", lineSoft: "#dbe7db", ink: "#132018", inkDim: "#41564a", inkFaint: "#728a78",
+          },
+        },
+        oled: {
+          dark: {
+            bg: "#000000", surface: "#0a0a0a", surfaceRaised: "#131313", surfaceSunken: "#000000",
+            line: "#232323", lineSoft: "#1a1a1a", ink: "#f5f5f5", inkDim: "#969696", inkFaint: "#555555",
+          },
+          light: {
+            bg: "#ffffff", surface: "#fafafa", surfaceRaised: "#ffffff", surfaceSunken: "#f0f0f0",
+            line: "#e0e0e0", lineSoft: "#ececec", ink: "#000000", inkDim: "#3a3a3a", inkFaint: "#7a7a7a",
+          },
+        },
+      };
+      const THEME_PRESET_VAR_MAP = {
+        bg: "--bg", surface: "--surface", surfaceRaised: "--surface-raised", surfaceSunken: "--surface-sunken",
+        line: "--line", lineSoft: "--line-soft", ink: "--ink", inkDim: "--ink-dim", inkFaint: "--ink-faint",
+      };
+
+      function applyActiveThemePreset(resolvedLight) {
+        const name = localStorage.getItem("mcp_theme_preset") || "default";
+        if (name === "default" || !THEME_PRESETS[name]) {
+          Object.values(THEME_PRESET_VAR_MAP).forEach((cssVar) =>
+            document.body.style.removeProperty(cssVar),
+          );
+          return;
+        }
+        const variant = THEME_PRESETS[name][resolvedLight ? "light" : "dark"];
+        Object.entries(THEME_PRESET_VAR_MAP).forEach(([key, cssVar]) =>
+          document.body.style.setProperty(cssVar, variant[key]),
+        );
+      }
+
+      function setThemePreset(name) {
+        if (name === "default" || !THEME_PRESETS[name]) {
+          localStorage.removeItem("mcp_theme_preset");
+        } else {
+          localStorage.setItem("mcp_theme_preset", name);
+        }
+        const mode = localStorage.getItem("mcp_theme_mode") || "dark";
+        applyActiveThemePreset(resolveIsLight(mode));
+        document.querySelectorAll(".theme-swatch").forEach((swatch) => {
+          swatch.classList.toggle(
+            "active",
+            swatch.dataset.themePreset === (name || "default"),
+          );
+        });
+      }
+      // Preset wird bereits über applyThemeMode()/initTheme() oben mit angewendet (liest
+      // "mcp_theme_preset" selbst aus localStorage) - hier nur noch die aktive Kachel markieren.
+      document.querySelectorAll(".theme-swatch").forEach((swatch) => {
+        swatch.classList.toggle(
+          "active",
+          swatch.dataset.themePreset === (localStorage.getItem("mcp_theme_preset") || "default"),
+        );
+      });
+
       /* ---------- THEME MODE ---------- */
       const themeIcons = {
         dark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646z"/></svg>',
@@ -306,12 +414,15 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
       };
 
-      function applyThemeMode(mode) {
+      function resolveIsLight(mode) {
         const prefersDark =
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolvedLight =
-          mode === "light" || (mode === "system" && !prefersDark);
+        return mode === "light" || (mode === "system" && !prefersDark);
+      }
+
+      function applyThemeMode(mode) {
+        const resolvedLight = resolveIsLight(mode);
         document.body.classList.toggle("light-mode", resolvedLight);
 
         const btn = document.getElementById("theme-toggle-btn");
@@ -324,6 +435,12 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
           };
           btn.title = t("label.theme_toggle_hint").replace("{mode}", labels[mode]);
         }
+
+        // Ist gerade ein volles Farbschema (Nord, Solarized, ...) aktiv, muss dessen
+        // passende Dunkel-/Hell-Variante erneut angewendet werden - sonst hätte der
+        // Umschalter hier keine sichtbare Wirkung, weil die Preset-Werte als Inline-Style
+        // ohnehin über die .light-mode Klasse gewinnen (siehe applyActiveThemePreset).
+        applyActiveThemePreset(resolvedLight);
       }
 
       function toggleTheme() {
@@ -362,61 +479,6 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
       }
       const savedAccent = localStorage.getItem("mcp_accent");
       if (savedAccent) setThemeAccent(savedAccent);
-
-      /* ---------- FULL THEME PRESETS (Hintergrund/Oberflächen, unabhängig von der Akzentfarbe) ---------- */
-      const THEME_PRESETS = {
-        nord: {
-          bg: "#2e3440", surface: "#3b4252", surfaceRaised: "#434c5e", surfaceSunken: "#272c36",
-          line: "#4c566a", lineSoft: "#434c5e", ink: "#eceff4", inkDim: "#9aa5b1", inkFaint: "#616e81",
-        },
-        solarized: {
-          bg: "#002b36", surface: "#073642", surfaceRaised: "#0a3f4d", surfaceSunken: "#00212b",
-          line: "#0d4956", lineSoft: "#0a3f4d", ink: "#eee8d5", inkDim: "#93a1a1", inkFaint: "#586e75",
-        },
-        sepia: {
-          bg: "#f4ecd8", surface: "#fbf6ea", surfaceRaised: "#fffdf8", surfaceSunken: "#ece0c4",
-          line: "#ddccA0", lineSoft: "#e6d9b8", ink: "#3b2f1e", inkDim: "#6b5c42", inkFaint: "#a08e68",
-        },
-        midnight: {
-          bg: "#0a0e1a", surface: "#121828", surfaceRaised: "#1a2236", surfaceSunken: "#070a12",
-          line: "#232c42", lineSoft: "#1c2338", ink: "#e6eaf5", inkDim: "#8891a8", inkFaint: "#4d5670",
-        },
-        forest: {
-          bg: "#0d1512", surface: "#16211c", surfaceRaised: "#1d2b24", surfaceSunken: "#0a100d",
-          line: "#2a3a32", lineSoft: "#223129", ink: "#e8f0ea", inkDim: "#8ba398", inkFaint: "#4f6358",
-        },
-        oled: {
-          bg: "#000000", surface: "#0a0a0a", surfaceRaised: "#131313", surfaceSunken: "#000000",
-          line: "#232323", lineSoft: "#1a1a1a", ink: "#f5f5f5", inkDim: "#969696", inkFaint: "#555555",
-        },
-      };
-      const THEME_PRESET_VAR_MAP = {
-        bg: "--bg", surface: "--surface", surfaceRaised: "--surface-raised", surfaceSunken: "--surface-sunken",
-        line: "--line", lineSoft: "--line-soft", ink: "--ink", inkDim: "--ink-dim", inkFaint: "--ink-faint",
-      };
-
-      function setThemePreset(name) {
-        if (name === "default" || !THEME_PRESETS[name]) {
-          Object.values(THEME_PRESET_VAR_MAP).forEach((cssVar) =>
-            document.body.style.removeProperty(cssVar),
-          );
-          localStorage.removeItem("mcp_theme_preset");
-        } else {
-          const preset = THEME_PRESETS[name];
-          Object.entries(THEME_PRESET_VAR_MAP).forEach(([key, cssVar]) =>
-            document.body.style.setProperty(cssVar, preset[key]),
-          );
-          localStorage.setItem("mcp_theme_preset", name);
-        }
-        document.querySelectorAll(".theme-swatch").forEach((swatch) => {
-          swatch.classList.toggle(
-            "active",
-            swatch.dataset.themePreset === (name || "default"),
-          );
-        });
-      }
-      const savedThemePreset = localStorage.getItem("mcp_theme_preset");
-      setThemePreset(savedThemePreset || "default");
 
       function setConnectionStatus(state) {
         const el = document.getElementById("ws-status");

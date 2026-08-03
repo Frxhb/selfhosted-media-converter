@@ -293,7 +293,8 @@
     "interval_days": "Every {n} day(s)",
     "interval_hours": "Every {n} hour(s)",
     "interval_minutes": "Every {n} min.",
-    "error_last_check": "⚠️ Error during last check ({date})"
+    "error_last_check": "⚠️ Error during last check ({date})",
+    "exclude_shorts_label": "Don't download YouTube Shorts"
   },
   "queue": {
     "title": "Job Queue",

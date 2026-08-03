@@ -107,6 +107,7 @@ class Subscription(BaseModel):
     container: str = "mp4"  # Ziel-Container (mp4/mkv für Video, mp3/m4a/flac für Audio)
     max_items_per_check: int = 25  # Sicherheitslimit: max. neue Videos pro Check-Lauf
     backfill_count: int = 0  # Beim Anlegen: zusätzlich die letzten N bestehenden Videos herunterladen (0 = nur ab jetzt neue)
+    exclude_shorts: bool = False  # YouTube Shorts (URL enthält "/shorts/") beim Check überspringen
     created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
     last_checked_at: Optional[str] = None
     last_check_status: Optional[str] = None  # "ok" | "error" | None (noch nie geprüft)
@@ -124,6 +125,7 @@ class SubscriptionCreateRequest(BaseModel):
     max_items_per_check: int = 25
     backfill_count: int = 0
     enabled: bool = True
+    exclude_shorts: bool = False
 
 class MediaTagsUpdateRequest(BaseModel):
     file_path: str
