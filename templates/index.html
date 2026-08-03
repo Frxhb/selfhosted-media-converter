@@ -192,6 +192,13 @@
       >
         📡 <span data-i18n="nav.subscriptions">Abos</span>
       </button>
+      <button
+        onclick="switchMainGroup('logviewer')"
+        class="stage-btn-mobile"
+        data-group="logviewer"
+      >
+        🧾 <span data-i18n="nav.logviewer">Logs</span>
+      </button>
     </nav>
 
     <div class="app-shell">
@@ -339,6 +346,26 @@
             <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none" />
           </svg>
           <span class="i18n-text" data-i18n="nav.subscriptions">Abonnements</span>
+        </button>
+        <button
+          onclick="switchMainGroup('logviewer')"
+          class="stage-btn"
+          data-group="logviewer"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+            <polyline points="14 3 14 8 19 8" />
+            <line x1="8" y1="13" x2="16" y2="13" />
+            <line x1="8" y1="17" x2="13" y2="17" />
+          </svg>
+          <span class="i18n-text" data-i18n="nav.logviewer">Logs</span>
         </button>
       </nav>
 
@@ -1738,6 +1765,151 @@
               </p>
               <div
  id="subscription-list" class="u-col-gap-06"></div>
+            </div>
+          </div>
+
+          <div id="group-logviewer" class="group-view">
+            <div class="card">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 0.9rem;
+                  flex-wrap: wrap;
+                  gap: 0.5rem;
+                "
+              >
+                <h3 class="u-m0" data-i18n="logviewer.title">Log-Viewer</h3>
+                <div class="u-row-gap-05" style="display: flex; gap: 0.4rem; flex-wrap: wrap">
+                  <button
+                    onclick="refreshLogViewer()"
+                    class="btn btn-secondary btn-sm"
+                    data-i18n="logviewer.refresh_btn"
+                  >
+                    🔄 Aktualisieren
+                  </button>
+                  <button
+                    onclick="copyLogViewerToClipboard()"
+                    class="btn btn-secondary btn-sm"
+                    data-i18n="logviewer.copy_btn"
+                  >
+                    Kopieren
+                  </button>
+                  <a
+                    id="logviewer-download-link"
+                    href="/api/logs/download"
+                    class="btn btn-secondary btn-sm"
+                    data-i18n="logviewer.download_btn"
+                    download
+                  >
+                    ⬇️ Download
+                  </a>
+                </div>
+              </div>
+              <p
+                style="
+                  font-size: 0.8rem;
+                  color: var(--ink-dim);
+                  margin-top: -0.4rem;
+                  margin-bottom: 1rem;
+                "
+                data-i18n="logviewer.description"
+              >
+                Zeigt die Server-Logdateien direkt in der Oberfläche an, ganz
+                ohne Container-Zugriff. Praktisch zum schnellen Prüfen von
+                Fehlern oder zum Nachvollziehen, was im Hintergrund passiert
+                ist.
+              </p>
+
+              <div
+                class="grid-2"
+                style="align-items: end; margin-bottom: 0.8rem"
+              >
+                <div>
+                  <label for="logviewer-level-select" data-i18n="logviewer.level_label"
+                    >Log-Datei:</label
+                  >
+                  <select
+                    id="logviewer-level-select"
+                    onchange="refreshLogViewer()"
+                  >
+                    <option value="app" data-i18n="logviewer.level_app">
+                      App-Log (alles)
+                    </option>
+                    <option value="error" data-i18n="logviewer.level_error">
+                      Error-Log (nur Warnungen/Fehler)
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label for="logviewer-lines-select" data-i18n="logviewer.lines_label"
+                    >Anzahl Zeilen:</label
+                  >
+                  <select
+                    id="logviewer-lines-select"
+                    onchange="refreshLogViewer()"
+                  >
+                    <option value="100">100</option>
+                    <option value="300" selected>300</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                    <option value="2000">2000</option>
+                  </select>
+                </div>
+              </div>
+
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  gap: 0.6rem;
+                  flex-wrap: wrap;
+                  margin-bottom: 0.6rem;
+                "
+              >
+                <input
+                  type="text"
+                  id="logviewer-search"
+                  placeholder="Log durchsuchen..."
+                  data-i18n-placeholder="logviewer.search_placeholder"
+                  oninput="filterLogViewer()"
+                  style="flex: 1; min-width: 200px"
+                />
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.72rem;
+                    color: var(--ink-dim);
+                    white-space: nowrap;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    id="logviewer-autorefresh"
+                    onchange="onLogViewerAutoRefreshToggle()"
+                  />
+                  <span data-i18n="logviewer.autorefresh">Auto-Aktualisierung (5s)</span>
+                </label>
+              </div>
+
+              <pre
+                id="logviewer-console"
+                class="console-box"
+                style="height: 480px"
+              ></pre>
+              <div
+                id="logviewer-status"
+                style="
+                  font-size: 0.68rem;
+                  color: var(--ink-dim);
+                  margin-top: 0.4rem;
+                "
+              ></div>
             </div>
           </div>
 
@@ -3238,6 +3410,9 @@
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
+    <script>
+      window.ASSET_VERSION = "{{ asset_version }}";
+    </script>
     <script src="/static/js/i18n.js?v={{ asset_version }}"></script>
     <script src="/static/js/part0-config.js?v={{ asset_version }}"></script>
     <script src="/static/js/part1-core-utils.js?v={{ asset_version }}"></script>
@@ -3249,5 +3424,6 @@
     <script src="/static/js/part7-mediatags.js?v={{ asset_version }}"></script>
     <script src="/static/js/part8-pipelines.js?v={{ asset_version }}"></script>
     <script src="/static/js/part9-subscriptions.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part10-logviewer.js?v={{ asset_version }}"></script>
   </body>
 </html>

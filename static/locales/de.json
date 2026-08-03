@@ -18,7 +18,8 @@
     "output": "Ausgabe",
     "pipelines": "Pipelines",
     "subscriptions": "Abos",
-    "automation": "Automatisierung"
+    "automation": "Automatisierung",
+    "logviewer": "Logs"
   },
   "dashboard": {
     "active_jobs": "Aktive Jobs",
@@ -564,7 +565,8 @@
     "check_complete_none": "Prüfung abgeschlossen: keine neuen Videos gefunden.",
     "delete_failed_detail": "Löschen fehlgeschlagen: ",
     "live_stopping": "Aufnahme wird beendet, Datei wird gesichert...",
-    "live_stop_failed": "Aufnahme konnte nicht beendet werden: "
+    "live_stop_failed": "Aufnahme konnte nicht beendet werden: ",
+    "logviewer_load_failed": "Logs konnten nicht geladen werden."
   },
   "confirm": {
     "reset_stats": "Alle Statistiken zurücksetzen?",
@@ -678,5 +680,20 @@
     "genre_ph": "z. B. Podcast",
     "comment_label": "Kommentar:",
     "comment_ph": "Optionale Notiz"
+  },
+  "logviewer": {
+    "title": "Log-Viewer",
+    "description": "Zeigt die Server-Logdateien direkt in der Oberfläche an, ganz ohne Container-Zugriff. Praktisch zum schnellen Prüfen von Fehlern oder zum Nachvollziehen, was im Hintergrund passiert ist.",
+    "refresh_btn": "🔄 Aktualisieren",
+    "copy_btn": "Kopieren",
+    "download_btn": "⬇️ Download",
+    "level_label": "Log-Datei:",
+    "level_app": "App-Log (alles)",
+    "level_error": "Error-Log (nur Warnungen/Fehler)",
+    "lines_label": "Anzahl Zeilen:",
+    "lines_suffix": "Zeilen",
+    "updated_at": "Aktualisiert um",
+    "search_placeholder": "Log durchsuchen...",
+    "autorefresh": "Auto-Aktualisierung (5s)"
   }
 }

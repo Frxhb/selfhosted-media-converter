@@ -799,6 +799,11 @@ class JobManager:
             record_job(job.id, job.title, job.job_type.value, "failed", tool=job.tool, is_playlist=job.is_playlist)
 
             job.error_message = job.error_message or hint
+            logger.error(
+                f"Job {job.id} ({job.title}, tool={job.tool}) fehlgeschlagen"
+                f"{f' nach {job.retry_count} Neuversuch(en)' if job.retry_count > 0 else ''}: "
+                f"{job.error_message or 'unbekannter Fehler'}"
+            )
 
             banner = f"\n============================================================\n[FAILED] Job {job.id} ({job.title}) FEHLGESCHLAGEN!\n"
             if job.retry_count > 0:
@@ -968,10 +973,12 @@ class JobManager:
             err_msg = f"[ERROR] Das Werkzeug '{tool}' ist auf dem Server nicht installiert oder wurde nicht im PATH gefunden."
             job.error_message = err_msg
             self._append_log(job, err_msg)
+            logger.error(f"Job {job.id}: Werkzeug '{tool}' nicht gefunden (PATH).")
             return False
         except Exception as e:
             job.error_message = str(e)
             self._append_log(job, f"[ERROR] {str(e)}")
+            logger.exception(f"Job {job.id} ({tool}): unerwartete Ausnahme während der Verarbeitung")
             return False
         finally:
             self.running_processes.pop(job.id, None)

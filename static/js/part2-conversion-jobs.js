@@ -50,6 +50,7 @@ function dismissToast(toast) {
         if (groupId === "library") refreshOutputFiles();
         if (groupId === "pipelines") refreshPipelines();
         if (groupId === "subscriptions") refreshSubscriptions();
+        if (groupId === "logviewer") refreshLogViewer();
       }
 
       function switchSubTab(groupPrefix, subId) {

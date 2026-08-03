@@ -1,5 +1,6 @@
 """System-, Health-, Log- und Backup/Restore-Routen, sowie die Index-Seite und der WebSocket-Endpunkt."""
 import os
+import time
 import shutil
 import zipfile
 import subprocess
@@ -16,11 +17,20 @@ logger = logging.getLogger("Main")
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
+# Wird beim Prozessstart einmal gesetzt und für alle ?v=... Cache-Busting-Parameter
+# (CSS, JS, i18n-Locales) verwendet, damit Browser nach einem Deploy/Neustart nicht
+# versehentlich alte gecachte Dateien weiterverwenden. Vorher wurde asset_version
+# nie an das Template übergeben, wodurch ?v= immer leer war und Caching faktisch
+# nie funktioniert hat.
+ASSET_VERSION = str(int(time.time()))
+
 
 # --- HTML & WEBSOCKET ---
 @router.get("/")
 def render_index(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html")
+    return templates.TemplateResponse(
+        request=request, name="index.html", context={"asset_version": ASSET_VERSION}
+    )
 
 
 @router.websocket("/ws")
@@ -112,11 +122,13 @@ def get_logs(lines: int = Query(300, ge=10, le=5000), level: str = Query("app"))
 
 
 @router.get("/api/logs/download")
-def download_logs():
-    path = os.path.join(LOG_DIR, "app.log")
+def download_logs(level: str = Query("app")):
+    filename = "error.log" if level == "error" else "app.log"
+    path = os.path.join(LOG_DIR, filename)
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Kein Log vorhanden")
-    return FileResponse(path, filename="media_converter_app.log")
+    download_name = "media_converter_error.log" if level == "error" else "media_converter_app.log"
+    return FileResponse(path, filename=download_name)
 
 
 @router.get("/api/system/ytdlp-version")

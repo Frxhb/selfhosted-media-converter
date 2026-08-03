@@ -7,7 +7,8 @@ let translations = {};
 
 async function loadLocale(lang) {
   try {
-    const res = await fetch(`/static/locales/${lang}.json`);
+    const v = window.ASSET_VERSION ? `?v=${window.ASSET_VERSION}` : "";
+    const res = await fetch(`/static/locales/${lang}.json${v}`);
     if (!res.ok) throw new Error(`Could not load locale ${lang}`);
     translations = await res.json();
     currentLang = lang;

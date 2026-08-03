@@ -137,6 +137,7 @@ class SubscriptionManager:
                 new_video_ids = await self._fetch_new_video_ids(sub, archive_path)
             except Exception as e:
                 error_msg = str(e)
+                logger.error(f"Abo-Prüfung fehlgeschlagen für '{sub.name}' ({sub.url}): {error_msg}")
 
             sub.last_checked_at = datetime.now().isoformat()
             if error_msg:

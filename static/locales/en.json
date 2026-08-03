@@ -18,7 +18,8 @@
     "output": "Output",
     "pipelines": "Pipelines",
     "subscriptions": "Subscriptions",
-    "automation": "Automation"
+    "automation": "Automation",
+    "logviewer": "Logs"
   },
   "dashboard": {
     "active_jobs": "Active Jobs",
@@ -564,7 +565,8 @@
     "check_complete_none": "Check complete: no new videos found.",
     "delete_failed_detail": "Deletion failed: ",
     "live_stopping": "Stopping recording, saving file...",
-    "live_stop_failed": "Could not stop recording: "
+    "live_stop_failed": "Could not stop recording: ",
+    "logviewer_load_failed": "Failed to load logs."
   },
   "confirm": {
     "reset_stats": "Reset all statistics?",
@@ -678,5 +680,20 @@
     "genre_ph": "e.g. Podcast",
     "comment_label": "Comment:",
     "comment_ph": "Optional note"
+  },
+  "logviewer": {
+    "title": "Log Viewer",
+    "description": "Shows the server log files directly in the interface, no container access needed. Handy for quickly checking errors or seeing what happened in the background.",
+    "refresh_btn": "🔄 Refresh",
+    "copy_btn": "Copy",
+    "download_btn": "⬇️ Download",
+    "level_label": "Log file:",
+    "level_app": "App log (everything)",
+    "level_error": "Error log (warnings/errors only)",
+    "lines_label": "Number of lines:",
+    "lines_suffix": "lines",
+    "updated_at": "Updated at",
+    "search_placeholder": "Search log...",
+    "autorefresh": "Auto-refresh (5s)"
   }
 }
