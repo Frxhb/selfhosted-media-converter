@@ -2,13 +2,16 @@
 import os
 import re
 import json
+import time
 import asyncio
+import logging
 from fastapi import APIRouter, HTTPException, Query
 
 from app.database import find_similar_completed_jobs
 from app.models import MediaTagsUpdateRequest
 from app.core import MEDIA_TAG_EXTENSIONS, _resolve_media_path_safely
 
+logger = logging.getLogger("Main")
 router = APIRouter()
 
 
@@ -243,4 +246,103 @@ async def get_ytdlp_playlist_items(url: str, max_items: int = Query(500, ge=1, l
         err_msg = stderr.decode('utf-8', errors='replace').strip() or stdout.decode('utf-8', errors='replace').strip()
         raise HTTPException(status_code=400, detail=f"Playlist konnte nicht geladen werden: {err_msg[:200]}")
 
+    return items
+
+
+# Einfacher In-Memory TTL-Cache für Titel-Suchen. Verhindert, dass identische Suchen
+# (z.B. erneutes Absenden derselben Anfrage, oder mehrere Nutzer, die dasselbe suchen)
+# jedes Mal einen neuen yt-dlp Prozess anstoßen. Bewusst simpel gehalten (kein LRU-Limit,
+# kein Redis) - die Ergebnismenge pro Query ist winzig (<=10 Items) und der Cache lebt
+# nur im Prozessspeicher, ist also nach einem Neustart ohnehin leer.
+_SEARCH_CACHE: dict[str, tuple[float, list]] = {}
+_SEARCH_CACHE_TTL_SECONDS = 300
+_SEARCH_CACHE_MAX_ENTRIES = 200
+
+
+def _search_cache_get(key: str):
+    entry = _SEARCH_CACHE.get(key)
+    if not entry:
+        return None
+    ts, items = entry
+    if time.time() - ts > _SEARCH_CACHE_TTL_SECONDS:
+        _SEARCH_CACHE.pop(key, None)
+        return None
+    return items
+
+
+def _search_cache_set(key: str, items: list):
+    if len(_SEARCH_CACHE) >= _SEARCH_CACHE_MAX_ENTRIES:
+        # Ältesten Eintrag verwerfen statt einer komplexen LRU-Struktur - reicht für
+        # diese Cache-Größe völlig aus.
+        oldest_key = min(_SEARCH_CACHE, key=lambda k: _SEARCH_CACHE[k][0])
+        _SEARCH_CACHE.pop(oldest_key, None)
+    _SEARCH_CACHE[key] = (time.time(), items)
+
+
+@router.get("/api/ytdlp-search")
+async def search_ytdlp_by_title(q: str, max_results: int = Query(8, ge=1, le=20), lang: str = "en"):
+    """
+    Schnelle Titel-Suche über yt-dlp's ytsearch, getrennt vom generischen
+    Playlist-Endpunkt. Der Playlist-Endpunkt ist für große, potenziell heikle
+    Playlists ausgelegt (mehrstufige player_client-Fallback-Kette gegen 403-Fehler,
+    45s Timeout, bis zu 500 Items) - für eine simple 8-Ergebnis-Titelsuche ist das
+    unnötig langsam. Hier: ein einzelner Client, kurzer Timeout, kleines Ergebnislimit,
+    plus ein TTL-Cache für wiederholte Suchen.
+    """
+    query = q.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="Suchbegriff darf nicht leer sein.")
+
+    cache_key = f"{lang}:{max_results}:{query.lower()}"
+    cached = _search_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    cmd = [
+        "yt-dlp",
+        "--flat-playlist",
+        "--dump-json",
+        "--no-warnings",
+        "--ignore-errors",
+        "--socket-timeout", "8",
+        # Für Suche reicht ein einzelner Client - die Multi-Client-Fallback-Kette
+        # (default,android,ios,web) im Playlist-Endpunkt existiert, um 403-Fehler beim
+        # tatsächlichen Download zu umgehen, kostet hier aber nur unnötig Zeit.
+        "--extractor-args", f"youtube:player_client=web;lang={lang}",
+        "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
+        f"ytsearch{max_results}:{query}",
+    ]
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=18.0)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        logger.warning(f"yt-dlp Titel-Suche Timeout für Query '{query}'")
+        raise HTTPException(status_code=504, detail="Suche hat zu lange gedauert (Timeout nach 18s).")
+
+    items = []
+    for line in stdout.decode("utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            data = json.loads(line)
+        except Exception:
+            continue
+        if not data.get("id"):
+            continue
+        items.append({
+            "id": data.get("id"),
+            "title": data.get("title", "Unbekannter Titel"),
+            "duration": data.get("duration_string") or "",
+            "uploader": data.get("uploader") or data.get("channel") or "",
+        })
+
+    if not items and proc.returncode != 0:
+        err_msg = stderr.decode("utf-8", errors="replace").strip()
+        logger.warning(f"yt-dlp Titel-Suche fehlgeschlagen für Query '{query}': {err_msg[:300]}")
+        raise HTTPException(status_code=400, detail=f"Suche fehlgeschlagen: {err_msg[:200]}")
+
+    _search_cache_set(cache_key, items)
     return items

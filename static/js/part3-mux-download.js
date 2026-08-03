@@ -556,10 +556,19 @@ function tokenizeCliFlags(str) {
         pendingDownloadContext = null;
       }
 
+      let ytdlpSearchInFlight = false;
+      let ytdlpSearchResults = [];
+      let ytdlpSearchActiveIndex = -1;
+
       async function searchYtDlpByTitle() {
         const query = document.getElementById("d-search-query").value.trim();
         const resultsContainer = document.getElementById("d-search-results");
         if (!query) return showToast(t("downloader.toast_enter_query"), "warn");
+        if (ytdlpSearchInFlight) return; // verhindert überlappende Anfragen bei schnellem Enter-Mashing
+
+        ytdlpSearchInFlight = true;
+        ytdlpSearchResults = [];
+        ytdlpSearchActiveIndex = -1;
 
         const btn = document.getElementById("d-search-btn");
         const originalText = btn.textContent;
@@ -571,11 +580,10 @@ function tokenizeCliFlags(str) {
         clearDuplicateWarning();
 
         try {
-          const searchPseudoUrl = `ytsearch8:${query}`;
           const userLang = (window.navigator?.language || "de").split("-")[0];
-          
+
           const res = await fetch(
-            `/api/ytdlp-playlist-items?url=${encodeURIComponent(searchPseudoUrl)}&lang=${userLang}`,
+            `/api/ytdlp-search?q=${encodeURIComponent(query)}&max_results=8&lang=${userLang}`,
           );
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -589,25 +597,83 @@ function tokenizeCliFlags(str) {
             return;
           }
 
-          resultsContainer.innerHTML = "";
-          items.forEach((item) => {
-            if (!item.id) return; 
-            const div = document.createElement("div");
-            div.className = "queue-item";
-            div.style.cursor = "pointer";
-            div.style.gap = "0.5rem";
-            div.innerHTML = `
-                        <span style="font-weight:700; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
-                        <span style="color:var(--ink-dim); font-size:0.68rem;">${escapeHtml(item.duration || "")}</span>
-                    `;
-            div.onclick = () => selectSearchResult(item.id, item.title);
-            resultsContainer.appendChild(div);
-          });
+          ytdlpSearchResults = items.filter((item) => !!item.id);
+          renderSearchResults();
         } catch (e) {
           resultsContainer.innerHTML = `<p style="text-align:center; color:var(--danger); font-size:0.75rem; margin:0.5rem 0;">${e.message}</p>`;
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
+          ytdlpSearchInFlight = false;
+        }
+      }
+
+      function renderSearchResults() {
+        const resultsContainer = document.getElementById("d-search-results");
+        resultsContainer.innerHTML = "";
+        ytdlpSearchResults.forEach((item, idx) => {
+          const div = document.createElement("div");
+          div.className = "queue-item";
+          div.dataset.searchIdx = String(idx);
+          div.style.cursor = "pointer";
+          div.style.gap = "0.5rem";
+          if (idx === ytdlpSearchActiveIndex) {
+            div.style.outline = "2px solid var(--accent, #5b8def)";
+            div.style.outlineOffset = "-2px";
+          }
+          const subtitle = item.uploader
+            ? `<span style="color:var(--ink-dim); font-size:0.66rem;">${escapeHtml(item.uploader)}</span>`
+            : "";
+          div.innerHTML = `
+                        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:0.1rem;">
+                          <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+                          ${subtitle}
+                        </div>
+                        <span style="color:var(--ink-dim); font-size:0.68rem; flex-shrink:0;">${escapeHtml(item.duration || "")}</span>
+                    `;
+          div.onclick = () => selectSearchResult(item.id, item.title);
+          div.onmouseenter = () => {
+            ytdlpSearchActiveIndex = idx;
+            renderSearchResults();
+          };
+          resultsContainer.appendChild(div);
+        });
+      }
+
+      function handleSearchInputKeydown(event) {
+        const hasResults = ytdlpSearchResults.length > 0;
+        const resultsVisible =
+          document.getElementById("d-search-results").style.display !== "none";
+
+        if (event.key === "Enter") {
+          event.preventDefault();
+          // Ist bereits ein Ergebnis per Pfeiltaste ausgewählt -> das übernehmen,
+          // statt eine komplett neue Suche auszulösen.
+          if (hasResults && resultsVisible && ytdlpSearchActiveIndex >= 0) {
+            const item = ytdlpSearchResults[ytdlpSearchActiveIndex];
+            selectSearchResult(item.id, item.title);
+          } else {
+            searchYtDlpByTitle();
+          }
+          return;
+        }
+
+        if (!hasResults || !resultsVisible) return;
+
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          ytdlpSearchActiveIndex = Math.min(
+            ytdlpSearchActiveIndex + 1,
+            ytdlpSearchResults.length - 1,
+          );
+          renderSearchResults();
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          ytdlpSearchActiveIndex = Math.max(ytdlpSearchActiveIndex - 1, 0);
+          renderSearchResults();
+        } else if (event.key === "Escape") {
+          document.getElementById("d-search-results").style.display = "none";
+          ytdlpSearchActiveIndex = -1;
         }
       }
 
@@ -616,6 +682,8 @@ function tokenizeCliFlags(str) {
         document.getElementById("d-url").value = url;
         document.getElementById("d-search-results").style.display = "none";
         document.getElementById("d-search-query").value = "";
+        ytdlpSearchResults = [];
+        ytdlpSearchActiveIndex = -1;
         showToast(t("toast.selected_title").replace("{title}", title), "success");
         
         // WICHTIG: Vorschau & GUI updaten, da JavaScript-Wertänderungen kein "oninput" auslösen
