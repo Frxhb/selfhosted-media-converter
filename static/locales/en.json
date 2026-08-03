@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Overview",
-    "import": "Import",
+    "import": "Download",
     "process": "Process",
     "ai_suite": "AI Suite",
     "output": "Output",
@@ -566,7 +566,9 @@
     "delete_failed_detail": "Deletion failed: ",
     "live_stopping": "Stopping recording, saving file...",
     "live_stop_failed": "Could not stop recording: ",
-    "logviewer_load_failed": "Failed to load logs."
+    "logviewer_load_failed": "Failed to load logs.",
+    "invalid_url": "Please enter a valid URL (starting with http:// or https://).",
+    "url_maybe_unsupported": "⚠️ {domain} may not be supported by yt-dlp. Trying anyway."
   },
   "confirm": {
     "reset_stats": "Reset all statistics?",

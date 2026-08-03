@@ -244,6 +244,16 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         return (raw || "").replace(/\s+/g, "").trim();
       }
 
+      function isLikelyValidUrl(str) {
+        if (!str) return false;
+        try {
+          const parsed = new URL(str);
+          return parsed.protocol === "http:" || parsed.protocol === "https:";
+        } catch (e) {
+          return false;
+        }
+      }
+
       /* ---------- PRIORITY SLIDER ---------- */
       const PRIORITY_HINTS = {
         low: t("settings.priority_hint_low"),

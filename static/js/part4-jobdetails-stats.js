@@ -1,11 +1,47 @@
-async function fetchYtDlpInfo() {
-        const url = sanitizeUrl(document.getElementById("d-url").value);
+async function checkUrlSupportHeuristic(url) {
+        try {
+          const res = await fetch(`/api/ytdlp-check-url?url=${encodeURIComponent(url)}`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (e) {
+          // Netzwerkfehler bei dieser rein informativen Vor-Prüfung soll den eigentlichen
+          // Ablauf (Info abrufen) niemals blockieren - einfach ohne Warnung weitermachen.
+          return null;
+        }
+      }
+
+      async function fetchYtDlpInfo() {
+        const rawUrl = document.getElementById("d-url").value;
+        const url = sanitizeUrl(rawUrl);
         if (!url) return showToast(t("toast.enter_url"), "warn");
+        if (!isLikelyValidUrl(url)) {
+          return showToast(
+            t(
+              "toast.invalid_url",
+              currentLang === "de"
+                ? "Bitte eine gültige URL eingeben (mit http:// oder https://)."
+                : "Please enter a valid URL (starting with http:// or https://).",
+            ),
+            "warn",
+          );
+        }
 
         const btn = document.getElementById("d-fetch-btn");
         btn.disabled = true;
         btn.textContent = "⏳...";
         clearDuplicateWarning();
+
+        // Schnelle, rein lokale Heuristik (kein yt-dlp-Aufruf) - warnt nur, blockiert nichts.
+        const support = await checkUrlSupportHeuristic(url);
+        if (support && support.supported === false) {
+          const warnMsg = t(
+            "toast.url_maybe_unsupported",
+            currentLang === "de"
+              ? "⚠️ {domain} wird evtl. nicht von yt-dlp unterstützt. Es wird trotzdem versucht."
+              : "⚠️ {domain} may not be supported by yt-dlp. Trying anyway.",
+          );
+          showToast(warnMsg.replace("{domain}", support.domain || url), "warn", 6000);
+        }
 
         try {
           // --- NEU: Browser-Sprache auslesen ---
@@ -15,7 +51,12 @@ async function fetchYtDlpInfo() {
           const res = await fetch(
             `/api/ytdlp-info?url=${encodeURIComponent(url)}&lang=${userLang}`,
           );
-          
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || t("toast.search_failed"));
+          }
+
           const info = await res.json();
           document.getElementById("d-info-title").textContent =
             info.title || t("label.unknown");

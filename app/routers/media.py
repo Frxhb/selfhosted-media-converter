@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query
 from app.database import find_similar_completed_jobs
 from app.models import MediaTagsUpdateRequest
 from app.core import MEDIA_TAG_EXTENSIONS, _resolve_media_path_safely
+from app.supported_sites import check_url_support
 
 logger = logging.getLogger("Main")
 router = APIRouter()
@@ -145,6 +146,17 @@ async def set_media_tags(request: MediaTagsUpdateRequest):
                 os.remove(tmp_path)
             except Exception:
                 pass
+
+
+@router.get("/api/ytdlp-check-url")
+async def check_ytdlp_url(url: str):
+    """
+    Rein lokale, schnelle Heuristik-Prüfung (kein yt-dlp-Aufruf, kein Netzwerk-Request) -
+    siehe app/supported_sites.py für Details und Einschränkungen. Wird vom Frontend vor
+    dem eigentlichen "Info abrufen" aufgerufen, um offensichtlich unsinnige Eingaben
+    (kein URL-Format) oder vermutlich nicht unterstützte Seiten früh zu erkennen.
+    """
+    return check_url_support((url or "").strip())
 
 
 @router.get("/api/ytdlp-info")

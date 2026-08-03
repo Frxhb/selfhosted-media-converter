@@ -725,6 +725,7 @@
                     placeholder="https://www.youtube.com/watch?v=..."
                     data-i18n-placeholder="downloader.url_placeholder"
                     oninput="updateDownloadPreview(); clearDuplicateWarning();"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();fetchYtDlpInfo();}"
                   />
                   <button
                     onclick="fetchYtDlpInfo()"

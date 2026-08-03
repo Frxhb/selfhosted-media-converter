@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Übersicht",
-    "import": "Import",
+    "import": "Download",
     "process": "Verarbeiten",
     "ai_suite": "KI-Suite",
     "output": "Ausgabe",
@@ -566,7 +566,9 @@
     "delete_failed_detail": "Löschen fehlgeschlagen: ",
     "live_stopping": "Aufnahme wird beendet, Datei wird gesichert...",
     "live_stop_failed": "Aufnahme konnte nicht beendet werden: ",
-    "logviewer_load_failed": "Logs konnten nicht geladen werden."
+    "logviewer_load_failed": "Logs konnten nicht geladen werden.",
+    "invalid_url": "Bitte eine gültige URL eingeben (mit http:// oder https://).",
+    "url_maybe_unsupported": "⚠️ {domain} wird evtl. nicht von yt-dlp unterstützt. Es wird trotzdem versucht."
   },
   "confirm": {
     "reset_stats": "Alle Statistiken zurücksetzen?",

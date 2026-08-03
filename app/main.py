@@ -17,6 +17,7 @@ from app.job_manager import job_manager
 from app.database import init_db, load_app_config
 from app.core import INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, FFMPEG_STATIC_DIR, DOWNLOAD_TEMP_DIR
 from app.subscription_manager import init_subscription_manager
+from app.supported_sites import ensure_supported_sites_cache_fresh
 
 from app.routers import system, stats, files, media, config, pipelines, jobs, subscriptions
 
@@ -107,6 +108,7 @@ async def lifespan(app: FastAPI):
     apply_persisted_config()
     asyncio.create_task(asyncio.to_thread(perform_auto_cleanup))
     asyncio.create_task(ensure_local_ffmpeg_wasm_assets())  # non-blocking: Server startet sofort
+    asyncio.create_task(ensure_supported_sites_cache_fresh())  # non-blocking, max. 1x/Woche
     await job_manager.start()
     subscription_manager = init_subscription_manager(job_manager)
     await subscription_manager.start()
