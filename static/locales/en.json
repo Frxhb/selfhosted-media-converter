@@ -380,9 +380,9 @@
     "save_btn": "Save Settings",
     "backup_btn": "Download Backup",
     "restore_btn": "Restore Backup",
-    "priority_hint_low": "Protects the system & other services the most. Jobs run slower, the web UI always stays snappy.",
-    "priority_hint_below_normal": "Good middle ground (default). Jobs run promptly without noticeably slowing down the interface.",
-    "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers.",
+    "priority_hint_low": "Protects the system and other services the most. Jobs run a bit slower, but the interface always stays snappy.",
+    "priority_hint_below_normal": "A good middle ground and the default setting. Jobs run promptly without noticeably slowing down the interface.",
+    "priority_hint_high": "Maximum speed for jobs. May slow down the web interface and other containers a little in the meantime.",
     "config_badge_tooltip": "Shows whether these values come from saved settings or from .env defaults",
     "disk_warning": "Only {free} GB free on /media/outputs. New jobs will be blocked once the value drops below {threshold} GB. Delete files you no longer need in the library.",
     "choose_file_btn": "Choose File",
@@ -685,7 +685,7 @@
   },
   "logviewer": {
     "title": "Log Viewer",
-    "description": "Shows the server log files directly in the interface, no container access needed. Handy for quickly checking errors or seeing what happened in the background.",
+    "description": "Shows the server log files directly in the interface, no container access needed. App log holds the actual application logic, access log holds HTTP requests (routine frontend polling is automatically filtered out there), error log holds only warnings and errors.",
     "refresh_btn": "🔄 Refresh",
     "copy_btn": "Copy",
     "download_btn": "⬇️ Download",
@@ -696,6 +696,7 @@
     "lines_suffix": "lines",
     "updated_at": "Updated at",
     "search_placeholder": "Search log...",
-    "autorefresh": "Auto-refresh (5s)"
+    "autorefresh": "Auto-refresh (5s)",
+    "level_access": "Access log (HTTP requests)"
   }
 }

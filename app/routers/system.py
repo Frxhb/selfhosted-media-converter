@@ -105,10 +105,14 @@ def restore_config(file: UploadFile = File(...)):
             os.remove(tmp_path)
 
 
+def _log_filename_for_level(level: str) -> str:
+    return {"error": "error.log", "access": "access.log"}.get(level, "app.log")
+
+
 @router.get("/api/logs")
 def get_logs(lines: int = Query(300, ge=10, le=5000), level: str = Query("app")):
-    """Liest die letzten N Zeilen aus app.log oder error.log für die UI-Anzeige."""
-    filename = "error.log" if level == "error" else "app.log"
+    """Liest die letzten N Zeilen aus app.log, error.log oder access.log für die UI-Anzeige."""
+    filename = _log_filename_for_level(level)
     path = os.path.join(LOG_DIR, filename)
     if not os.path.exists(path):
         return {"lines": [], "file": filename}
@@ -123,11 +127,11 @@ def get_logs(lines: int = Query(300, ge=10, le=5000), level: str = Query("app"))
 
 @router.get("/api/logs/download")
 def download_logs(level: str = Query("app")):
-    filename = "error.log" if level == "error" else "app.log"
+    filename = _log_filename_for_level(level)
     path = os.path.join(LOG_DIR, filename)
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Kein Log vorhanden")
-    download_name = "media_converter_error.log" if level == "error" else "media_converter_app.log"
+    download_name = f"media_converter_{filename}"
     return FileResponse(path, filename=download_name)
 
 

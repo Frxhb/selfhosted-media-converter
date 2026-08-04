@@ -380,9 +380,9 @@
     "save_btn": "Einstellungen speichern",
     "backup_btn": "Backup herunterladen",
     "restore_btn": "Backup wiederherstellen",
-    "priority_hint_low": "Schont System & andere Dienste am meiste. Jobs laufen langsamer, Web-UI bleibt immer flott.",
-    "priority_hint_below_normal": "Guter Mittelweg (Standard). Jobs laufen zügig, ohne die Oberfläche spürbar zu bremsen.",
-    "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container verlangsamen.",
+    "priority_hint_low": "Schont System und andere Dienste am meisten. Jobs laufen etwas langsamer, die Oberfläche bleibt aber immer flott.",
+    "priority_hint_below_normal": "Guter Mittelweg und die Standardeinstellung. Jobs laufen zügig, ohne die Oberfläche spürbar zu bremsen.",
+    "priority_hint_high": "Maximale Geschwindigkeit für Jobs. Kann die Web-Oberfläche und andere Container zwischendurch etwas verlangsamen.",
     "config_badge_tooltip": "Zeigt, ob diese Werte aus gespeicherten Einstellungen oder aus .env-Defaults stammen",
     "disk_warning": "Nur noch {free} GB frei auf /media/outputs. Neue Jobs werden blockiert, sobald der Wert unter {threshold} GB fällt. Lösche nicht mehr benötigte Dateien in der Bibliothek.",
     "choose_file_btn": "Datei auswählen",
@@ -685,7 +685,7 @@
   },
   "logviewer": {
     "title": "Log-Viewer",
-    "description": "Zeigt die Server-Logdateien direkt in der Oberfläche an, ganz ohne Container-Zugriff. Praktisch zum schnellen Prüfen von Fehlern oder zum Nachvollziehen, was im Hintergrund passiert ist.",
+    "description": "Zeigt die Server-Logdateien direkt in der Oberfläche an, ganz ohne Container-Zugriff. App-Log enthält die eigentliche Anwendungslogik, Access-Log die HTTP-Anfragen (wiederkehrende Frontend-Abfragen werden dort automatisch herausgefiltert), Error-Log nur Warnungen und Fehler.",
     "refresh_btn": "🔄 Aktualisieren",
     "copy_btn": "Kopieren",
     "download_btn": "⬇️ Download",
@@ -696,6 +696,7 @@
     "lines_suffix": "Zeilen",
     "updated_at": "Aktualisiert um",
     "search_placeholder": "Log durchsuchen...",
-    "autorefresh": "Auto-Aktualisierung (5s)"
+    "autorefresh": "Auto-Aktualisierung (5s)",
+    "level_access": "Access-Log (HTTP-Anfragen)"
   }
 }

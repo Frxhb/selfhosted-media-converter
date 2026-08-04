@@ -255,12 +255,21 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
       }
 
       /* ---------- PRIORITY SLIDER ---------- */
-      const PRIORITY_HINTS = {
-        low: t("settings.priority_hint_low"),
-        below_normal: t("settings.priority_hint_below_normal"),
-        high: t("settings.priority_hint_high"),
-      };
+      // WICHTIG: t() hier NICHT in eine einmalig gebaute Konstante schreiben - diese
+      // Datei läuft synchron beim Parsen der Seite, BEVOR i18n.js auf "DOMContentLoaded"
+      // die Übersetzungen nachlädt. Ein t()-Aufruf an dieser Stelle würde für immer den
+      // rohen Übersetzungsschlüssel (z.B. "settings.priority_hint_high") statt des Textes
+      // zwischenspeichern. Stattdessen wird bei jeder Anzeige live nachgeschlagen.
+      function getPriorityHint(value) {
+        const key = {
+          low: "settings.priority_hint_low",
+          below_normal: "settings.priority_hint_below_normal",
+          high: "settings.priority_hint_high",
+        }[value] || "settings.priority_hint_below_normal";
+        return t(key);
+      }
       const PRIORITY_SLOT_INDEX = { low: 0, below_normal: 1, high: 2 };
+      const PRIORITY_ICONS = { low: "🐢", below_normal: "⚖️", high: "⚡" };
 
       function setPrioritySlider(value) {
         document.getElementById("cfg-process-priority").value = value;
@@ -276,8 +285,8 @@ const tabQueues = { audio: [], video: [], images: [], tools: [] };
         const slot = PRIORITY_SLOT_INDEX[value] ?? 1;
         thumb.style.transform = `translateX(${slot * 100}%)`;
 
-        document.getElementById("priority-hint").textContent =
-          PRIORITY_HINTS[value] || PRIORITY_HINTS.below_normal;
+        const hintEl = document.getElementById("priority-hint");
+        hintEl.innerHTML = `<span class="priority-hint-icon">${PRIORITY_ICONS[value] || PRIORITY_ICONS.below_normal}</span><span>${escapeHtml(getPriorityHint(value))}</span>`;
       }
 
       function normalizePriorityForSlider(rawValue) {

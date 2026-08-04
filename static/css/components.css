@@ -207,7 +207,7 @@
       .priority-slider-wrap {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.6rem;
       }
 
       .priority-track {
@@ -221,6 +221,7 @@
 
       .priority-option {
         flex: 1;
+        min-width: 0;
         text-align: center;
         padding: 0.5rem 0.4rem;
         font-size: 0.74rem;
@@ -230,6 +231,9 @@
         color: var(--ink-dim);
         position: relative;
         z-index: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         transition: color 0.2s;
         user-select: none;
       }
@@ -251,9 +255,23 @@
       }
 
       .priority-hint {
-        font-size: 0.68rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        font-size: 0.74rem;
+        line-height: 1.45;
         color: var(--ink-dim);
         min-height: 1.4em;
+        background: var(--surface-sunken);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 0.55rem 0.7rem;
+      }
+
+      .priority-hint-icon {
+        flex-shrink: 0;
+        font-size: 0.95rem;
+        line-height: 1.45;
       }
 
       /* ---------- ALERT / WARNING BANNERS ---------- */

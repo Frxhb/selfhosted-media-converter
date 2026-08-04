@@ -1818,9 +1818,10 @@
                 data-i18n="logviewer.description"
               >
                 Zeigt die Server-Logdateien direkt in der Oberfläche an, ganz
-                ohne Container-Zugriff. Praktisch zum schnellen Prüfen von
-                Fehlern oder zum Nachvollziehen, was im Hintergrund passiert
-                ist.
+                ohne Container-Zugriff. App-Log enthält die eigentliche
+                Anwendungslogik, Access-Log die HTTP-Anfragen (wiederkehrende
+                Frontend-Abfragen werden dort automatisch herausgefiltert),
+                Error-Log nur Warnungen und Fehler.
               </p>
 
               <div
@@ -1840,6 +1841,9 @@
                     </option>
                     <option value="error" data-i18n="logviewer.level_error">
                       Error-Log (nur Warnungen/Fehler)
+                    </option>
+                    <option value="access" data-i18n="logviewer.level_access">
+                      Access-Log (HTTP-Anfragen)
                     </option>
                   </select>
                 </div>
