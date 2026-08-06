@@ -114,6 +114,7 @@ class Subscription(BaseModel):
     last_check_error: Optional[str] = None
     last_check_new_count: int = 0
     total_downloaded: int = 0
+    consecutive_failures: int = 0  # für Backoff bei wiederholt fehlschlagenden Checks, siehe subscription_manager.py
 
 class SubscriptionCreateRequest(BaseModel):
     name: str

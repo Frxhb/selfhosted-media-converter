@@ -25,6 +25,27 @@ logger = logging.getLogger("SubscriptionManager")
 # oft im Leerlauf zu prüfen).
 SCHEDULER_TICK_SECONDS = 60
 
+# Backoff für fehlschlagende Abo-Checks: ohne dies würde ein transienter Fehler (z.B.
+# YouTube-Rate-Limiting, kurzer Netzwerk-Aussetzer) dazu führen, dass die Subscription erst
+# beim NÄCHSTEN reguladdren Intervall erneut geprüft wird - bei einem 6h-Intervall im
+# schlimmsten Fall fast 6 Stunden Wartezeit für einen einzigen Ausrutscher. Stattdessen wird
+# nach einem Fehler exponentiell schneller erneut versucht (2, 4, 8, 16, ... Minuten),
+# gedeckelt durch das reguläre Intervall selbst (nie öfter als normal) und einen harten
+# Maximalwert (nie länger als das normale Intervall warten müssen, selbst bei sehr langen
+# Intervallen).
+BACKOFF_BASE_MINUTES = 2
+BACKOFF_MAX_MINUTES = 240
+
+
+def _next_check_delay_minutes(sub: Subscription) -> int:
+    """Wie viele Minuten seit dem letzten Check müssen vergangen sein, bevor ein erneuter
+    Check fällig ist? Normalerweise das konfigurierte Intervall - nach einem Fehlschlag
+    stattdessen ein kürzeres, exponentiell wachsendes Backoff-Intervall."""
+    if sub.last_check_status == "error" and sub.consecutive_failures > 0:
+        backoff = BACKOFF_BASE_MINUTES * (2 ** (sub.consecutive_failures - 1))
+        return max(1, min(backoff, sub.check_interval_minutes, BACKOFF_MAX_MINUTES))
+    return sub.check_interval_minutes
+
 
 class SubscriptionManager:
     def __init__(self, job_manager):
@@ -109,7 +130,7 @@ class SubscriptionManager:
             if sub.last_checked_at:
                 try:
                     last = datetime.fromisoformat(sub.last_checked_at)
-                    due = now >= last + timedelta(minutes=sub.check_interval_minutes)
+                    due = now >= last + timedelta(minutes=_next_check_delay_minutes(sub))
                 except Exception:
                     due = True
             if due:
@@ -144,11 +165,13 @@ class SubscriptionManager:
                 sub.last_check_status = "error"
                 sub.last_check_error = error_msg[:500]
                 sub.last_check_new_count = 0
+                sub.consecutive_failures += 1
                 self._persist()
                 return {"status": "error", "detail": error_msg}
 
             sub.last_check_status = "ok"
             sub.last_check_error = None
+            sub.consecutive_failures = 0
 
             # WICHTIG: Beim allerersten Check einer Subscription (Archiv-Datei existiert
             # noch nicht) gilt der GESAMTE bisherige Kanal-Katalog als "neu" - das würde bei

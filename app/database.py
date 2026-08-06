@@ -62,6 +62,16 @@ def init_db():
                 except Exception as e:
                     logger.warning(f"Spalte '{col}' konnte nicht hinzugefügt werden: {e}")
 
+        # Index für find_similar_completed_jobs() - läuft bei jedem "Info abrufen" im
+        # Download-Tab (Duplikat-Fingerprint-Check). Spaltenreihenfolge folgt der WHERE-
+        # Klausel dort: status ist eine Gleichheitsprüfung (kommt zuerst), size_mb/
+        # duration_sec sind BETWEEN-Bereichsabfragen (danach) - so kann SQLite den Index
+        # für alle drei Bedingungen nutzen statt nur für die erste.
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_job_history_dup_lookup "
+            "ON job_history(status, size_mb, duration_sec)"
+        )
+
 
 def record_job(job_id: str, title: str, job_type: str, status: str,
                size_mb: float = 0.0, duration_sec: float = 0.0, ext: str = "",

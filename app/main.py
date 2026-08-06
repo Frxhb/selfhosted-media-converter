@@ -1,4 +1,5 @@
 import os
+import shutil
 import asyncio
 import urllib.request
 import logging
@@ -31,6 +32,53 @@ for directory in [INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, FFMPEG_STATIC_DIR, DOWNLOAD
             os.makedirs(directory, exist_ok=True)
     except Exception:
         pass
+
+
+def cleanup_stale_download_temp_dir():
+    """Räumt beim Start verwaiste Dateien/Ordner aus DOWNLOAD_TEMP_DIR auf.
+
+    job_manager selbst hält keine Job-Warteschlange auf Platte vor (self.jobs ist rein
+    In-Memory) - läuft der Container neu an, ist die Job-Liste also einfach leer, es gibt
+    keine "hängengebliebenen" Job-Einträge zu bereinigen. Was aber tatsächlich zurückbleiben
+    kann: DOWNLOAD_TEMP_DIR liegt unter /tmp und wird bei einem reinen Prozess-Neustart
+    (docker-compose 'restart: unless-stopped' startet i.d.R. denselben Container neu, keinen
+    frischen) NICHT automatisch geleert. Wurde ein Abo-Download durch einen Absturz/Neustart
+    mittendrin unterbrochen, bleibt die dortige Teildatei liegen und sammelt sich über die Zeit
+    an. Alles darin ist per Definition unvollständig - ein erfolgreich abgeschlossener Download
+    wird von yt-dlp selbst aus dem Temp-Verzeichnis in den finalen Output-Ordner verschoben.
+    """
+    if not os.path.isdir(DOWNLOAD_TEMP_DIR):
+        return
+    removed_count = 0
+    removed_bytes = 0
+    for entry in os.listdir(DOWNLOAD_TEMP_DIR):
+        full_path = os.path.join(DOWNLOAD_TEMP_DIR, entry)
+        try:
+            if os.path.isfile(full_path) or os.path.islink(full_path):
+                removed_bytes += os.path.getsize(full_path)
+                os.remove(full_path)
+                removed_count += 1
+            elif os.path.isdir(full_path):
+                for root, _, filenames in os.walk(full_path):
+                    for name in filenames:
+                        try:
+                            removed_bytes += os.path.getsize(os.path.join(root, name))
+                        except Exception:
+                            pass
+                shutil.rmtree(full_path, ignore_errors=True)
+                removed_count += 1
+        except Exception as e:
+            logger.warning(f"Konnte verwaiste Datei/Ordner im Download-Staging-Verzeichnis nicht entfernen: {entry} ({e})")
+
+    if removed_count > 0:
+        logger.info(
+            f"Beim Start: {removed_count} verwaiste Datei(en)/Ordner aus dem Download-"
+            f"Staging-Verzeichnis entfernt ({removed_bytes / (1024 * 1024):.1f} MB) - "
+            f"vermutlich Reste eines durch Absturz/Neustart unterbrochenen Downloads."
+        )
+
+
+cleanup_stale_download_temp_dir()
 
 
 def download_asset_sync(filename: str, url: str):

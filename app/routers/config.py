@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.job_manager import job_manager
 from app.database import save_app_config
 from app.models import AppConfig
-from app.core import CONFIG_DIR, COOKIES_DIR, COOKIES_FILE_PATH, get_cookies_status
+from app.core import CONFIG_DIR, COOKIES_DIR, COOKIES_FILE_PATH, get_cookies_status, check_cookies_expiry
 
 router = APIRouter()
 
@@ -77,6 +77,14 @@ def get_cookies():
     Upload-Datum, Größe). Der Inhalt der Datei selbst wird nie über die API ausgegeben,
     da Cookies sensible Session-Tokens enthalten."""
     return get_cookies_status()
+
+
+@router.get("/api/config/cookies/test")
+def test_cookies():
+    """Prüft lokal (kein Netzwerk-Request, kein yt-dlp-Aufruf), ob die hinterlegten Cookies
+    laut ihrem eigenen Ablaufdatum bereits abgelaufen sind. Kein Login-Test - siehe
+    check_cookies_expiry() in app/core.py für die genaue Einschränkung."""
+    return check_cookies_expiry()
 
 
 @router.post("/api/config/cookies")

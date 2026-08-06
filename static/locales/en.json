@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Overview",
-    "import": "Download",
+    "import": "Import",
     "process": "Process",
     "ai_suite": "AI Suite",
     "output": "Output",
@@ -393,7 +393,12 @@
     "theme_sepia": "Sepia",
     "theme_midnight": "Midnight Blue",
     "theme_forest": "Forest",
-    "theme_oled": "OLED Black"
+    "theme_oled": "OLED Black",
+    "cookies_test_btn": "Test",
+    "cookies_test_all_expired": "⚠️ All {count} cookies with an expiry date have already expired. Please export and upload again.",
+    "cookies_test_some_expired": "⚠️ {expired} of {total} cookies have already expired.",
+    "cookies_test_ok": "✓ All {total} cookies with an expiry date are still valid.",
+    "cookies_test_earliest": "Earliest expiry: {date}."
   },
   "modals": {
     "playlist_detected": "Playlist Detected",

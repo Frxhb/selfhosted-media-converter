@@ -556,7 +556,10 @@ function removeFromTabQueue(tab, index) {
       async function loadCookiesStatus() {
         const textEl = document.getElementById("cookies-status-text");
         const delBtn = document.getElementById("btn-cookies-delete");
+        const testBtn = document.getElementById("btn-cookies-test");
+        const resultEl = document.getElementById("cookies-test-result");
         if (!textEl) return;
+        if (resultEl) resultEl.classList.add("u-hidden");
         try {
           const res = await fetch("/api/config/cookies");
           const data = await res.json();
@@ -572,15 +575,91 @@ function removeFromTabQueue(tab, index) {
               : t("label.unknown");
             textEl.textContent = t("label.cookies_active").replace("{date}", uploaded);
             textEl.style.color = "var(--ok)";
-            if (delBtn) delBtn.style.display = "";
+            if (delBtn) delBtn.classList.remove("u-hidden");
+            if (testBtn) testBtn.classList.remove("u-hidden");
           } else {
             textEl.textContent = t("toast.no_cookies_stored");
             textEl.style.color = "var(--ink-dim)";
-            if (delBtn) delBtn.style.display = "none";
+            if (delBtn) delBtn.classList.add("u-hidden");
+            if (testBtn) testBtn.classList.add("u-hidden");
           }
         } catch (e) {
           textEl.textContent = t("toast.cookies_status_load_failed");
           textEl.style.color = "var(--ink-dim)";
+        }
+      }
+
+      async function testCookiesExpiry() {
+        const resultEl = document.getElementById("cookies-test-result");
+        const btn = document.getElementById("btn-cookies-test");
+        if (!resultEl) return;
+
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "⏳...";
+
+        try {
+          const res = await fetch("/api/config/cookies/test");
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          resultEl.classList.remove("u-hidden");
+
+          if (!data.has_cookies) {
+            resultEl.textContent = t("toast.no_cookies_stored");
+            resultEl.style.background = "var(--surface-sunken)";
+            resultEl.style.border = "1px solid var(--line)";
+            resultEl.style.color = "var(--ink-dim)";
+            return;
+          }
+          if (data.error) {
+            resultEl.textContent = `⚠️ ${data.error}`;
+            resultEl.style.background = "rgba(220, 90, 90, 0.1)";
+            resultEl.style.border = "1px solid var(--danger)";
+            resultEl.style.color = "var(--danger)";
+            return;
+          }
+
+          if (data.all_expired) {
+            resultEl.textContent = t("settings.cookies_test_all_expired").replace(
+              "{count}",
+              data.expired,
+            );
+            resultEl.style.background = "rgba(220, 90, 90, 0.1)";
+            resultEl.style.border = "1px solid var(--danger)";
+            resultEl.style.color = "var(--danger)";
+          } else if (data.expired > 0) {
+            let msg = t("settings.cookies_test_some_expired")
+              .replace("{expired}", data.expired)
+              .replace("{total}", data.total);
+            if (data.earliest_expiry) {
+              const d = new Date(data.earliest_expiry).toLocaleDateString("de-DE");
+              msg += " " + t("settings.cookies_test_earliest").replace("{date}", d);
+            }
+            resultEl.textContent = msg;
+            resultEl.style.background = "rgba(245, 196, 81, 0.1)";
+            resultEl.style.border = "1px solid var(--warn)";
+            resultEl.style.color = "var(--warn)";
+          } else {
+            let msg = t("settings.cookies_test_ok").replace("{total}", data.total);
+            if (data.earliest_expiry) {
+              const d = new Date(data.earliest_expiry).toLocaleDateString("de-DE");
+              msg += " " + t("settings.cookies_test_earliest").replace("{date}", d);
+            }
+            resultEl.textContent = msg;
+            resultEl.style.background = "rgba(107, 190, 122, 0.12)";
+            resultEl.style.border = "1px solid var(--ok)";
+            resultEl.style.color = "var(--ok)";
+          }
+        } catch (e) {
+          resultEl.classList.remove("u-hidden");
+          resultEl.textContent = t("toast.cookies_status_load_failed");
+          resultEl.style.background = "rgba(220, 90, 90, 0.1)";
+          resultEl.style.border = "1px solid var(--danger)";
+          resultEl.style.color = "var(--danger)";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
         }
       }
 

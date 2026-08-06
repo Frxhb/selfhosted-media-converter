@@ -5,6 +5,7 @@ import json
 import time
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from fastapi import APIRouter, HTTPException, Query
 
 from app.database import find_similar_completed_jobs
@@ -14,6 +15,35 @@ from app.supported_sites import check_url_support
 
 logger = logging.getLogger("Main")
 router = APIRouter()
+
+# Anders als echte Download-/Konvertierungs-Jobs (die über job_manager's Worker-Pool laufen
+# und dadurch durch "Max. parallele Jobs" begrenzt sind) laufen diese drei Vorschau-Endpunkte
+# (Info abrufen, Playlist-Vorschau, Titel-Suche) als eigene, sofortige yt-dlp-Subprozesse pro
+# Anfrage - ohne dieses Limit könnte z.B. mehrfaches schnelles Klicken auf "Info abrufen" oder
+# mehrere offene Tabs beliebig viele parallele yt-dlp-Prozesse erzeugen und den Server/die
+# Netzwerkverbindung überlasten.
+_YTDLP_PREVIEW_SEMAPHORE = asyncio.Semaphore(3)
+_YTDLP_PREVIEW_SEMAPHORE_WAIT_TIMEOUT = 15.0
+
+
+@asynccontextmanager
+async def _ytdlp_preview_slot():
+    """Wartet auf einen freien Slot (max. 3 gleichzeitige Vorschau-Subprozesse). Wenn selbst
+    das Warten zu lange dauert (Server bereits stark ausgelastet), wird ein 503 zurückgegeben
+    statt die Anfrage unbegrenzt in der Warteschlange verhungern zu lassen."""
+    try:
+        await asyncio.wait_for(
+            _YTDLP_PREVIEW_SEMAPHORE.acquire(), timeout=_YTDLP_PREVIEW_SEMAPHORE_WAIT_TIMEOUT
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=503,
+            detail="Server ist aktuell mit zu vielen yt-dlp-Anfragen beschäftigt. Bitte kurz warten und erneut versuchen.",
+        )
+    try:
+        yield
+    finally:
+        _YTDLP_PREVIEW_SEMAPHORE.release()
 
 
 @router.get("/api/media-info")
@@ -161,104 +191,106 @@ async def check_ytdlp_url(url: str):
 
 @router.get("/api/ytdlp-info")
 async def get_ytdlp_info(url: str, cookies: str = "none", po_token: str = "", lang: str = "en"):
-    cmd = ["yt-dlp", "--dump-json", "--no-playlist", "--no-warnings"]
-    if cookies != "none":
-        cmd.extend(["--cookies-from-browser", cookies])
+    async with _ytdlp_preview_slot():
+        cmd = ["yt-dlp", "--dump-json", "--no-playlist", "--no-warnings"]
+        if cookies != "none":
+            cmd.extend(["--cookies-from-browser", cookies])
 
-    # Dynamische Sprache statt hart codiertem en-US
-    cmd.extend(["--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8"])
+        # Dynamische Sprache statt hart codiertem en-US
+        cmd.extend(["--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8"])
 
-    # Fallback-Kette für 403 Forbidden Fehler hinzugefügt: player_client=default,android,ios,web
-    ext_args = "youtube:player_client=default,android,ios,web"
-    if po_token.strip():
-        ext_args += f";po_token=web+{po_token.strip()}"
+        # Fallback-Kette für 403 Forbidden Fehler hinzugefügt: player_client=default,android,ios,web
+        ext_args = "youtube:player_client=default,android,ios,web"
+        if po_token.strip():
+            ext_args += f";po_token=web+{po_token.strip()}"
     
-    # Sprach-Argument für den Extractor
-    ext_args += f";lang={lang}"
+        # Sprach-Argument für den Extractor
+        ext_args += f";lang={lang}"
     
-    cmd.extend(["--extractor-args", ext_args, url])
+        cmd.extend(["--extractor-args", ext_args, url])
 
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30.0)
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
-        raise HTTPException(status_code=504, detail="yt-dlp hat zu lange für die Metadaten-Abfrage gebraucht (Timeout nach 30s).")
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30.0)
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.wait()
+            raise HTTPException(status_code=504, detail="yt-dlp hat zu lange für die Metadaten-Abfrage gebraucht (Timeout nach 30s).")
 
-    if proc.returncode != 0:
-        err_msg = stderr.decode('utf-8', errors='replace').strip() or stdout.decode('utf-8', errors='replace').strip()
-        raise HTTPException(status_code=400, detail=f"yt-dlp Fehler: {err_msg[:250]}")
+        if proc.returncode != 0:
+            err_msg = stderr.decode('utf-8', errors='replace').strip() or stdout.decode('utf-8', errors='replace').strip()
+            raise HTTPException(status_code=400, detail=f"yt-dlp Fehler: {err_msg[:250]}")
 
-    try:
-        data = json.loads(stdout.decode('utf-8', errors='replace'))
-        if isinstance(data, list) and len(data) > 0:
-            data = data[0]
+        try:
+            data = json.loads(stdout.decode('utf-8', errors='replace'))
+            if isinstance(data, list) and len(data) > 0:
+                data = data[0]
 
-        title = data.get("title", "Unbekannter Titel")
-        list_match = re.search(r"[?&]list=([\w-]+)", url)
-        if list_match:
-            list_id = list_match.group(1)
-            if list_id.startswith("RD"):
-                title = f"{title} (Radio/Mix)"
-            else:
-                title = f"{title} (Playlist)"
+            title = data.get("title", "Unbekannter Titel")
+            list_match = re.search(r"[?&]list=([\w-]+)", url)
+            if list_match:
+                list_id = list_match.group(1)
+                if list_id.startswith("RD"):
+                    title = f"{title} (Radio/Mix)"
+                else:
+                    title = f"{title} (Playlist)"
 
-        return {
-            "title": title,
-            "duration": data.get("duration_string") or str(data.get("duration", "Unbekannt")),
-            "uploader": data.get("uploader") or data.get("channel", "Unbekannt"),
-            "thumbnail": data.get("thumbnail")
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Parsing Fehler: {str(e)}")
+            return {
+                "title": title,
+                "duration": data.get("duration_string") or str(data.get("duration", "Unbekannt")),
+                "uploader": data.get("uploader") or data.get("channel", "Unbekannt"),
+                "thumbnail": data.get("thumbnail")
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Parsing Fehler: {str(e)}")
 
 
 @router.get("/api/ytdlp-playlist-items")
 async def get_ytdlp_playlist_items(url: str, max_items: int = Query(500, ge=1, le=5000), lang: str = "en"):
-    cmd = [
-        "yt-dlp",
-        "--flat-playlist",
-        "--dump-json",
-        "--no-warnings",
-        "--ignore-errors",
-        "--playlist-end", str(max_items),
-        # Dynamische Sprache statt hart codiertem en-US
-        "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
-        # Fallback-Kette für 403 Forbidden Fehler + Sprache
-        "--extractor-args", f"youtube:player_client=default,android,ios,web;lang={lang}",
-        url
-    ]
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=45.0)
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
-        raise HTTPException(status_code=504, detail="Playlist-Abfrage hat zu lange gedauert (Timeout nach 45s). Bei sehr großen Playlists ggf. direkt als Download-Job starten.")
-
-    items = []
-    raw_lines = stdout.decode('utf-8', errors='replace').splitlines()
-    for line in raw_lines:
-        line = line.strip()
-        if not line:
-            continue
+    async with _ytdlp_preview_slot():
+        cmd = [
+            "yt-dlp",
+            "--flat-playlist",
+            "--dump-json",
+            "--no-warnings",
+            "--ignore-errors",
+            "--playlist-end", str(max_items),
+            # Dynamische Sprache statt hart codiertem en-US
+            "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
+            # Fallback-Kette für 403 Forbidden Fehler + Sprache
+            "--extractor-args", f"youtube:player_client=default,android,ios,web;lang={lang}",
+            url
+        ]
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         try:
-            data = json.loads(line)
-            items.append({
-                "index": data.get("playlist_index") or (len(items) + 1),
-                "id": data.get("id"),
-                "title": data.get("title", "Unbekannter Titel"),
-                "duration": data.get("duration_string") or ""
-            })
-        except Exception:
-            pass
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=45.0)
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.wait()
+            raise HTTPException(status_code=504, detail="Playlist-Abfrage hat zu lange gedauert (Timeout nach 45s). Bei sehr großen Playlists ggf. direkt als Download-Job starten.")
 
-    if not items and proc.returncode != 0:
-        err_msg = stderr.decode('utf-8', errors='replace').strip() or stdout.decode('utf-8', errors='replace').strip()
-        raise HTTPException(status_code=400, detail=f"Playlist konnte nicht geladen werden: {err_msg[:200]}")
+        items = []
+        raw_lines = stdout.decode('utf-8', errors='replace').splitlines()
+        for line in raw_lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+                items.append({
+                    "index": data.get("playlist_index") or (len(items) + 1),
+                    "id": data.get("id"),
+                    "title": data.get("title", "Unbekannter Titel"),
+                    "duration": data.get("duration_string") or ""
+                })
+            except Exception:
+                pass
 
-    return items
+        if not items and proc.returncode != 0:
+            err_msg = stderr.decode('utf-8', errors='replace').strip() or stdout.decode('utf-8', errors='replace').strip()
+            raise HTTPException(status_code=400, detail=f"Playlist konnte nicht geladen werden: {err_msg[:200]}")
+
+        return items
 
 
 # Einfacher In-Memory TTL-Cache für Titel-Suchen. Verhindert, dass identische Suchen
@@ -310,51 +342,52 @@ async def search_ytdlp_by_title(q: str, max_results: int = Query(8, ge=1, le=20)
     if cached is not None:
         return cached
 
-    cmd = [
-        "yt-dlp",
-        "--flat-playlist",
-        "--dump-json",
-        "--no-warnings",
-        "--ignore-errors",
-        "--socket-timeout", "8",
-        # Für Suche reicht ein einzelner Client - die Multi-Client-Fallback-Kette
-        # (default,android,ios,web) im Playlist-Endpunkt existiert, um 403-Fehler beim
-        # tatsächlichen Download zu umgehen, kostet hier aber nur unnötig Zeit.
-        "--extractor-args", f"youtube:player_client=web;lang={lang}",
-        "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
-        f"ytsearch{max_results}:{query}",
-    ]
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=18.0)
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
-        logger.warning(f"yt-dlp Titel-Suche Timeout für Query '{query}'")
-        raise HTTPException(status_code=504, detail="Suche hat zu lange gedauert (Timeout nach 18s).")
-
-    items = []
-    for line in stdout.decode("utf-8", errors="replace").splitlines():
-        line = line.strip()
-        if not line:
-            continue
+    async with _ytdlp_preview_slot():
+        cmd = [
+            "yt-dlp",
+            "--flat-playlist",
+            "--dump-json",
+            "--no-warnings",
+            "--ignore-errors",
+            "--socket-timeout", "8",
+            # Für Suche reicht ein einzelner Client - die Multi-Client-Fallback-Kette
+            # (default,android,ios,web) im Playlist-Endpunkt existiert, um 403-Fehler beim
+            # tatsächlichen Download zu umgehen, kostet hier aber nur unnötig Zeit.
+            "--extractor-args", f"youtube:player_client=web;lang={lang}",
+            "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
+            f"ytsearch{max_results}:{query}",
+        ]
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         try:
-            data = json.loads(line)
-        except Exception:
-            continue
-        if not data.get("id"):
-            continue
-        items.append({
-            "id": data.get("id"),
-            "title": data.get("title", "Unbekannter Titel"),
-            "duration": data.get("duration_string") or "",
-            "uploader": data.get("uploader") or data.get("channel") or "",
-        })
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=18.0)
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.wait()
+            logger.warning(f"yt-dlp Titel-Suche Timeout für Query '{query}'")
+            raise HTTPException(status_code=504, detail="Suche hat zu lange gedauert (Timeout nach 18s).")
 
-    if not items and proc.returncode != 0:
-        err_msg = stderr.decode("utf-8", errors="replace").strip()
-        logger.warning(f"yt-dlp Titel-Suche fehlgeschlagen für Query '{query}': {err_msg[:300]}")
-        raise HTTPException(status_code=400, detail=f"Suche fehlgeschlagen: {err_msg[:200]}")
+        items = []
+        for line in stdout.decode("utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except Exception:
+                continue
+            if not data.get("id"):
+                continue
+            items.append({
+                "id": data.get("id"),
+                "title": data.get("title", "Unbekannter Titel"),
+                "duration": data.get("duration_string") or "",
+                "uploader": data.get("uploader") or data.get("channel") or "",
+            })
 
-    _search_cache_set(cache_key, items)
-    return items
+        if not items and proc.returncode != 0:
+            err_msg = stderr.decode("utf-8", errors="replace").strip()
+            logger.warning(f"yt-dlp Titel-Suche fehlgeschlagen für Query '{query}': {err_msg[:300]}")
+            raise HTTPException(status_code=400, detail=f"Suche fehlgeschlagen: {err_msg[:200]}")
+
+        _search_cache_set(cache_key, items)
+        return items

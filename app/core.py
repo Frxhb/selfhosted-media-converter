@@ -240,3 +240,64 @@ def get_cookies_status() -> dict:
         }
     except Exception:
         return {"active": False, "uploaded_at": None, "size_bytes": 0}
+
+
+def check_cookies_expiry() -> dict:
+    """Prüft rein lokal (kein Netzwerk-Zugriff, kein yt-dlp-Aufruf), ob die hinterlegten
+    Cookies laut ihrem eigenen Ablaufdatum bereits abgelaufen sind - anhand des
+    Expiration-Feldes im Netscape-Cookie-Format (Spalte 5, Unix-Timestamp, 0 = reiner
+    Session-Cookie ohne festes Ablaufdatum).
+
+    WICHTIG: Das ist KEIN Login-Test - ob eine Seite die Cookies noch als gültig
+    akzeptiert, kann nur ein echter Request an diese Seite beantworten (und selbst dann
+    site-abhängig unzuverlässig). Diese Funktion beantwortet nur die deutlich engere,
+    aber lokal und ohne Netzwerk zuverlässig beantwortbare Frage: "ist das im Cookie
+    selbst hinterlegte Ablaufdatum schon in der Vergangenheit?" - der häufigste, am
+    einfachsten erkennbare Grund für "Downloads mit Cookies funktionieren plötzlich
+    nicht mehr"."""
+    if not os.path.exists(COOKIES_FILE_PATH):
+        return {"has_cookies": False}
+
+    now = datetime.now().timestamp()
+    total = 0
+    expired = 0
+    session_only = 0
+    soonest_valid_expiry = None
+
+    try:
+        with open(COOKIES_FILE_PATH, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.rstrip("\n")
+                if not line.strip() or line.startswith("#"):
+                    continue
+                parts = line.split("\t")
+                if len(parts) != 7:
+                    continue  # Zeile entspricht nicht dem erwarteten Netscape-Format, überspringen
+                total += 1
+                try:
+                    expiry = float(parts[4])
+                except ValueError:
+                    continue
+                if expiry == 0:
+                    session_only += 1
+                elif expiry < now:
+                    expired += 1
+                elif soonest_valid_expiry is None or expiry < soonest_valid_expiry:
+                    soonest_valid_expiry = expiry
+    except Exception as e:
+        return {"has_cookies": True, "error": f"Cookies-Datei konnte nicht gelesen werden: {e}"}
+
+    if total == 0:
+        return {"has_cookies": True, "total": 0, "expired": 0, "all_expired": False}
+
+    with_expiry = total - session_only
+    return {
+        "has_cookies": True,
+        "total": total,
+        "expired": expired,
+        "session_only": session_only,
+        "all_expired": with_expiry > 0 and expired == with_expiry,
+        "earliest_expiry": (
+            datetime.fromtimestamp(soonest_valid_expiry).isoformat() if soonest_valid_expiry else None
+        ),
+    }

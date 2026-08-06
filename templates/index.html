@@ -3322,15 +3322,36 @@
                   data-i18n="common.loading"
                   >Status wird geladen...</span
                 >
-                <button
+                <div style="display: flex; gap: 0.4rem; flex-shrink: 0">
+                  <button
+onclick="testCookiesExpiry()"
+id="btn-cookies-test"
+class="btn btn-secondary btn-sm u-hidden"
+data-i18n="settings.cookies_test_btn"
+>
+                    Testen
+                  </button>
+                  <button
  onclick="deleteCookiesFile()"
  id="btn-cookies-delete"
  class="btn btn-danger btn-sm u-hidden"
  data-i18n="common.remove"
  >
-                  Entfernen
-                </button>
+                    Entfernen
+                  </button>
+                </div>
               </div>
+              <div
+                id="cookies-test-result"
+                class="u-hidden"
+                style="
+                  font-size: 0.74rem;
+                  line-height: 1.45;
+                  border-radius: var(--radius-sm);
+                  padding: 0.5rem 0.65rem;
+                  margin: -0.2rem 0 0.6rem;
+                "
+              ></div>
               <label
                 for="cookies-upload-input"
                 class="btn btn-secondary btn-sm"

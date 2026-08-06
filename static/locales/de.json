@@ -12,7 +12,7 @@
   },
   "nav": {
     "overview": "Übersicht",
-    "import": "Download",
+    "import": "Import",
     "process": "Verarbeiten",
     "ai_suite": "KI-Suite",
     "output": "Ausgabe",
@@ -393,7 +393,12 @@
     "theme_sepia": "Sepia",
     "theme_midnight": "Midnight Blue",
     "theme_forest": "Forest",
-    "theme_oled": "OLED Black"
+    "theme_oled": "OLED Black",
+    "cookies_test_btn": "Testen",
+    "cookies_test_all_expired": "⚠️ Alle {count} Cookies mit Ablaufdatum sind bereits abgelaufen. Bitte neu exportieren und hochladen.",
+    "cookies_test_some_expired": "⚠️ {expired} von {total} Cookies sind bereits abgelaufen.",
+    "cookies_test_ok": "✓ Alle {total} Cookies mit Ablaufdatum sind noch gültig.",
+    "cookies_test_earliest": "Läuft als erstes ab am {date}."
   },
   "modals": {
     "playlist_detected": "Playlist erkannt",
