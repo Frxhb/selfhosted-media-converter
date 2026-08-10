@@ -24,37 +24,61 @@ Disclaimer: Vibe-coding project.
 ## Screenshots
 
 <p align="center">
-  <img src="pictures/Dashboard.png" alt="Dashboard Screenshot" width="85%">
+  <img src="pictures/mediaconverter_dashboard.png" alt="Dashboard Screenshot" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/yt-dlp.png" alt="YouTube-Downloader Screenshot" width="85%">
+  <img src="pictures/mediaconverter_download-overview.png" alt="YouTube-Downloader Screenshot" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/live-log.png" alt="Live Logs Screenshot" width="85%">
+  <img src="pictures/mediaconverter_download-progress.png" alt="Download Progress" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/Abonnement-Settings.png" alt="YouTube Abonnements Settings" width="85%">
+  <img src="pictures/mediaconverter_process-overview.png" alt="Process Overview" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/Abonnement-Action.png" alt="YouTube Abonnements in Action" width="85%">
+  <img src="pictures/mediaconverter_ai-suite-overview.png" alt="AI-Suite Overview" width="85%">
 </p>
 
 <br>
 
 <p align="center">
-  <img src="pictures/Ausgabe.png" alt="Processed files" width="85%">
+  <img src="pictures/mediaconverter_new-pipeline-overview.png" alt="New Pipeline Overview" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/mediaconverter_new-subscription.png" alt="New Subscription" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/mediaconverter_subscriptions-overview.png" alt="Subscription Overview" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/mediaconverter_output-overview.png" alt="Processed files" width="85%">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="pictures/mediaconverter_settings-overview.png" alt="Settings Overview" width="85%">
 </p>
 
 ---
@@ -79,6 +103,7 @@ Designed to run locally or on a private server using Docker.
 - Background processing queue with per-domain and global concurrency limits
 - Job history tracking
 - Bulk ZIP downloads
+- Download Livestreams from e.g. YouTube
 
 ### Video Conversion
 
@@ -140,6 +165,13 @@ Convert images between:
 - Subscriptions for automatically fetching new content from a source
 - Optional push notifications via Pushover
 - Optional automatic cleanup of old files
+
+### Also
+
+- Start/Pause Downloads or Tasks
+- Add cookies from YouTube
+- Save custom settings
+- Language: German & English
 
 ---
 
