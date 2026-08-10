@@ -394,6 +394,7 @@ class SubscriptionManager:
             command_args=args,
             input_file=video_url,
             subscription_id=sub.id,
+            auto_pipeline_id=sub.pipeline_id,
         )
         await self.job_manager.add_job(request)
 

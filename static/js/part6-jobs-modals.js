@@ -38,6 +38,8 @@
       function statusBadgeStyle(status) {
         if (status === "running")
           return "background: var(--signal-dim); color: var(--signal);";
+        if (status === "paused")
+          return "background: rgba(245, 196, 81, 0.15); color: var(--warn);";
         if (status === "completed")
           return "background: var(--ok-dim); color: var(--ok);";
         if (status === "failed")
@@ -119,8 +121,14 @@
         }
 
         const cancelFn = local ? "cancelClientJob" : "cancelJob";
-        const canCancel = j.status === "running" || j.status === "pending";
+        const canCancel = j.status === "running" || j.status === "pending" || j.status === "paused";
         const canRetry = !local && j.status === "failed";
+        // Pause/Resume gibt es nur für Server-Jobs (client-seitige WASM-Jobs haben keinen
+        // Server-Subprozess, den man per SIGSTOP anhalten könnte) und nicht für laufende
+        // Live-Mitschnitte (die haben mit "Aufnahme beenden" bereits ihren eigenen,
+        // spezielleren Abschluss-Mechanismus).
+        const canPause = !local && !j.is_live_stream && (j.status === "running" || j.status === "pending");
+        const canResume = !local && j.status === "paused";
         const retryBadge =
           j.retry_count > 0
             ? `<span title="${j.retry_count} automatische Neuversuche" style="font-size:0.6rem; color:var(--ink-faint); font-family:var(--font-mono);">↻${j.retry_count}</span>`
@@ -171,6 +179,8 @@
                             <button onclick="openJobDetails('${j.id}')" class="btn btn-secondary btn-sm">${t('common.details', 'Details')}</button>
                             ${canRetry ? `<button onclick="retryJob('${j.id}')" class="btn btn-primary btn-sm">${t('common.retry', 'Wiederholen')}</button>` : ""}
                             ${isLiveRunning ? `<button onclick="stopLiveRecording('${j.id}')" class="btn btn-primary btn-sm">⏹ ${t('queue.stop_live_btn', 'Aufnahme beenden')}</button>` : ""}
+                            ${canPause ? `<button onclick="pauseJob('${j.id}')" class="btn btn-secondary btn-sm" title="${t('queue.pause_hint', 'Job anhalten, ohne ihn zu verlieren')}">⏸ ${t('common.pause', 'Pausieren')}</button>` : ""}
+                            ${canResume ? `<button onclick="resumeJob('${j.id}')" class="btn btn-primary btn-sm">▶ ${t('common.resume', 'Fortsetzen')}</button>` : ""}
                             ${canCancel ? `<button onclick="${cancelFn}('${j.id}')" class="btn btn-danger btn-sm">${t('common.cancel', 'Abbrechen')}</button>` : ""}
                         </div>
                     </div>
@@ -313,6 +323,34 @@
           }
         } catch (e) {
           showToast(t("toast.cancel_failed") + e.message, "warn");
+        }
+        loadJobs();
+      }
+
+      async function pauseJob(jobId) {
+        try {
+          const res = await fetch(`/api/jobs/${jobId}/pause`, { method: "POST" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          showToast(t("toast.job_paused", "Job pausiert."), "success");
+        } catch (e) {
+          showToast(t("toast.pause_failed", "Pausieren fehlgeschlagen: ") + e.message, "warn");
+        }
+        loadJobs();
+      }
+
+      async function resumeJob(jobId) {
+        try {
+          const res = await fetch(`/api/jobs/${jobId}/resume`, { method: "POST" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          showToast(t("toast.job_resumed", "Job fortgesetzt."), "success");
+        } catch (e) {
+          showToast(t("toast.resume_failed", "Fortsetzen fehlgeschlagen: ") + e.message, "warn");
         }
         loadJobs();
       }

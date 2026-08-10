@@ -18,6 +18,7 @@ class JobType(str, Enum):
 class JobStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
+    PAUSED = "paused"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -48,9 +49,15 @@ class Job(BaseModel):
     pipeline_stage_index: Optional[int] = None
     pipeline_stage_count: Optional[int] = None
     subscription_id: Optional[str] = None  # gesetzt, wenn dieser Job von einem Kanal-Abonnement automatisch angelegt wurde
+    auto_pipeline_id: Optional[str] = None  # falls gesetzt: nach erfolgreichem Abschluss dieses (Download-)Jobs
+                                              # automatisch die referenzierte Pipeline auf die Ausgabedatei anwenden -
+                                              # kommt von Subscription.pipeline_id, siehe subscription_manager.py
     is_live_stream: bool = False  # markiert einen laufenden yt-dlp Download als Livestream-Mitschnitt;
                                     # erlaubt ein geordnetes Beenden (statt hartem Abbruch), das die bisher
                                     # aufgezeichnete Datei als abgeschlossen speichert statt sie zu verwerfen
+    paused_from: Optional[str] = None  # "running" oder "pending" - merkt sich, aus welchem Zustand heraus
+                                         # pausiert wurde, damit resume_job() weiß, ob der Subprozess per
+                                         # SIGCONT fortgesetzt oder der Job einfach in die Warteschlange muss
 
 class JobCreateRequest(BaseModel):
     job_type: JobType
@@ -62,6 +69,7 @@ class JobCreateRequest(BaseModel):
     output_file: Optional[str] = None
     is_playlist: bool = False
     subscription_id: Optional[str] = None
+    auto_pipeline_id: Optional[str] = None
     is_live_stream: bool = False
 
 class PipelineStage(BaseModel):
@@ -115,6 +123,8 @@ class Subscription(BaseModel):
     last_check_new_count: int = 0
     total_downloaded: int = 0
     consecutive_failures: int = 0  # für Backoff bei wiederholt fehlschlagenden Checks, siehe subscription_manager.py
+    pipeline_id: Optional[str] = None  # falls gesetzt: jedes neu heruntergeladene Video wird nach
+                                         # Abschluss automatisch durch diese Pipeline geschickt
 
 class SubscriptionCreateRequest(BaseModel):
     name: str
@@ -127,6 +137,7 @@ class SubscriptionCreateRequest(BaseModel):
     backfill_count: int = 0
     enabled: bool = True
     exclude_shorts: bool = False
+    pipeline_id: Optional[str] = None
 
 class MediaTagsUpdateRequest(BaseModel):
     file_path: str

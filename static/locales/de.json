@@ -295,7 +295,10 @@
     "interval_hours": "Alle {n} Stunde(n)",
     "interval_minutes": "Alle {n} Min.",
     "error_last_check": "⚠️ Fehler bei letzter Prüfung ({date})",
-    "exclude_shorts_label": "Keine YouTube Shorts herunterladen"
+    "exclude_shorts_label": "Keine YouTube Shorts herunterladen",
+    "pipeline_label": "Pipeline nach Download:",
+    "pipeline_none": "Keine (nur herunterladen)",
+    "pipeline_hint": "Optional: jedes neu heruntergeladene Video automatisch durch diese Pipeline schicken (z.B. komprimieren, Audio extrahieren)."
   },
   "queue": {
     "title": "Warteschlange",
@@ -314,7 +317,8 @@
     "copy_logs": "Kopieren",
     "clear_logs": "Leeren",
     "stop_live_btn": "Aufnahme beenden",
-    "live_badge": "LIVE"
+    "live_badge": "LIVE",
+    "pause_hint": "Job anhalten, ohne ihn zu verlieren"
   },
   "logs": {
     "title": "Live-Ausgabe",
@@ -454,7 +458,9 @@
     "no": "Nein",
     "clear": "Leeren",
     "copy": "Kopieren",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen"
   },
   "options": {
     "best_quality": "Beste Qualität (Max/4K)",
@@ -573,7 +579,11 @@
     "live_stop_failed": "Aufnahme konnte nicht beendet werden: ",
     "logviewer_load_failed": "Logs konnten nicht geladen werden.",
     "invalid_url": "Bitte eine gültige URL eingeben (mit http:// oder https://).",
-    "url_maybe_unsupported": "⚠️ {domain} wird evtl. nicht von yt-dlp unterstützt. Es wird trotzdem versucht."
+    "url_maybe_unsupported": "⚠️ {domain} wird evtl. nicht von yt-dlp unterstützt. Es wird trotzdem versucht.",
+    "job_paused": "Job pausiert.",
+    "job_resumed": "Job fortgesetzt.",
+    "pause_failed": "Pausieren fehlgeschlagen: ",
+    "resume_failed": "Fortsetzen fehlgeschlagen: "
   },
   "confirm": {
     "reset_stats": "Alle Statistiken zurücksetzen?",

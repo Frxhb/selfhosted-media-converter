@@ -295,7 +295,10 @@
     "interval_hours": "Every {n} hour(s)",
     "interval_minutes": "Every {n} min.",
     "error_last_check": "⚠️ Error during last check ({date})",
-    "exclude_shorts_label": "Don't download YouTube Shorts"
+    "exclude_shorts_label": "Don't download YouTube Shorts",
+    "pipeline_label": "Pipeline after download:",
+    "pipeline_none": "None (download only)",
+    "pipeline_hint": "Optional: automatically run every newly downloaded video through this pipeline (e.g. compress, extract audio)."
   },
   "queue": {
     "title": "Job Queue",
@@ -314,7 +317,8 @@
     "copy_logs": "Copy",
     "clear_logs": "Clear",
     "stop_live_btn": "Stop Recording",
-    "live_badge": "LIVE"
+    "live_badge": "LIVE",
+    "pause_hint": "Pause the job without losing it"
   },
   "logs": {
     "title": "Live Output",
@@ -454,7 +458,9 @@
     "no": "No",
     "clear": "Clear",
     "copy": "Copy",
-    "remove": "Remove"
+    "remove": "Remove",
+    "pause": "Pause",
+    "resume": "Resume"
   },
   "options": {
     "best_quality": "Best Quality (Max/4K)",
@@ -573,7 +579,11 @@
     "live_stop_failed": "Could not stop recording: ",
     "logviewer_load_failed": "Failed to load logs.",
     "invalid_url": "Please enter a valid URL (starting with http:// or https://).",
-    "url_maybe_unsupported": "⚠️ {domain} may not be supported by yt-dlp. Trying anyway."
+    "url_maybe_unsupported": "⚠️ {domain} may not be supported by yt-dlp. Trying anyway.",
+    "job_paused": "Job paused.",
+    "job_resumed": "Job resumed.",
+    "pause_failed": "Failed to pause: ",
+    "resume_failed": "Failed to resume: "
   },
   "confirm": {
     "reset_stats": "Reset all statistics?",

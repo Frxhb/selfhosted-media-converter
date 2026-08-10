@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Set
 from fastapi import WebSocket
 import uuid
 from app.models import Job, JobCreateRequest, JobStatus, JobType, Pipeline, PipelineStage
-from app.database import record_job
+from app.database import record_job, load_pipelines
 from app.core import COOKIES_FILE_PATH, OUTPUT_DIR
 
 logger = logging.getLogger("JobManager")
@@ -226,6 +226,7 @@ class JobManager:
             output_file=request.output_file,
             is_playlist=request.is_playlist,
             subscription_id=request.subscription_id,
+            auto_pipeline_id=request.auto_pipeline_id,
             is_live_stream=request.is_live_stream
         )
         self.jobs[job.id] = job
@@ -251,7 +252,8 @@ class JobManager:
             input_file=old_job.input_file,
             output_file=old_job.output_file,
             is_playlist=old_job.is_playlist,
-            subscription_id=old_job.subscription_id
+            subscription_id=old_job.subscription_id,
+            auto_pipeline_id=old_job.auto_pipeline_id
         )
         self.jobs[new_job.id] = new_job
         async with self.queue_lock:
@@ -583,19 +585,116 @@ class JobManager:
             if job.pipeline_run_id:
                 self.pipeline_runs.pop(job.pipeline_run_id, None)
             return True
+        elif job.status == JobStatus.PAUSED:
+            if job.paused_from == "running" and job_id in self.running_processes:
+                proc = self.running_processes[job_id]
+                self.live_stop_requested.discard(job_id)
+                try:
+                    # SIGKILL wirkt zuverlässig auch auf einen per SIGSTOP angehaltenen
+                    # Prozess - er muss dafür nicht erst per SIGCONT fortgesetzt werden.
+                    proc.kill()
+                except Exception:
+                    pass
+            job.status = JobStatus.CANCELLED
+            job.paused_from = None
+            job.logs.append("[SYSTEM] Job abgebrochen (war pausiert).")
+            await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+            await self.broadcast_queue_order()
+            if job.pipeline_run_id:
+                self.pipeline_runs.pop(job.pipeline_run_id, None)
+            return True
         return False
+
+    async def pause_job(self, job_id: str) -> bool:
+        """Pausiert einen Job.
+
+        Bei einem laufenden Job wird der Subprozess per SIGSTOP eingefroren - das
+        funktioniert unter Linux zuverlässig für ffmpeg/yt-dlp (und praktisch jeden
+        anderen normalen Prozess), ohne ihn zu beenden: der Prozess hält exakt an der
+        Stelle an, an der er gerade war (keine Netzwerkverbindung wird dabei geschlossen,
+        kein Fortschritt geht verloren), verbraucht aber währenddessen keine CPU-Zeit
+        mehr. SIGCONT (siehe resume_job) setzt ihn danach nahtlos fort.
+
+        Bei einem noch wartenden (pending) Job gibt es keinen Prozess zum Anhalten -
+        stattdessen wird er einfach aus der Warteschlange entfernt, damit kein Worker ihn
+        aufgreift, bis er wieder fortgesetzt wird.
+        """
+        job = self.jobs.get(job_id)
+        if not job:
+            return False
+
+        if job.status == JobStatus.RUNNING and job_id in self.running_processes:
+            proc = self.running_processes[job_id]
+            try:
+                proc.send_signal(signal.SIGSTOP)
+            except Exception as e:
+                logger.warning(f"Job {job_id}: SIGSTOP fehlgeschlagen: {e}")
+                return False
+            job.status = JobStatus.PAUSED
+            job.paused_from = "running"
+            job.eta = "Pausiert"
+            self._append_log(job, "[SYSTEM] Job pausiert.")
+            await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+            return True
+
+        if job.status == JobStatus.PENDING:
+            async with self.queue_lock:
+                if job_id in self.pending_queue:
+                    self.pending_queue.remove(job_id)
+            job.status = JobStatus.PAUSED
+            job.paused_from = "pending"
+            job.eta = "Pausiert"
+            self._append_log(job, "[SYSTEM] Job pausiert (aus Warteschlange entfernt, bis fortgesetzt).")
+            await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+            await self.broadcast_queue_order()
+            return True
+
+        return False
+
+    async def resume_job(self, job_id: str) -> bool:
+        """Setzt einen zuvor pausierten Job fort - siehe pause_job() für die Gegenrichtung."""
+        job = self.jobs.get(job_id)
+        if not job or job.status != JobStatus.PAUSED:
+            return False
+
+        if job.paused_from == "running" and job_id in self.running_processes:
+            proc = self.running_processes[job_id]
+            try:
+                proc.send_signal(signal.SIGCONT)
+            except Exception as e:
+                logger.warning(f"Job {job_id}: SIGCONT fehlgeschlagen: {e}")
+                return False
+            job.status = JobStatus.RUNNING
+            job.paused_from = None
+            self._append_log(job, "[SYSTEM] Job fortgesetzt.")
+            await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+            return True
+
+        # paused_from == "pending", oder der Prozess ist inzwischen weg (z.B. Server
+        # zwischenzeitlich neu gestartet) - sicherheitshalber wie "pending" behandeln und
+        # einfach wieder in die Warteschlange einreihen.
+        job.status = JobStatus.PENDING
+        job.paused_from = None
+        job.eta = "Wartet..."
+        async with self.queue_lock:
+            self.pending_queue.append(job_id)
+        self.queue_event.set()
+        self._append_log(job, "[SYSTEM] Job fortgesetzt (zurück in die Warteschlange).")
+        await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+        await self.broadcast_queue_order()
+        return True
 
     async def cancel_all_jobs(self) -> int:
         cancelled_count = 0
         job_ids = list(self.jobs.keys())
         for jid in job_ids:
             job = self.jobs.get(jid)
-            if job and job.status in [JobStatus.RUNNING, JobStatus.PENDING]:
+            if job and job.status in [JobStatus.RUNNING, JobStatus.PENDING, JobStatus.PAUSED]:
                 if await self.cancel_job(jid):
                     cancelled_count += 1
         return cancelled_count
 
-    def _send_pushover(self, title: str, message: str):
+    def _send_pushover(self, title: str, message: str, priority: int = 0):
         enabled = os.getenv("PUSHOVER_ENABLED", "false").lower() == "true"
         user_key = os.getenv("PUSHOVER_USER_KEY", "").strip()
         token = os.getenv("PUSHOVER_TOKEN", "").strip()
@@ -604,12 +703,15 @@ class JobManager:
             return
 
         try:
-            data = urllib.parse.urlencode({
+            payload = {
                 "token": token,
                 "user": user_key,
                 "title": title,
-                "message": message
-            }).encode("utf-8")
+                "message": message,
+            }
+            if priority:
+                payload["priority"] = priority
+            data = urllib.parse.urlencode(payload).encode("utf-8")
             req = urllib.request.Request("https://api.pushover.net/1/messages.json", data=data)
             urllib.request.urlopen(req, timeout=5)
         except Exception as e:
@@ -770,6 +872,32 @@ class JobManager:
 
             await asyncio.to_thread(self._send_pushover, "Media Converter Pro", f"✅ Job '{job.title}' erfolgreich abgeschlossen!")
 
+            # Abo-verknüpfte Pipeline: wurde dieser (Download-)Job von einer Subscription mit
+            # hinterlegter pipeline_id erzeugt (siehe subscription_manager.py _queue_download),
+            # wird die fertige Ausgabedatei jetzt automatisch durch diese Pipeline geschickt -
+            # z.B. "nach jedem Download aus diesem Kanal automatisch komprimieren + Audio
+            # extrahieren". auto_pipeline_id wird NUR beim ursprünglichen Abo-Download gesetzt,
+            # nie bei den dadurch erzeugten Pipeline-Stufen-Jobs selbst (siehe
+            # _enqueue_pipeline_stage) - kein Risiko einer Endlosschleife.
+            if job.auto_pipeline_id and resolved_output and os.path.exists(resolved_output):
+                try:
+                    pipeline_dict = next(
+                        (p for p in load_pipelines() if p.get("id") == job.auto_pipeline_id), None
+                    )
+                    if pipeline_dict:
+                        pipeline_obj = Pipeline(**pipeline_dict)
+                        auto_msg = f"[SYSTEM] Abo-verknüpfte Pipeline '{pipeline_obj.name}' wird automatisch gestartet..."
+                        self._append_log(job, auto_msg)
+                        await self.broadcast({"type": "log", "job_id": job.id, "line": auto_msg})
+                        await self.start_pipeline_run(pipeline_obj, resolved_output, title=job.title)
+                    else:
+                        logger.warning(
+                            f"Job {job.id}: verknüpfte Pipeline '{job.auto_pipeline_id}' nicht "
+                            f"gefunden (evtl. inzwischen gelöscht) - automatischer Start übersprungen."
+                        )
+                except Exception as e:
+                    logger.warning(f"Job {job.id}: automatischer Pipeline-Start fehlgeschlagen: {e}")
+
         elif job.status != JobStatus.CANCELLED:
             hint = self._diagnose_failure(job)
             is_transient = self._is_transient_failure(job)
@@ -803,6 +931,19 @@ class JobManager:
                 f"Job {job.id} ({job.title}, tool={job.tool}) fehlgeschlagen"
                 f"{f' nach {job.retry_count} Neuversuch(en)' if job.retry_count > 0 else ''}: "
                 f"{job.error_message or 'unbekannter Fehler'}"
+            )
+
+            # Anders als der Erfolgs-Fall unten wird hier priority=1 (Pushover "high
+            # priority") gesetzt, damit ein fehlgeschlagener Job sich auf dem Gerät des
+            # Nutzers spürbar von einer normalen Erfolgsmeldung abhebt - ein Fehlschlag ist
+            # i.d.R. das dringendere der beiden Ereignisse.
+            failure_notify_msg = f"❌ Job '{job.title}' fehlgeschlagen"
+            if job.retry_count > 0:
+                failure_notify_msg += f" (nach {job.retry_count} Neuversuch(en))"
+            if hint:
+                failure_notify_msg += f": {hint}"
+            await asyncio.to_thread(
+                self._send_pushover, "Media Converter Pro", failure_notify_msg, priority=1
             )
 
             banner = f"\n============================================================\n[FAILED] Job {job.id} ({job.title}) FEHLGESCHLAGEN!\n"

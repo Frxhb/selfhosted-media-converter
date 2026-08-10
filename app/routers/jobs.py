@@ -64,6 +64,22 @@ async def cancel_job(job_id: str):
     return {"status": "cancelled", "job_id": job_id}
 
 
+@router.post("/api/jobs/{job_id}/pause")
+async def pause_job(job_id: str):
+    success = await job_manager.pause_job(job_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Job konnte nicht pausiert werden")
+    return {"status": "paused", "job_id": job_id}
+
+
+@router.post("/api/jobs/{job_id}/resume")
+async def resume_job(job_id: str):
+    success = await job_manager.resume_job(job_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Job konnte nicht fortgesetzt werden")
+    return {"status": "resumed", "job_id": job_id}
+
+
 @router.post("/api/jobs/{job_id}/stop-live")
 async def stop_live_job(job_id: str):
     """Beendet eine als Livestream markierte, laufende Aufnahme geordnet (statt hartem Abbruch)

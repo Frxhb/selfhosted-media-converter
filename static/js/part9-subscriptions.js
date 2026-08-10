@@ -47,6 +47,12 @@ let subscriptionsCache = [];
             const activeBadge = sub.enabled
               ? `<span class="status-badge" style="background:var(--ok-dim); color:var(--ok);">${t('subscriptions.active', 'Aktiv')}</span>`
               : `<span class="status-badge" style="background:var(--surface-sunken); border:1px solid var(--line); color:var(--ink-dim);">${t('subscriptions.paused', 'Pausiert')}</span>`;
+            const linkedPipeline = sub.pipeline_id
+              ? pipelinesCache.find((p) => p.id === sub.pipeline_id)
+              : null;
+            const pipelineBadge = linkedPipeline
+              ? `<span class="status-badge" style="background:var(--signal-dim); color:var(--signal);" title="${t('subscriptions.pipeline_label', 'Pipeline nach Download:')}">🔗 ${escapeHtml(linkedPipeline.name)}</span>`
+              : "";
 
             return `
                 <div class="card" style="padding:0.7rem 0.9rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
@@ -54,6 +60,7 @@ let subscriptionsCache = [];
                         <div style="font-weight:600; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                             ${escapeHtml(sub.name)}
                             ${activeBadge}
+                            ${pipelineBadge}
                         </div>
                         <div style="font-size:0.72rem; color:var(--ink-dim); margin-top:0.3rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:420px;" title="${escapeHtml(sub.url)}">
                             ${escapeHtml(sub.url)}
@@ -141,6 +148,17 @@ let subscriptionsCache = [];
           ? !!sub.exclude_shorts
           : false;
 
+        const pipelineSelect = document.getElementById("sub-edit-pipeline");
+        if (pipelineSelect) {
+          const noneLabel = t("subscriptions.pipeline_none", "Keine (nur herunterladen)");
+          pipelineSelect.innerHTML =
+            `<option value="">${noneLabel}</option>` +
+            pipelinesCache
+              .map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+              .join("");
+          pipelineSelect.value = sub && sub.pipeline_id ? sub.pipeline_id : "";
+        }
+
         openModal("subscription-editor-modal");
       }
 
@@ -183,6 +201,7 @@ let subscriptionsCache = [];
           ) || 0,
           enabled: document.getElementById("sub-edit-enabled").checked,
           exclude_shorts: document.getElementById("sub-edit-exclude-shorts").checked,
+          pipeline_id: document.getElementById("sub-edit-pipeline").value || null,
         };
 
         try {
