@@ -8,7 +8,8 @@
     "tooltip_stats": "Statistiken",
     "tooltip_settings": "Einstellungen",
     "tooltip_reset": "UI & Warteschlange zurücksetzen",
-    "tooltip_connection": "Server-Verbindung"
+    "tooltip_connection": "Server-Verbindung",
+    "tooltip_home": "Zur Übersicht zurückkehren"
   },
   "nav": {
     "overview": "Übersicht",

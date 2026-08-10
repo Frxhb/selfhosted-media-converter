@@ -8,7 +8,8 @@
     "tooltip_stats": "Statistics",
     "tooltip_settings": "Settings",
     "tooltip_reset": "Reset UI & Queue",
-    "tooltip_connection": "Server connection"
+    "tooltip_connection": "Server connection",
+    "tooltip_home": "Return to overview"
   },
   "nav": {
     "overview": "Overview",
