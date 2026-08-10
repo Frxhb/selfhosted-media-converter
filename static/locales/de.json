@@ -402,7 +402,12 @@
     "cookies_test_all_expired": "⚠️ Alle {count} Cookies mit Ablaufdatum sind bereits abgelaufen. Bitte neu exportieren und hochladen.",
     "cookies_test_some_expired": "⚠️ {expired} von {total} Cookies sind bereits abgelaufen.",
     "cookies_test_ok": "✓ Alle {total} Cookies mit Ablaufdatum sind noch gültig.",
-    "cookies_test_earliest": "Läuft als erstes ab am {date}."
+    "cookies_test_earliest": "Läuft als erstes ab am {date}.",
+    "watch_folder_title": "Watch-Ordner",
+    "watch_folder_enable": "Watch-Ordner aktivieren",
+    "watch_folder_hint": "Neue Dateien, die manuell oder von einem anderen Tool (rsync, Syncthing, ...) in den Eingangsordner gelegt werden, automatisch erkennen und durch eine Pipeline schicken. Eine Datei gilt erst als \"fertig\" und wird verarbeitet, wenn sich ihre Größe für mindestens zwei Prüfintervalle nicht mehr ändert - noch aktiv kopierte Dateien werden also nicht angefasst. Bereits importierte Dateien landen in einem Unterordner _watch_imported, damit sie nicht erneut aufgegriffen werden.",
+    "watch_folder_pipeline": "Pipeline:",
+    "watch_folder_interval": "Prüfintervall (Sekunden):"
   },
   "modals": {
     "playlist_detected": "Playlist erkannt",

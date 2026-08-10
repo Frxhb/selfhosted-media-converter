@@ -369,8 +369,12 @@ class SubscriptionManager:
                 "--no-colors", "--no-playlist",
                 "-x", "--audio-format", sub.container, "--audio-quality", sub.quality,
                 "--download-archive", archive_path,
+                # WICHTIG: -o muss relativ bleiben, sonst ignoriert yt-dlp --paths
+                # komplett (auch "temp:") - siehe ausführlicher Kommentar im else-Zweig
+                # unten für die Video-Variante.
+                "--paths", f"home:{output_dir}",
                 "--paths", f"temp:{DOWNLOAD_TEMP_DIR}",
-                "-o", os.path.join(output_dir, "%(title)s.%(ext)s"),
+                "-o", "%(title)s.%(ext)s",
             ]
             job_type = JobType.DOWNLOAD
         else:
@@ -380,8 +384,17 @@ class SubscriptionManager:
             args.extend([
                 "--merge-output-format", sub.container,
                 "--download-archive", archive_path,
+                # WICHTIG: yt-dlp ignoriert ALLE --paths Angaben (auch "temp:"), sobald -o
+                # ein absoluter Pfad ist (dokumentiertes yt-dlp-Verhalten) - deshalb hier
+                # "home:" statt eines absoluten -o Ziels, und -o selbst nur noch relativ
+                # (nur der Dateiname). Ohne dieses Detail landen die Zwischenformate
+                # (z.B. .f399.mp4, .f251.webm vor dem Mergen) direkt im finalen
+                # Abo-Ausgabeordner statt im Staging-Verzeichnis - das Endergebnis
+                # (finaler Dateiname/-ort) bleibt dabei identisch, nur die Zwischenschritte
+                # ändern sich.
+                "--paths", f"home:{output_dir}",
                 "--paths", f"temp:{DOWNLOAD_TEMP_DIR}",
-                "-o", os.path.join(output_dir, "%(title)s.%(ext)s"),
+                "-o", "%(title)s.%(ext)s",
             ])
             job_type = JobType.DOWNLOAD
 

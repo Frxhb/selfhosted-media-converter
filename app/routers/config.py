@@ -37,6 +37,9 @@ def get_config():
             (k for k, v in job_manager.PRIORITY_MAP.items() if v == getattr(job_manager, "process_niceness", 10)),
             "below_normal"
         ),
+        "watch_folder_enabled": getattr(job_manager, "watch_folder_enabled", False),
+        "watch_folder_pipeline_id": getattr(job_manager, "watch_folder_pipeline_id", None),
+        "watch_folder_interval_seconds": getattr(job_manager, "watch_folder_interval_seconds", 30),
         # Zeigt der UI an, ob die aktuellen Werte aus gespeicherten Einstellungen (persistente JSON,
         # überlebt Neustarts) oder nur aus den .env-Defaults dieses Starts stammen. Nach dem ersten
         # Speichern in den Settings gewinnt immer die gespeicherte Config, das entspricht dem
@@ -56,6 +59,9 @@ def save_config(config: AppConfig):
     job_manager.auto_delete_originals = config.auto_delete_originals
     job_manager.ffmpeg_threads = job_manager.parse_ffmpeg_threads(config.ffmpeg_threads)
     job_manager.process_niceness = job_manager.priority_label_to_niceness(config.process_priority)
+    job_manager.watch_folder_enabled = config.watch_folder_enabled
+    job_manager.watch_folder_pipeline_id = config.watch_folder_pipeline_id
+    job_manager.watch_folder_interval_seconds = config.watch_folder_interval_seconds
     os.environ["PUSHOVER_ENABLED"] = "true" if config.pushover_enabled else "false"
     os.environ["PUSHOVER_USER_KEY"] = config.pushover_user_key
     os.environ["PUSHOVER_TOKEN"] = config.pushover_token

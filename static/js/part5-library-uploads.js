@@ -384,6 +384,21 @@ function removeFromTabQueue(tab, index) {
           document.getElementById("cfg-auto-delete-originals").checked =
             !!cfg.auto_delete_originals;
 
+          document.getElementById("cfg-watch-folder-enabled").checked =
+            !!cfg.watch_folder_enabled;
+          document.getElementById("cfg-watch-folder-interval").value =
+            cfg.watch_folder_interval_seconds ?? 30;
+          const watchPipelineSelect = document.getElementById("cfg-watch-folder-pipeline");
+          if (watchPipelineSelect) {
+            const noneLabel = t("subscriptions.pipeline_none", "Keine (nur herunterladen)");
+            watchPipelineSelect.innerHTML =
+              `<option value="">${noneLabel}</option>` +
+              pipelinesCache
+                .map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+                .join("");
+            watchPipelineSelect.value = cfg.watch_folder_pipeline_id || "";
+          }
+
           const badge = document.getElementById("config-source-badge");
           if (badge) {
             if (cfg.config_source === "saved") {
@@ -439,6 +454,13 @@ function removeFromTabQueue(tab, index) {
           auto_delete_originals: document.getElementById(
             "cfg-auto-delete-originals",
           ).checked,
+          watch_folder_enabled: document.getElementById(
+            "cfg-watch-folder-enabled",
+          ).checked,
+          watch_folder_pipeline_id:
+            document.getElementById("cfg-watch-folder-pipeline").value || null,
+          watch_folder_interval_seconds:
+            parseInt(document.getElementById("cfg-watch-folder-interval").value) || 30,
         };
 
         const btn = document.getElementById("btn-save-settings");

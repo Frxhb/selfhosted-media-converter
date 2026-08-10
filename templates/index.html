@@ -3276,6 +3276,57 @@
           </div>
 
           <div class="settings-section">
+            <h4 data-i18n="settings.watch_folder_title">Watch-Ordner</h4>
+            <div
+              class="toggle-row"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.6rem;
+              "
+            >
+              <label class="u-mb0" data-i18n="settings.watch_folder_enable">Watch-Ordner aktivieren</label>
+              <label class="switch">
+                <input type="checkbox" id="cfg-watch-folder-enabled" />
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+            <span
+              class="settings-hint"
+              style="display: block; margin-bottom: 0.6rem"
+              data-i18n="settings.watch_folder_hint"
+              >Neue Dateien, die manuell oder von einem anderen Tool (rsync,
+              Syncthing, ...) in den Eingangsordner gelegt werden, automatisch
+              erkennen und durch eine Pipeline schicken. Eine Datei gilt erst
+              als "fertig" und wird verarbeitet, wenn sich ihre Größe für
+              mindestens zwei Prüfintervalle nicht mehr ändert - noch aktiv
+              kopierte Dateien werden also nicht angefasst. Bereits importierte
+              Dateien landen in einem Unterordner
+              <code>_watch_imported</code>, damit sie nicht erneut aufgegriffen
+              werden.</span
+            >
+            <div class="grid-2">
+              <div>
+                <label for="cfg-watch-folder-pipeline" data-i18n="settings.watch_folder_pipeline">Pipeline:</label>
+                <select id="cfg-watch-folder-pipeline">
+                  <option value="" data-i18n="subscriptions.pipeline_none">Keine (nur herunterladen)</option>
+                </select>
+              </div>
+              <div>
+                <label for="cfg-watch-folder-interval" data-i18n="settings.watch_folder_interval">Prüfintervall (Sekunden):</label>
+                <input
+                  type="number"
+                  id="cfg-watch-folder-interval"
+                  min="10"
+                  step="5"
+                  value="30"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
             <h4 data-i18n="settings.ytdlp_engine">yt-dlp Engine</h4>
             <div
               style="

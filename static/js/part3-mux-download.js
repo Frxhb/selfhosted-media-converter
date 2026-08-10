@@ -309,10 +309,14 @@ function tokenizeCliFlags(str) {
               batchFile,
               ...baseArgs,
               "--no-playlist",
+              // Siehe ausführlicher Kommentar in executeDownloadJob() weiter oben: -o muss
+              // relativ bleiben, sonst ignoriert yt-dlp --paths (auch "temp:") komplett.
+              "--paths",
+              `home:/media/outputs/${batchOutputSubdir}`,
               "--paths",
               `temp:/tmp/ytdlp_staging`,
               "-o",
-              `/media/outputs/${batchOutputSubdir}/%(title)s.%(ext)s`,
+              `%(title)s.%(ext)s`,
             ];
             await submitJob({
               job_type: "download",
@@ -341,9 +345,11 @@ function tokenizeCliFlags(str) {
                 ...baseArgs,
                 "--no-playlist",
                 "--paths",
+                `home:/media/outputs/${batchOutputSubdir}`,
+                "--paths",
                 `temp:/tmp/ytdlp_staging`,
                 "-o",
-                `/media/outputs/${batchOutputSubdir}/%(title)s.%(ext)s`,
+                `%(title)s.%(ext)s`,
                 link,
               ];
               const shortUrl =
@@ -496,10 +502,17 @@ function tokenizeCliFlags(str) {
           ...effectiveBaseArgs,
           ...extraFlags,
           ...liveFlags,
+          // WICHTIG: yt-dlp ignoriert ALLE --paths Angaben (auch "temp:"), sobald -o ein
+          // absoluter Pfad ist (dokumentiertes yt-dlp-Verhalten). Deshalb hier "home:" statt
+          // -o explizit setzen, und -o selbst nur noch relativ (nur der Dateiname). Ohne
+          // dieses Detail landen die Zwischenformate (.f399.mp4, .f251.webm vor dem Mergen)
+          // direkt im finalen Output-Ordner statt im Staging-Verzeichnis.
+          "--paths",
+          `home:/media/outputs/${outputSubdir}`,
           "--paths",
           `temp:/tmp/ytdlp_staging`,
           "-o",
-          `/media/outputs/${outputSubdir}/${filePrefix}%(title)s.%(ext)s`,
+          `${filePrefix}%(title)s.%(ext)s`,
           targetUrl,
         ];
 

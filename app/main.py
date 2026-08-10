@@ -19,6 +19,7 @@ from app.database import init_db, load_app_config
 from app.core import INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, FFMPEG_STATIC_DIR, DOWNLOAD_TEMP_DIR
 from app.subscription_manager import init_subscription_manager
 from app.supported_sites import ensure_supported_sites_cache_fresh
+from app.watch_folder import init_watch_folder_service
 
 from app.routers import system, stats, files, media, config, pipelines, jobs, subscriptions
 
@@ -143,6 +144,9 @@ def apply_persisted_config():
     job_manager.auto_delete_originals = cfg.auto_delete_originals
     job_manager.ffmpeg_threads = job_manager.parse_ffmpeg_threads(cfg.ffmpeg_threads)
     job_manager.process_niceness = job_manager.priority_label_to_niceness(cfg.process_priority)
+    job_manager.watch_folder_enabled = cfg.watch_folder_enabled
+    job_manager.watch_folder_pipeline_id = cfg.watch_folder_pipeline_id
+    job_manager.watch_folder_interval_seconds = cfg.watch_folder_interval_seconds
     os.environ["PUSHOVER_ENABLED"] = "true" if cfg.pushover_enabled else "false"
     os.environ["PUSHOVER_USER_KEY"] = cfg.pushover_user_key
     os.environ["PUSHOVER_TOKEN"] = cfg.pushover_token
@@ -160,6 +164,7 @@ async def lifespan(app: FastAPI):
     await job_manager.start()
     subscription_manager = init_subscription_manager(job_manager)
     await subscription_manager.start()
+    init_watch_folder_service(job_manager).start()
     yield
 
 app = FastAPI(title="Media Converter Pro API", lifespan=lifespan)

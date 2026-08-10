@@ -402,7 +402,12 @@
     "cookies_test_all_expired": "⚠️ All {count} cookies with an expiry date have already expired. Please export and upload again.",
     "cookies_test_some_expired": "⚠️ {expired} of {total} cookies have already expired.",
     "cookies_test_ok": "✓ All {total} cookies with an expiry date are still valid.",
-    "cookies_test_earliest": "Earliest expiry: {date}."
+    "cookies_test_earliest": "Earliest expiry: {date}.",
+    "watch_folder_title": "Watch Folder",
+    "watch_folder_enable": "Enable watch folder",
+    "watch_folder_hint": "Automatically detect new files dropped into the input folder (manually, or by another tool like rsync or Syncthing) and run them through a pipeline. A file only counts as \"done\" and gets processed once its size hasn't changed for at least two check intervals - files still being copied are left alone. Already-imported files are moved into a _watch_imported subfolder so they don't get picked up again.",
+    "watch_folder_pipeline": "Pipeline:",
+    "watch_folder_interval": "Check interval (seconds):"
   },
   "modals": {
     "playlist_detected": "Playlist Detected",

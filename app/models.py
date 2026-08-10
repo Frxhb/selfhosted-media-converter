@@ -167,3 +167,8 @@ class AppConfig(BaseModel):
     auto_delete_originals: bool = False
     ffmpeg_threads: str = "Auto"  # "Auto" or a positive integer as string
     process_priority: str = "below_normal"  # low | below_normal | normal | above_normal | high
+    # Watch-Ordner: automatisches Verarbeiten neuer Dateien, die manuell/von einem anderen
+    # Tool (rsync, Syncthing, ...) in INPUT_DIR abgelegt werden - siehe app/watch_folder.py
+    watch_folder_enabled: bool = False
+    watch_folder_pipeline_id: Optional[str] = None
+    watch_folder_interval_seconds: int = 30
