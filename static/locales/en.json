@@ -374,7 +374,7 @@
     "cookies_label": "Cookies (for age-restricted / member-only videos):",
     "cookies_status": "Loading status...",
     "cookies_delete": "Remove",
-    "cookies_hint": "Export as <strong>Netscape cookies.txt</strong> (e.g. with browser extension 'Get cookies.txt LOCALLY') and upload here. Automatically passed to yt-dlp. Contains session data - not included in config export.",
+    "cookies_hint": "Export as <strong>Netscape cookies.txt</strong> (e.g. with <a style='text-decoration: none;' target='_blank' rel='noopener noreferrer' href='https://github.com/kairi003/Get-cookies.txt-LOCALLY'>browser extension \"Get cookies.txt LOCALLY\")</a> and upload here. Automatically passed to yt-dlp. Contains session data - not included in config export.",
     "backup_restore": "Backup & Restore",
     "export_backup": "Export settings & statistics (.zip)",
     "restore_backup": "Restore Backup:",
