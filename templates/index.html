@@ -23,35 +23,28 @@
 
   <body>
     <header>
-      <a 
-        href="/" 
-        style="text-decoration: none; color: inherit;"
-        title="Zur Übersicht zurückkehren"
-        data-i18n-title="app.tooltip_home"
-      >
-        <div class="logo-box">
-          <div class="logo-mark">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--signal)"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="6" cy="6" r="2.2" />
-              <circle cx="6" cy="18" r="2.2" />
-              <circle cx="18" cy="12" r="2.2" />
-              <path d="M8 6h4a4 4 0 0 1 4 4v0" />
-              <path d="M8 18h4a4 4 0 0 0 4-4v0" />
-            </svg>
-          </div>
-          <div class="header-title">
-            <h1>Media Converter</h1>
-            <p>ffmpeg · yt-dlp · whisper</p>
-          </div>
+      <div class="logo-box">
+        <div class="logo-mark">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--signal)"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="6" cy="6" r="2.2" />
+            <circle cx="6" cy="18" r="2.2" />
+            <circle cx="18" cy="12" r="2.2" />
+            <path d="M8 6h4a4 4 0 0 1 4 4v0" />
+            <path d="M8 18h4a4 4 0 0 0 4-4v0" />
+          </svg>
         </div>
-      </a>
+        <div class="header-title">
+          <h1>Media Converter</h1>
+          <p>ffmpeg · yt-dlp · whisper</p>
+        </div>
+      </div>
       <div class="header-actions">
         <div
           id="ws-status"
@@ -2068,9 +2061,9 @@
             class="card"
             style="height: 380px; display: flex; flex-direction: column"
           >
-            <div class="card-title">
+            <div class="card-title" style="flex-wrap: wrap; row-gap: 0.5rem">
               <span data-i18n="queue.title">Warteschlange</span>
-              <div style="display: flex; align-items: center; gap: 0.4rem">
+              <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap">
                 <span
                   id="queue-count"
                   class="status-badge"

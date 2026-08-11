@@ -10,7 +10,7 @@ from fastapi import WebSocket
 import uuid
 from app.models import Job, JobCreateRequest, JobStatus, JobType, Pipeline, PipelineStage
 from app.database import record_job, load_pipelines
-from app.core import COOKIES_FILE_PATH, OUTPUT_DIR
+from app.core import COOKIES_FILE_PATH, OUTPUT_DIR, DOWNLOAD_TEMP_DIR
 
 logger = logging.getLogger("JobManager")
 
@@ -276,7 +276,41 @@ class JobManager:
                 else:
                     a = a.replace("{input}", input_path).replace("{output_noext}", output_noext).replace("{output}", output_path)
             resolved.append(a)
+
+        if tool == "yt-dlp":
+            resolved = JobManager._make_ytdlp_output_relative(resolved, output_noext)
+
         return resolved
+
+    @staticmethod
+    def _make_ytdlp_output_relative(args: List[str], output_noext: str) -> List[str]:
+        """yt-dlp ignoriert ALLE --paths Angaben (auch 'temp:'), sobald -o ein absoluter Pfad
+        ist (dokumentiertes yt-dlp-Verhalten) - siehe derselbe Fix in subscription_manager.py
+        und part3-mux-download.js. Der Pipeline-Stage-Platzhalter {output_noext} löst
+        oben IMMER zu einem absoluten Pfad auf, also würde ein daraus gebautes '-o' diesen
+        Bug auslösen. Statt jede Pipeline-Stage-Definition einzeln anzupassen, wird das hier
+        zentral als Nachbearbeitung EINMAL korrigiert: ein gefundenes '-o <absoluter Pfad>'
+        Paar wird durch '--paths home:<Verzeichnis>' + ein relatives -o (nur Dateiname)
+        ersetzt, plus '--paths temp:DOWNLOAD_TEMP_DIR' für die Zwischenformate vor dem Merge.
+        Bewusst nur für tool == "yt-dlp" aufgerufen - andere Tools (ffmpeg, ...) kennen
+        weder -o noch --paths in diesem Sinne und werden von dieser Methode nie erreicht."""
+        home_dir = os.path.dirname(output_noext)
+        new_args = []
+        i = 0
+        while i < len(args):
+            a = args[i]
+            if a == "-o" and i + 1 < len(args) and os.path.isabs(args[i + 1]):
+                template = args[i + 1]
+                new_args.extend([
+                    "--paths", f"home:{home_dir}",
+                    "--paths", f"temp:{DOWNLOAD_TEMP_DIR}",
+                    "-o", os.path.basename(template),
+                ])
+                i += 2
+                continue
+            new_args.append(a)
+            i += 1
+        return new_args
 
     @staticmethod
     def _extract_clean_base_name(input_file: str) -> str:

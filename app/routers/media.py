@@ -192,7 +192,7 @@ async def check_ytdlp_url(url: str):
 @router.get("/api/ytdlp-info")
 async def get_ytdlp_info(url: str, cookies: str = "none", po_token: str = "", lang: str = "en"):
     async with _ytdlp_preview_slot():
-        cmd = ["yt-dlp", "--dump-json", "--no-playlist", "--no-warnings"]
+        cmd = ["yt-dlp", "--dump-json", "--no-playlist", "--no-warnings", "--remote-components", "ejs:github"]
         if cookies != "none":
             cmd.extend(["--cookies-from-browser", cookies])
 
@@ -255,6 +255,7 @@ async def get_ytdlp_playlist_items(url: str, max_items: int = Query(500, ge=1, l
             "--no-warnings",
             "--ignore-errors",
             "--playlist-end", str(max_items),
+            "--remote-components", "ejs:github",
             # Dynamische Sprache statt hart codiertem en-US
             "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9,en;q=0.8",
             # Fallback-Kette für 403 Forbidden Fehler + Sprache

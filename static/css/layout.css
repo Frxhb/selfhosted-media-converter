@@ -619,6 +619,8 @@
         align-items: center;
         gap: 0.3rem;
         font-family: var(--font-mono);
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .meter-bar {

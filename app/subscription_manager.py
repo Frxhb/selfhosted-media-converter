@@ -299,6 +299,7 @@ class SubscriptionManager:
             "--no-warnings",
             "--ignore-errors",
             "--playlist-end", str(sub.max_items_per_check),
+            "--remote-components", "ejs:github",
             "--extractor-args", "youtube:player_client=default,android,ios,web",
             sub.url,
         ]
@@ -359,14 +360,32 @@ class SubscriptionManager:
     async def _queue_download(self, sub: Subscription, video_id: str):
         """Erstellt einen normalen Download-Job für ein einzelnes neu gefundenes Video.
         Nutzt --download-archive, damit yt-dlp die Video-ID selbst in die Archiv-Datei
-        einträgt (gleiche Quelle der Wahrheit, die auch beim nächsten Check gelesen wird)."""
+        einträgt (gleiche Quelle der Wahrheit, die auch beim nächsten Check gelesen wird).
+
+        Die extractor-args/Accept-Language Flags unten spiegeln bewusst exakt das, was der
+        manuelle Download-Tab im Frontend setzt (siehe baseArgs in part3-mux-download.js) -
+        vorher hatten nur manuelle/Batch-Downloads die 403-Forbidden-Fallback-Kette
+        (player_client=default,android,ios,web), automatische Abo-Downloads liefen OHNE sie.
+        Das war eher andersherum riskant: bei einem manuellen Download bemerkt man einen
+        Fehlschlag sofort und kann es erneut versuchen, ein unbeaufsichtigter Abo-Download
+        schlägt sonst still fehl.
+        """
         video_url = f"https://www.youtube.com/watch?v={video_id}"
         output_dir = self._output_dir_for(sub)
         archive_path = self._archive_path(sub.id)
 
+        # Kein Browser-Kontext im Hintergrund-Task vorhanden (anders als im Frontend) - "en"
+        # als neutraler Standard für Metadaten-Sprache/Header.
+        lang = "en"
+        common_args = [
+            "--extractor-args", f"youtube:player_client=default,android,ios,web;lang={lang}",
+            "--add-header", f"Accept-Language:{lang},{lang}-{lang.upper()};q=0.9",
+        ]
+
         if sub.download_type == "audio":
             args = [
-                "--no-colors", "--no-playlist",
+                "--no-colors", "--no-playlist", "--remote-components", "ejs:github",
+                *common_args,
                 "-x", "--audio-format", sub.container, "--audio-quality", sub.quality,
                 "--download-archive", archive_path,
                 # WICHTIG: -o muss relativ bleiben, sonst ignoriert yt-dlp --paths
@@ -378,7 +397,7 @@ class SubscriptionManager:
             ]
             job_type = JobType.DOWNLOAD
         else:
-            args = ["--no-colors", "--no-playlist"]
+            args = ["--no-colors", "--no-playlist", "--remote-components", "ejs:github", *common_args]
             if sub.quality != "best":
                 args.extend(["-f", f"bestvideo[height<={sub.quality}]+bestaudio/best"])
             args.extend([

@@ -91,7 +91,13 @@ async function openTagsEditor(relPath) {
               ? t("pipeline_stage.desc_audio_download").replace("{container}", s.audioContainer.toUpperCase())
               : t("pipeline_stage.desc_video_download").replace("{quality}", s.resolution === "best" ? t("pipeline_stage.best_quality") : s.resolution + "p").replace("{container}", s.videoContainer.toUpperCase()),
           build: (s) => {
-            let args = ["--no-colors"];
+            const userLang = (window.navigator?.language || "en").split("-")[0];
+            let args = [
+              "--no-colors",
+              "--remote-components", "ejs:github",
+              "--add-header", `Accept-Language:${userLang},${userLang}-${userLang.toUpperCase()};q=0.9,en;q=0.8`,
+              "--extractor-args", `youtube:player_client=default,android,ios,web;lang=${userLang}`,
+            ];
             let ext;
             if (s.mode === "audio") {
               args.push(
