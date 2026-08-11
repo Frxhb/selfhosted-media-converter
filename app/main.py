@@ -78,8 +78,33 @@ def cleanup_stale_download_temp_dir():
             f"vermutlich Reste eines durch Absturz/Neustart unterbrochenen Downloads."
         )
 
+def cleanup_orphaned_output_files():
+    """Sucht im Output-Verzeichnis nach abgebrochenen Download-/Konvertierungsresten
+    (*.part, *.ytdl, *.temp) und löscht diese beim Start."""
+    if not os.path.isdir(OUTPUT_DIR):
+        return
+    removed_count = 0
+    removed_bytes = 0
+    for root, _, filenames in os.walk(OUTPUT_DIR):
+        for name in filenames:
+            if name.endswith((".part", ".ytdl", ".temp", ".tmp", ".download", ".aria2")):
+                full_path = os.path.join(root, name)
+                try:
+                    removed_bytes += os.path.getsize(full_path)
+                    os.remove(full_path)
+                    removed_count += 1
+                except Exception as e:
+                    logger.warning(f"Konnte verwaiste Datei nicht entfernen: {name} ({e})")
+
+    if removed_count > 0:
+        logger.info(
+            f"Beim Start: {removed_count} verwaiste .part/.ytdl Datei(en) aus dem "
+            f"Output-Verzeichnis entfernt ({removed_bytes / (1024 * 1024):.1f} MB)."
+        )
+
 
 cleanup_stale_download_temp_dir()
+cleanup_orphaned_output_files()
 
 
 def download_asset_sync(filename: str, url: str):
