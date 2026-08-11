@@ -144,7 +144,7 @@
             j.playlist_index && j.playlist_count
               ? `${j.playlist_index}/${j.playlist_count}`
               : "Playlist";
-          playlistBadge = `<span style="font-size:0.6rem; background:var(--signal-dim); color:var(--signal); padding:0.1rem 0.35rem; border-radius:0.2rem; font-family:var(--font-mono); flex-shrink:0;">📋 ${idxText}</span>`;
+          playlistBadge = `<span id="pl-badge-${j.id}" style="font-size:0.6rem; background:var(--signal-dim); color:var(--signal); padding:0.1rem 0.35rem; border-radius:0.2rem; font-family:var(--font-mono); flex-shrink:0;">📋 ${idxText}</span>`;
         }
 
         const isLiveRunning = j.is_live_stream && j.status === "running";
@@ -168,8 +168,8 @@
                         ${retryBadge}
                     </div>
                     ${
-                      j.is_playlist && j.current_item_title
-                        ? `<div style="font-size:0.72rem; color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">▶ ${escapeHtml(j.current_item_title)}</div>`
+                      j.is_playlist
+                        ? `<div id="cur-title-${j.id}" style="font-size:0.72rem; color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; ${j.current_item_title ? '' : 'display:none;'}">▶ ${escapeHtml(j.current_item_title || '')}</div>`
                         : ""
                     }
                     <div class="meter-bar"><div id="pbar-${j.id}" class="meter-fill" style="width: ${j.progress}%;"></div></div>
@@ -280,22 +280,58 @@
         loadJobs();
       }
 
-      function updateJobProgressUI(jobId, progress, eta, logLine) {
+      function updateJobProgressUI(jobId, progress, eta, logLine, fullData) {
         const pbar = document.getElementById(`pbar-${jobId}`);
         const etaEl = document.getElementById(`eta-${jobId}`);
         const speedEl = document.getElementById(`speed-${jobId}`);
+        const titleEl = document.getElementById(`cur-title-${jobId}`);
+        const plBadge = document.getElementById(`pl-badge-${jobId}`);
 
         if (pbar) pbar.style.width = `${progress}%`;
         if (etaEl) etaEl.textContent = eta;
-        if (logLine && speedEl) {
-          const ffmpegMatch = logLine.match(/speed=\s*([\d.]+)x/);
-          const ytdlpMatch = logLine.match(/at\s+([\d.]+\s*[kMG]?i?B\/s)/);
-          if (ffmpegMatch) {
-            speedEl.textContent = ffmpegMatch[1] + "x";
-            speedEl.style.display = "";
-          } else if (ytdlpMatch) {
-            speedEl.textContent = ytdlpMatch[1];
-            speedEl.style.display = "";
+
+        // 1. Daten direkt vom Backend-Websocket nutzen
+        if (fullData) {
+          if (fullData.current_item_title !== undefined && titleEl) {
+            titleEl.textContent = `▶ ${fullData.current_item_title}`;
+            titleEl.style.display = "block";
+          }
+          if (fullData.playlist_index && fullData.playlist_count && plBadge) {
+            plBadge.textContent = `📋 ${fullData.playlist_index}/${fullData.playlist_count}`;
+          }
+        }
+
+        if (logLine) {
+          // 2. Geschwindigkeit aktualisieren
+          if (speedEl) {
+            const ffmpegMatch = logLine.match(/speed=\s*([\d.]+)x/);
+            const ytdlpMatch = logLine.match(/at\s+([\d.]+\s*[kMG]?i?B\/s)/);
+            if (ffmpegMatch) {
+              speedEl.textContent = ffmpegMatch[1] + "x";
+              speedEl.style.display = "";
+            } else if (ytdlpMatch) {
+              speedEl.textContent = ytdlpMatch[1];
+              speedEl.style.display = "";
+            }
+          }
+          
+          // 3. Fallback: Wir lesen den Dateinamen live aus dem Logfile im Frontend mit!
+          if (titleEl) {
+            const destMatch = logLine.match(/\[download\] Destination:\s*(.+?)$/i) || 
+                              logLine.match(/\[download\]\s*(.+?)\s+has already been downloaded/i);
+            if (destMatch) {
+              const cleanName = destMatch[1].split('/').pop().split(/\.f\d+/)[0]; // Entfernt Pfad und yt-dlp Formatcodes wie .f137
+              titleEl.textContent = `▶ ${cleanName}`;
+              titleEl.style.display = "block";
+            }
+          }
+          
+          // 4. Playlist-Zähler live auslesen
+          if (plBadge) {
+            const plMatch = logLine.match(/Downloading video (\d+) of (\d+)/i);
+            if (plMatch) {
+              plBadge.textContent = `📋 ${plMatch[1]}/${plMatch[2]}`;
+            }
           }
         }
       }
