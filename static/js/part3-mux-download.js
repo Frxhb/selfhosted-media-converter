@@ -268,7 +268,6 @@ function tokenizeCliFlags(str) {
           if (rawPreview.trim() === "-" || !rawPreview.trim()) {
             showToast(t("toast.fetching_video_info"), "info", 2000);
             try {
-              // WICHTIG: Auch hier die Sprache an den Backend-Endpunkt übergeben!
               const infoRes = await fetch(
                 `/api/ytdlp-info?url=${encodeURIComponent(url)}&lang=${userLang}`,
               );
@@ -309,8 +308,6 @@ function tokenizeCliFlags(str) {
               batchFile,
               ...baseArgs,
               "--no-playlist",
-              // Siehe ausführlicher Kommentar in executeDownloadJob() weiter oben: -o muss
-              // relativ bleiben, sonst ignoriert yt-dlp --paths (auch "temp:") komplett.
               "--paths",
               `home:/media/outputs/${batchOutputSubdir}`,
               "--paths",
@@ -486,11 +483,6 @@ function tokenizeCliFlags(str) {
           : [];
 
         if (isLiveStream && !isAudio) {
-          // Bei laufenden Livestreams darf es KEIN nachträgliches Merging von separaten
-          // Video-/Audio-Spuren geben: wird die Aufnahme mittendrin gestoppt, läuft dieser
-          // Merge-Schritt nie und die Datei bleibt unspielbar (falscher Container/MIME-Typ).
-          // Daher: vorhandene -f / --merge-output-format entfernen und stattdessen ein
-          // bereits fertig gemuxtes Einzel-Format ("b" = best, kein Merge nötig) erzwingen.
           effectiveBaseArgs = stripFlagWithValue(baseArgs, [
             "-f",
             "--merge-output-format",
@@ -502,11 +494,6 @@ function tokenizeCliFlags(str) {
           ...effectiveBaseArgs,
           ...extraFlags,
           ...liveFlags,
-          // WICHTIG: yt-dlp ignoriert ALLE --paths Angaben (auch "temp:"), sobald -o ein
-          // absoluter Pfad ist (dokumentiertes yt-dlp-Verhalten). Deshalb hier "home:" statt
-          // -o explizit setzen, und -o selbst nur noch relativ (nur der Dateiname). Ohne
-          // dieses Detail landen die Zwischenformate (.f399.mp4, .f251.webm vor dem Mergen)
-          // direkt im finalen Output-Ordner statt im Staging-Verzeichnis.
           "--paths",
           `home:/media/outputs/${outputSubdir}`,
           "--paths",
@@ -542,6 +529,16 @@ function tokenizeCliFlags(str) {
         document.getElementById("playlist-full-confirm-view").style.display =
           "none";
         document.getElementById("playlist-picker-view").style.display = "none";
+
+        // Warnung anzeigen, falls es sich um einen dynamischen YouTube-Mix handelt (list=RD...)
+        const msgEl = document.querySelector("#playlist-actions-view p");
+        if (msgEl && pendingDownloadContext) {
+          if (pendingDownloadContext.targetUrl.includes("list=RD")) {
+            msgEl.innerHTML = `${t('modals.playlist_detected_msg', 'Ein Playlist-Link wurde erkannt.')}<br><strong style="color:var(--accent);">⚠️ YouTube Radio Mix (RDMM): Titel werden von YouTube dynamisch generiert.</strong>`;
+          } else {
+            msgEl.textContent = t('modals.playlist_detected_msg', 'Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?');
+          }
+        }
       }
 
       function confirmFullPlaylistDownload() {
@@ -560,7 +557,13 @@ function tokenizeCliFlags(str) {
         const { baseArgs, targetUrl } = pendingDownloadContext;
 
         if (choice === "single") {
-          executeDownloadJob(baseArgs, targetUrl, ["--no-playlist"]);
+          // Falls es ein YouTube Radio Mix (list=RD...) ist, den list-Parameter entfernen,
+          // damit yt-dlp exakt das eine gewählte Einzelvideo lädt.
+          let cleanUrl = targetUrl;
+          if (targetUrl.includes("list=RD")) {
+            cleanUrl = targetUrl.replace(/([&?])list=RD[^&]*/, '').replace(/[?&]$/, '');
+          }
+          executeDownloadJob(baseArgs, cleanUrl, ["--no-playlist"]);
         } else if (choice === "full") {
           executeDownloadJob(baseArgs, targetUrl, ["--yes-playlist"]);
         }
@@ -577,7 +580,7 @@ function tokenizeCliFlags(str) {
         const query = document.getElementById("d-search-query").value.trim();
         const resultsContainer = document.getElementById("d-search-results");
         if (!query) return showToast(t("downloader.toast_enter_query"), "warn");
-        if (ytdlpSearchInFlight) return; // verhindert überlappende Anfragen bei schnellem Enter-Mashing
+        if (ytdlpSearchInFlight) return;
 
         ytdlpSearchInFlight = true;
         ytdlpSearchResults = [];
@@ -660,8 +663,6 @@ function tokenizeCliFlags(str) {
 
         if (event.key === "Enter") {
           event.preventDefault();
-          // Ist bereits ein Ergebnis per Pfeiltaste ausgewählt -> das übernehmen,
-          // statt eine komplett neue Suche auszulösen.
           if (hasResults && resultsVisible && ytdlpSearchActiveIndex >= 0) {
             const item = ytdlpSearchResults[ytdlpSearchActiveIndex];
             selectSearchResult(item.id, item.title);
@@ -699,11 +700,8 @@ function tokenizeCliFlags(str) {
         ytdlpSearchActiveIndex = -1;
         showToast(t("toast.selected_title").replace("{title}", title), "success");
         
-        // WICHTIG: Vorschau & GUI updaten, da JavaScript-Wertänderungen kein "oninput" auslösen
         if (typeof updateYtdlpPreview === "function") updateYtdlpPreview();
         if (typeof clearDuplicateWarning === "function") clearDuplicateWarning();
-        
-        // Info abrufen starten (sobald verfügbar)
         if (typeof fetchYtDlpInfo === "function") fetchYtDlpInfo();
       }
 
@@ -798,12 +796,12 @@ function tokenizeCliFlags(str) {
         }
 
         if (extractedTitles.length > minVisible) {
-          expandBtn.style.display = "inline-flex";
-          expandBtn.textContent = expanded
+          if (expandBtn) expandBtn.style.display = "inline-flex";
+          if (expandBtn) expandBtn.textContent = expanded
             ? t("label.expand_less")
             : t("label.expand_all_count").replace("{count}", extractedTitles.length);
         } else {
-          expandBtn.style.display = "none";
+          if (expandBtn) expandBtn.style.display = "none";
         }
       }
 
@@ -812,17 +810,21 @@ function tokenizeCliFlags(str) {
         renderJobDetailsFiles(window.jobDetailsExtractedTitles || [], 10);
       }
 
-      async function openJobDetails(jobId) {
-        let job = clientJobs[jobId];
-        if (!job) {
-          try {
-            const res = await fetch("/api/jobs");
-            if (res.ok) {
-              serverJobsCache = await res.json();
-            }
-          } catch (e) {}
-          job = serverJobsCache.find((j) => j.id === jobId);
-        }
+      let jobDetailsPollingTimer = null;
+      let activeJobDetailsId = null;
+
+      async function openJobDetails(jobId, isAutoRefresh = false) {
+        activeJobDetailsId = jobId;
+
+        // Bei jedem Aufruf/Refresh die frischesten Job-Daten vom Server laden
+        try {
+          const res = await fetch("/api/jobs");
+          if (res.ok) {
+            serverJobsCache = await res.json();
+          }
+        } catch (e) {}
+
+        let job = clientJobs[jobId] || (serverJobsCache && serverJobsCache.find((j) => j.id === jobId));
         if (!job) return;
 
         document.getElementById("job-details-header").textContent =
@@ -866,7 +868,6 @@ function tokenizeCliFlags(str) {
         const extractedTitles = Array.from(fileMap.values());
         const MIN_VISIBLE_TITLES = 10;
         window.jobDetailsExtractedTitles = extractedTitles;
-        window.jobDetailsFilesExpanded = false;
 
         const expandBtn = document.getElementById(
           "job-details-files-expand-btn",
@@ -879,17 +880,38 @@ function tokenizeCliFlags(str) {
           renderJobDetailsFiles(extractedTitles, MIN_VISIBLE_TITLES);
         } else if (job.current_item_title) {
           if (headerEl) headerEl.textContent = t("label.current_loading_title");
-          expandBtn.style.display = "none";
+          if (expandBtn) expandBtn.style.display = "none";
           filesContainer.innerHTML = `<div class="queue-item"><span style="font-weight:700;">🎵 ${escapeHtml(job.current_item_title)}</span></div>`;
         } else {
           if (headerEl) headerEl.textContent = t("label.processed_file");
-          expandBtn.style.display = "none";
+          if (expandBtn) expandBtn.style.display = "none";
           filesContainer.innerHTML = `<div class="queue-item"><span style="font-weight:700;">📄 ${escapeHtml(job.title)}</span></div>`;
         }
 
-        document.getElementById("job-details-logs").textContent =
-          job.logs && job.logs.length > 0
-            ? job.logs.join("\n")
-            : t("toast.no_log_entries");
-        openModal("job-details-modal");
+        const logsContainer = document.getElementById("job-details-logs");
+        if (logsContainer) {
+          logsContainer.textContent =
+            job.logs && job.logs.length > 0
+              ? job.logs.join("\n")
+              : t("toast.no_log_entries");
+        }
+
+        if (!isAutoRefresh) {
+          window.jobDetailsFilesExpanded = false;
+          openModal("job-details-modal");
+        }
+
+        // Live-Polling starten: Aktualisiert das Fenster alle 2 Sekunden automatisch, solange es offen ist
+        if (!jobDetailsPollingTimer) {
+          jobDetailsPollingTimer = setInterval(() => {
+            const modal = document.getElementById("job-details-modal");
+            if (modal && modal.style.display !== "none" && activeJobDetailsId) {
+              openJobDetails(activeJobDetailsId, true);
+            } else {
+              clearInterval(jobDetailsPollingTimer);
+              jobDetailsPollingTimer = null;
+              activeJobDetailsId = null;
+            }
+          }, 2000);
+        }
       }
