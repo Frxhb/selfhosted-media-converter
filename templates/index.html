@@ -3335,19 +3335,23 @@
                 gap: 0.6rem;
               "
             >
-              <span style="font-size: 0.78rem; color: var(--ink-dim)"
-                ><span data-i18n="settings.version">Version</span>:
-                <span
+              <span style="font-size: 0.78rem; color: var(--ink-dim)">
+		<span data-i18n="settings.version">Version</span>:
+                <a
                   id="ytdlp-version-display"
                   class="code-box"
                   style="
                     display: inline-block;
                     padding: 0.15rem 0.5rem;
                     margin-left: 0.3rem;
+		    text-decoration: none;
+     		    color: inherit;
                   "
+		  target="_blank"
+		  rel="noopener noreferrer"
                   data-i18n="common.loading"
-                  >wird geladen...</span
-                ></span
+                  >wird geladen...</a>
+                </span
               >
               <button
                 onclick="checkAndUpdateYtDlp()"

@@ -139,7 +139,15 @@ def download_logs(level: str = Query("app")):
 def get_ytdlp_version():
     try:
         result = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True, timeout=10)
-        return {"version": result.stdout.strip() or "unbekannt"}
+        version = result.stdout.strip()
+
+        if version:
+            return {
+                "version": version,
+                "url": f"https://github.com/yt-dlp/yt-dlp/releases/tag/{version}"
+            }
+        return {"version": "unbekannt"}
+
     except Exception as e:
         return {"version": "unbekannt", "error": str(e)}
 
@@ -148,19 +156,38 @@ def get_ytdlp_version():
 def update_ytdlp():
     """
     Aktualisiert yt-dlp zur Laufzeit über dessen eingebauten Self-Updater (yt-dlp -U).
-    Das Docker-Image pinnt yt-dlp bewusst auf eine feste Version (siehe Dockerfile);
-    dieser Endpunkt ist der bewusste, manuelle Weg, trotzdem ohne Rebuild zu aktualisieren.
-    Änderung ist nur bis zum nächsten Container-Neustart persistent, falls /usr/local/bin
-    nicht separat gemountet ist (Standard-Setup: nicht gemountet -> Rebuild bleibt die
-    dauerhafte Update-Quelle, dies hier ist der schnelle Zwischenweg).
     """
     try:
+        # 1. Alte Version vor dem Update auslesen
+        old_version_res = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True, timeout=10)
+        old_version = old_version_res.stdout.strip()
+
+        # 2. Update ausführen
         result = subprocess.run(["yt-dlp", "-U"], capture_output=True, text=True, timeout=60)
         output = (result.stdout or "") + (result.stderr or "")
+
         if result.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Update fehlgeschlagen: {output.strip()[-500:]}")
+
+        # 3. Neue Version auslesen
         version_result = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True, timeout=10)
-        return {"status": "ok", "output": output.strip(), "version": version_result.stdout.strip()}
+        new_version = version_result.stdout.strip()
+
+        # 4. Prüfen, ob wirklich eine neuere Version installiert wurde
+        is_updated = (old_version != new_version) and bool(new_version)
+
+        response_data = {
+            "status": "ok",
+            "updated": is_updated,  # True = es gab ein Update, False = war bereits aktuell
+            "output": output.strip(),
+            "version": new_version or "unbekannt"
+        }
+
+        if new_version:
+            response_data["url"] = f"https://github.com/yt-dlp/yt-dlp/releases/tag/{new_version}"
+
+        return response_data
+
     except subprocess.TimeoutExpired:
         raise HTTPException(status_code=504, detail="Zeitüberschreitung beim yt-dlp Update.")
     except HTTPException:
