@@ -1,9 +1,9 @@
 """
-Pflegt eine lokal gecachte Liste unterstützter yt-dlp/youtube-dl Extraktor-Namen, um vor
+Pflegt eine lokal gecachte Liste unterstützter yt-dlp Extraktor-Namen, um vor
 einem tatsächlichen yt-dlp-Aufruf eine schnelle, rein lokale Heuristik-Prüfung zu ermöglichen:
 "wird diese URL wahrscheinlich unterstützt?". yt-dlp exportiert die echten Extraktor-Regexe
 nicht als einfache Liste über die CLI, daher wird stattdessen die Namensliste aus den
-youtube-dl Docs geladen und der Domain-Name der eingegebenen URL dagegen abgeglichen.
+yt-dlp Docs geladen und der Domain-Name der eingegebenen URL dagegen abgeglichen.
 
 Bewusst nur eine Heuristik, kein Ersatz für die echte Extraktor-Zuordnung:
 - False Positives sind unwahrscheinlich (führt höchstens zu einer übersehenen Warnung)
@@ -28,12 +28,16 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger("Main")
 
-SUPPORTED_SITES_URL = "https://raw.githubusercontent.com/ytdl-org/youtube-dl/master/docs/supportedsites.md"
+# Updated to the official yt-dlp repository documentation source
+SUPPORTED_SITES_URL = "https://raw.githubusercontent.com/yt-dlp/yt-dlp/master/supportedsites.md"
 CACHE_TTL_SECONDS = 7 * 24 * 3600  # einmal pro Woche
 FETCH_TIMEOUT_SECONDS = 10
 
-# Markdown-Zeilen sehen aus wie "  - **9now.com.au**" oder "  - **YoutubeUser**: Beschreibung"
+# Markdown-Zeilen sehen aus wie "  - **10play**", "  - **10play:season**" oder "  - **1News**: 1news.co.nz"
 _SITE_NAME_RE = re.compile(r"^\s*-\s+\*\*(.+?)\*\*")
+
+# In-Memory Cache, um Festplattenzugriffe (Disk-I/O) bei jeder URL-Prüfung zu vermeiden
+_MEMORY_CACHE: Optional[list] = None
 
 
 def _cache_path() -> str:
@@ -62,6 +66,8 @@ def _load_cache() -> Optional[dict]:
 
 
 def _save_cache(names: list):
+    global _MEMORY_CACHE
+    _MEMORY_CACHE = names
     path = _cache_path()
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -78,7 +84,7 @@ def _fetch_and_cache_sync() -> list:
     names = _parse_supported_sites_md(text)
     if names:
         _save_cache(names)
-        logger.info(f"Liste unterstützter yt-dlp/youtube-dl Seiten aktualisiert ({len(names)} Einträge).")
+        logger.info(f"Liste unterstützter yt-dlp Seiten aktualisiert ({len(names)} Einträge).")
     else:
         logger.warning("Liste unterstützter Seiten geladen, aber 0 Einträge geparst - Format evtl. geändert.")
     return names
@@ -92,10 +98,18 @@ def is_cache_stale() -> bool:
 
 
 def get_cached_site_names() -> list:
-    """Liest NUR den Disk-Cache, ohne Netzwerk-Zugriff - für den API-Endpunkt, damit eine
-    URL-Prüfung nie durch einen GitHub-Request verzögert wird."""
+    """Liest den In-Memory-Cache (oder bei Bedarf einmalig den Disk-Cache) ohne Netzwerk-Zugriff - 
+    für den API-Endpunkt, damit eine URL-Prüfung nie durch Festplatten-I/O oder GitHub-Requests verzögert wird."""
+    global _MEMORY_CACHE
+    if _MEMORY_CACHE is not None:
+        return _MEMORY_CACHE
+
     cache = _load_cache()
-    return cache.get("sites", []) if cache else []
+    if cache and "sites" in cache:
+        _MEMORY_CACHE = cache["sites"]
+        return _MEMORY_CACHE
+
+    return []
 
 
 async def ensure_supported_sites_cache_fresh():
@@ -104,6 +118,9 @@ async def ensure_supported_sites_cache_fresh():
     Woche ist. Ein Fehlschlag (z.B. kein Internetzugang) wird nur geloggt, der Server
     funktioniert unverändert weiter - die Prüfung liefert dann einfach "unbekannt".
     """
+    # Befülle den In-Memory-Cache direkt beim Serverstart aus der Datei auf dem Datenträger
+    get_cached_site_names()
+
     if not is_cache_stale():
         return
     try:
@@ -145,10 +162,16 @@ def check_url_support(url: str) -> dict:
     domain_core_norm = re.sub(r"[^a-z0-9]", "", domain_core)
 
     for name in sites:
-        name_norm = re.sub(r"[^a-z0-9]", "", name.lower())
-        if not name_norm:
+        # Falls Sub-Extraktoren wie "10play:season" enthalten sind, trennen wir am Doppelpunkt
+        base_name = name.split(":")[0] if ":" in name else name
+        name_norm = re.sub(r"[^a-z0-9]", "", base_name.lower())
+
+        # Vermeide Zuordnungen durch sehr kurze Strings (z.B. < 3 Zeichen), um False Positives zu verhindern
+        if not name_norm or len(name_norm) < 3:
             continue
-        if name_norm == domain_core_norm or name_norm in domain_norm or domain_norm in name_norm:
+
+        # Prüfe Exakt-Treffer auf Core-Domain ODER ob der Extraktorname in der Domain vorkommt
+        if name_norm == domain_core_norm or name_norm in domain_norm:
             return {"valid_url": True, "supported": True, "domain": domain, "matched": name}
 
     return {"valid_url": True, "supported": False, "domain": domain}
