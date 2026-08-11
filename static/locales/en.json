@@ -410,9 +410,12 @@
     "watch_folder_pipeline": "Pipeline:",
     "watch_folder_interval": "Check interval (seconds):"
   },
-  "modals": {
+"modals": {
     "playlist_detected": "Playlist Detected",
     "playlist_detected_msg": "A playlist URL was detected. How would you like to proceed?",
+    "radio_detected": "YouTube Radio / Mix Detected",
+    "radio_detected_msg": "A YouTube Radio / Mix link was detected. YouTube generates this list dynamically on the fly based on recommendation algorithms.",
+    "radio_cookie_warning": "⚠️ <strong>Notice:</strong> Without uploaded cookies (Settings -> Cookies), yt-dlp will fetch YouTube's anonymous recommendations, which differ from your browser session.",
     "playlist_single_title": "Download single video only",
     "playlist_single_desc": "Downloads only the linked video (--no-playlist)",
     "playlist_full_title": "Download full playlist",
@@ -420,7 +423,6 @@
     "playlist_custom_title": "Select specific videos...",
     "playlist_custom_desc": "Load playlist titles and select items to download",
     "playlist_confirm_warn": "Playlists can contain many videos and consume all disk space. Download full playlist?",
-    "playlist_mix_warning": "⚠️ <strong>YouTube Radio Mix (RDMM) detected!</strong><br><span style='font-size:0.8rem; font-weight:normal;'>YouTube generates this list dynamically. Titles will differ from your browser unless session cookies are saved in Settings. Tip: Download as a single video or save your cookies.txt.</span>",
     "select_titles": "Select Titles:",
     "select_all": "All",
     "select_none": "None",

@@ -410,9 +410,12 @@
     "watch_folder_pipeline": "Pipeline:",
     "watch_folder_interval": "Prüfintervall (Sekunden):"
   },
-  "modals": {
+"modals": {
     "playlist_detected": "Playlist erkannt",
     "playlist_detected_msg": "Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?",
+    "radio_detected": "YouTube Radio / Mix erkannt",
+    "radio_detected_msg": "Ein YouTube Radio / Mix-Link wurde erkannt. YouTube generiert diese Liste dynamisch basierend auf Empfehlungen.",
+    "radio_cookie_warning": "⚠️ <strong>Hinweis:</strong> Ohne hinterlegte Cookies (Einstellungen -> Cookies) lädt yt-dlp die anonymen Empfehlungen von YouTube, die von deiner Browser-Sitzung abweichen.",
     "playlist_single_title": "Nur einzelnes Video herunterladen",
     "playlist_single_desc": "Lädt ausschließlich das verlinkte Einzelvideo (--no-playlist)",
     "playlist_full_title": "Gesamte Playlist herunterladen",
@@ -420,7 +423,6 @@
     "playlist_custom_title": "Spezifische Videos auswählen...",
     "playlist_custom_desc": "Titelübersicht laden und nur ausgewählte Videos laden",
     "playlist_confirm_warn": "Playlists können sehr viele Videos enthalten und den gesamten Speicherplatz belegen. Wirklich die komplette Playlist herunterladen?",
-    "playlist_mix_warning": "⚠️ <strong>YouTube Radio Mix (RDMM) erkannt!</strong><br><span style='font-size:0.8rem; font-weight:normal;'>YouTube generiert diese Liste dynamisch. Die Titel weichen vom Browser ab, solange keine Session-Cookies in den Einstellungen hinterlegt sind. Tipp: Lade das Video als Einzelvideo oder hinterlege deine cookies.txt.</span>",
     "select_titles": "Titel auswählen:",
     "select_all": "Alle",
     "select_none": "Keine",

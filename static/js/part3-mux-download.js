@@ -530,23 +530,28 @@ function showPlaylistActionsView() {
     "none";
   document.getElementById("playlist-picker-view").style.display = "none";
 
+  const isMix = pendingDownloadContext && pendingDownloadContext.targetUrl.includes("list=RD");
+
+  // 1. Überschrift des Modals anpassen ("Playlist erkannt" vs. "YouTube Radio / Mix erkannt")
+  const titleEl = document.querySelector("#playlist-modal h3") || document.getElementById("playlist-modal-title");
+  if (titleEl) {
+    titleEl.textContent = isMix
+      ? t("modals.radio_detected", "YouTube Radio / Mix erkannt")
+      : t("modals.playlist_detected", "Playlist erkannt");
+  }
+
+  // 2. Inhalt & Hinweis anpassen
   const msgEl = document.querySelector("#playlist-actions-view p");
   if (msgEl && pendingDownloadContext) {
-    const isMix = pendingDownloadContext.targetUrl.includes("list=RD");
-
     if (isMix) {
-      // Zeigt die ausführliche Radio-Mix-Warnung inkl. Cookie-Hinweis an
-      msgEl.innerHTML = t('modals.playlist_mix_warning');
-      msgEl.style.backgroundColor = "rgba(255, 193, 7, 0.15)";
-      msgEl.style.borderLeft = "4px solid var(--accent, #ffc107)";
-      msgEl.style.padding = "0.6rem 0.8rem";
-      msgEl.style.borderRadius = "4px";
+      msgEl.innerHTML = `
+              ${t('modals.radio_detected_msg')}<br><br>
+              <div style="background: rgba(255, 193, 7, 0.15); border-left: 4px solid #ffc107; padding: 0.6rem; border-radius: 4px; font-size: 0.8rem; text-align: left;">
+                ${t('modals.radio_cookie_warning')}
+              </div>
+            `;
     } else {
-      // Standard-Text für normale, statische Playlists (list=PL...)
-      msgEl.textContent = t('modals.playlist_detected_msg');
-      msgEl.style.backgroundColor = "transparent";
-      msgEl.style.borderLeft = "none";
-      msgEl.style.padding = "0";
+      msgEl.textContent = t('modals.playlist_detected_msg', 'Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?');
     }
   }
 }
