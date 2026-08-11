@@ -420,6 +420,7 @@
     "playlist_custom_title": "Select specific videos...",
     "playlist_custom_desc": "Load playlist titles and select items to download",
     "playlist_confirm_warn": "Playlists can contain many videos and consume all disk space. Download full playlist?",
+    "playlist_mix_warning": "⚠️ <strong>YouTube Radio Mix (RDMM) detected!</strong><br><span style='font-size:0.8rem; font-weight:normal;'>YouTube generates this list dynamically. Titles will differ from your browser unless session cookies are saved in Settings. Tip: Download as a single video or save your cookies.txt.</span>",
     "select_titles": "Select Titles:",
     "select_all": "All",
     "select_none": "None",
