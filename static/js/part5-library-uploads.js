@@ -502,14 +502,16 @@ async function saveServerConfig() {
 async function loadYtDlpVersion() {
   const el = document.getElementById("ytdlp-version-display");
   if (!el) return;
-  el.textContent = t("label.loading_ellipsis");
+
   try {
     const res = await fetch("/api/system/ytdlp-version");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+
     el.textContent = data.version || t("label.unknown");
 
-    // Macht den Link klickbar, falls eine URL geliefert wurde
+    el.removeAttribute("data-i18n");
+
     if (data.url) {
       el.href = data.url;
     } else {
@@ -518,8 +520,10 @@ async function loadYtDlpVersion() {
   } catch (e) {
     el.textContent = t("toast.error_prefix") + e.message;
     el.removeAttribute("href");
+    el.removeAttribute("data-i18n");
   }
 }
+
 async function checkAndUpdateYtDlp() {
   const btn = document.getElementById("btn-ytdlp-update");
   const originalText = btn.textContent;
@@ -543,7 +547,6 @@ async function checkAndUpdateYtDlp() {
       }
     }
 
-    // Unterscheidung mit i18n-Übersetzung
     if (data.updated) {
       showToast(
         t("toast.ytdlp_updated").replace("{version}", data.version || "").trim(),

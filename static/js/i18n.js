@@ -113,6 +113,9 @@ function applyTranslations() {
   if (typeof loadCookiesStatus === 'function') {
     loadCookiesStatus();
   }
+  if (typeof loadYtDlpVersion === 'function') {
+    loadYtDlpVersion();
+  }
   if (typeof loadJobs === 'function') {
     loadJobs();
   }
