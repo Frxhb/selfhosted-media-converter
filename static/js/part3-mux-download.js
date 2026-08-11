@@ -524,89 +524,48 @@ function executeDownloadJob(
   });
 }
 
-async function showPlaylistActionsView() {
-        document.getElementById("playlist-actions-view").style.display = "flex";
-        document.getElementById("playlist-full-confirm-view").style.display = "none";
-        document.getElementById("playlist-picker-view").style.display = "none";
+function showPlaylistActionsView() {
+  document.getElementById("playlist-actions-view").style.display = "flex";
+  document.getElementById("playlist-full-confirm-view").style.display = "none";
+  document.getElementById("playlist-picker-view").style.display = "none";
 
-        if (!pendingDownloadContext) return;
-        const targetUrl = pendingDownloadContext.targetUrl;
-        const isMix = targetUrl.includes("list=RD") || targetUrl.includes("start_radio=1");
+  if (!pendingDownloadContext) return;
+  const targetUrl = pendingDownloadContext.targetUrl;
+  const isMix = targetUrl.includes("list=RD") || targetUrl.includes("start_radio=1");
 
-        // 1. Überschrift des Modals anpassen & data-i18n entfernen
-        const titleEl = document.querySelector("#playlist-modal h3") || document.getElementById("playlist-modal-title");
-        if (titleEl) {
-          titleEl.removeAttribute("data-i18n");
-          titleEl.textContent = isMix 
-            ? t("modals.radio_detected", "YouTube Radio / Mix erkannt") 
-            : t("modals.playlist_detected", "Playlist erkannt");
-        }
+  const titleEl = document.getElementById("playlist-modal-title");
+  if (titleEl) {
+    titleEl.removeAttribute("data-i18n");
+    titleEl.textContent = isMix 
+      ? t("modals.radio_detected", "YouTube Radio / Mix erkannt") 
+      : t("modals.playlist_detected", "Playlist erkannt");
+  }
 
-        // 2. Cookie-Status vom Server abfragen
-        let hasCookies = false;
-        try {
-          const cRes = await fetch("/api/cookies/status");
-          if (cRes.ok) {
-            const cData = await cRes.json();
-            hasCookies = !!(cData.active || cData.exists);
-          }
-        } catch (e) {}
-
-        const cookieBadge = hasCookies
-          ? `<span style="color:#28a745; font-weight:bold;">✅ Cookies aktiv</span>`
-          : `<span style="color:#dc3545; font-weight:bold;">❌ Keine cookies.txt hinterlegt</span>`;
-
-        // 3. Hinweis im Modal setzen & data-i18n entfernen, damit es nicht überschrieben wird
-        const msgEl = document.querySelector("#playlist-actions-view p");
-        if (msgEl) {
-          msgEl.removeAttribute("data-i18n"); // MUSS entfernt werden!
-
-          if (isMix) {
-            msgEl.innerHTML = `
-              <strong style="color:var(--accent,#ffc107);">${t("modals.radio_detected_title", "⚠️ YouTube Radio / Mix erkannt!")}</strong><br>
-              <span style="font-size:0.82rem;">${t("modals.radio_detected_desc", "Dies ist keine statische Playlist, sondern eine von YouTube dynamisch generierte Radio-Mischung.")}</span>
-              
-              <div style="margin-top:0.7rem; padding:0.6rem 0.8rem; background:rgba(255,193,7,0.12); border-left:4px solid #ffc107; border-radius:4px; font-size:0.78rem; text-align:left;">
-                <div><strong>Cookie-Status:</strong> ${cookieBadge}</div>
-                <div style="margin-top:0.3rem; color:var(--ink-dim);">
-                  ${hasCookies 
-                    ? t("modals.radio_cookies_active_hint", "Deine hinterlegten Session-Cookies werden genutzt, um deine persönliche Radio-Liste zu laden.")
-                    : t("modals.radio_no_cookies_hint", "Ohne Cookies lädt yt-dlp anonyme Standard-Empfehlungen von YouTube, die von deinem Browser abweichen.")}
-                </div>
-              </div>
-            `;
-          } else {
-            msgEl.textContent = t("modals.playlist_detected_msg", "Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?");
-          }
-        }
-      }
-
-      function handlePlaylistChoice(choice) {
-        if (!pendingDownloadContext) return;
-        const { baseArgs, targetUrl } = pendingDownloadContext;
-
-        if (choice === "single") {
-          // Falls es ein YouTube Radio Mix ist (list=RD... / start_radio=1),
-          // entfernen wir alle Playlist/Mix-Parameter aus der URL komplett!
-          let cleanUrl = targetUrl;
-          try {
-            const urlObj = new URL(targetUrl);
-            if (urlObj.searchParams.has("list") || urlObj.searchParams.has("start_radio")) {
-              urlObj.searchParams.delete("list");
-              urlObj.searchParams.delete("start_radio");
-              urlObj.searchParams.delete("index");
-              cleanUrl = urlObj.toString();
-            }
-          } catch (e) {}
-
-          executeDownloadJob(baseArgs, cleanUrl, ["--no-playlist"]);
-        } else if (choice === "full") {
-          executeDownloadJob(baseArgs, targetUrl, ["--yes-playlist"]);
-        }
-
-        closeModal("playlist-modal");
-        pendingDownloadContext = null;
-      }
+  const msgContainer = document.getElementById("playlist-modal-msg-container");
+  if (msgContainer) {
+    if (isMix) {
+      msgContainer.innerHTML = `
+        <div style="margin-bottom:0.8rem;">
+          <strong style="color:var(--accent,#ffc107); font-size:0.9rem;">
+            ${t("modals.radio_detected_title", "⚠️ YouTube Radio / Mix erkannt!")}
+          </strong><br>
+          <span style="font-size:0.82rem; color:var(--ink-dim);">
+            ${t("modals.radio_detected_desc", "Dies ist keine statische Playlist, sondern eine von YouTube dynamisch generierte Radio-Mischung.")}
+          </span>
+        </div>
+        <div style="padding:0.6rem 0.8rem; background:rgba(255,193,7,0.12); border-left:4px solid #ffc107; border-radius:4px; font-size:0.78rem; text-align:left; line-height: 1.4;">
+          ${t("modals.radio_no_cookies_hint", "Ohne Cookies lädt yt-dlp anonyme Standard-Empfehlungen von YouTube, die von deinem Browser abweichen. Hast du Cookies in den Einstellungen hinterlegt, nutzt yt-dlp diese.")}
+        </div>
+      `;
+    } else {
+      msgContainer.innerHTML = `
+        <p id="playlist-modal-msg" style="font-size: 0.8rem; color: var(--ink-dim); margin: 0;">
+          ${t("modals.playlist_detected_msg", "Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?")}
+        </p>
+      `;
+    }
+  }
+}
 
 function confirmFullPlaylistDownload() {
   if (!pendingDownloadContext) return;
@@ -615,8 +574,7 @@ function confirmFullPlaylistDownload() {
     return;
   }
   document.getElementById("playlist-actions-view").style.display = "none";
-  document.getElementById("playlist-full-confirm-view").style.display =
-    "flex";
+  document.getElementById("playlist-full-confirm-view").style.display = "flex";
 }
 
 function handlePlaylistChoice(choice) {
@@ -624,12 +582,17 @@ function handlePlaylistChoice(choice) {
   const { baseArgs, targetUrl } = pendingDownloadContext;
 
   if (choice === "single") {
-    // Falls es ein YouTube Radio Mix (list=RD...) ist, den list-Parameter entfernen,
-    // damit yt-dlp exakt das eine gewählte Einzelvideo lädt.
     let cleanUrl = targetUrl;
-    if (targetUrl.includes("list=RD")) {
-      cleanUrl = targetUrl.replace(/([&?])list=RD[^&]*/, '').replace(/[?&]$/, '');
-    }
+    try {
+      const urlObj = new URL(targetUrl);
+      if (urlObj.searchParams.has("list") || urlObj.searchParams.has("start_radio")) {
+        urlObj.searchParams.delete("list");
+        urlObj.searchParams.delete("start_radio");
+        urlObj.searchParams.delete("index");
+        cleanUrl = urlObj.toString();
+      }
+    } catch (e) {}
+
     executeDownloadJob(baseArgs, cleanUrl, ["--no-playlist"]);
   } else if (choice === "full") {
     executeDownloadJob(baseArgs, targetUrl, ["--yes-playlist"]);

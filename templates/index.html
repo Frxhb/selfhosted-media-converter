@@ -2178,7 +2178,7 @@
     <div id="playlist-modal" class="modal-overlay">
       <div class="modal-card" style="max-width: 550px">
         <div class="card-title">
-          <span data-i18n="modals.playlist_detected">Playlist erkannt</span>
+          <span id="playlist-modal-title" data-i18n="modals.playlist_detected">Playlist erkannt</span>
           <button
             onclick="closeModal('playlist-modal')"
             class="btn btn-secondary btn-sm"
@@ -2186,17 +2186,19 @@
             ✕
           </button>
         </div>
-        <p
-          style="
-            font-size: 0.8rem;
-            color: var(--ink-dim);
-            margin-bottom: 1.2rem;
-          "
-          data-i18n="modals.playlist_detected_msg"
-        >
-          Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download
-          fortfahren?
-        </p>
+        <div id="playlist-modal-msg-container" style="margin-bottom: 1.2rem;">
+          <p
+            id="playlist-modal-msg"
+            style="
+              font-size: 0.8rem;
+              color: var(--ink-dim);
+              margin: 0;
+            "
+            data-i18n="modals.playlist_detected_msg"
+          >
+            Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?
+          </p>
+        </div>
 
         <div
  id="playlist-actions-view" class="u-col-gap-06">
