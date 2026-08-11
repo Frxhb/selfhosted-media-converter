@@ -259,8 +259,24 @@ async function handleDownloadSubmit() {
       pendingDownloadContext = { baseArgs, targetUrl: url };
       showPlaylistActionsView();
       openModal("playlist-modal");
+      
+      // NEU: Titel im Hintergrund abrufen, während der Nutzer das Playlist-Modal liest
+      const rawPreview = document.getElementById("d-info-title")?.textContent || "";
+      if (rawPreview.trim() === "-" || !rawPreview.trim()) {
+        fetch(`/api/ytdlp-info?url=${encodeURIComponent(url)}&lang=${userLang}`)
+          .then(res => res.ok ? res.json() : {})
+          .then(info => {
+            if (info.title && info.title !== "Unbekannt") {
+              document.getElementById("d-info-title").textContent = info.title;
+              document.getElementById("d-info-uploader").textContent = info.uploader || "-";
+              document.getElementById("d-info-duration").textContent = info.duration || "-";
+            }
+          }).catch(() => {});
+      }
       return;
     }
+
+    // Titel automatisch im Hintergrund auflösen, falls noch kein Info-Fetch gemacht wurde
 
     // Titel automatisch im Hintergrund auflösen, falls noch kein Info-Fetch gemacht wurde
     const rawPreview =
@@ -581,6 +597,10 @@ function handlePlaylistChoice(choice) {
   if (!pendingDownloadContext) return;
   const { baseArgs, targetUrl } = pendingDownloadContext;
 
+  // Versuche, den Titel auslesen (wurde evtl. gerade im Hintergrund geladen)
+  const rawPreview = document.getElementById("d-info-title")?.textContent || "";
+  const fetchedTitle = (rawPreview !== "-" && rawPreview.trim()) ? rawPreview.trim() : null;
+
   if (choice === "single") {
     let cleanUrl = targetUrl;
     try {
@@ -593,9 +613,11 @@ function handlePlaylistChoice(choice) {
       }
     } catch (e) {}
 
-    executeDownloadJob(baseArgs, cleanUrl, ["--no-playlist"]);
+    // Nimmt den abgerufenen Titel oder den Fallback "Video Download"
+    executeDownloadJob(baseArgs, cleanUrl, ["--no-playlist"], fetchedTitle || "Video Download");
   } else if (choice === "full") {
-    executeDownloadJob(baseArgs, targetUrl, ["--yes-playlist"]);
+    // Nimmt "Playlist: [Name]" oder den Fallback "Playlist Download"
+    executeDownloadJob(baseArgs, targetUrl, ["--yes-playlist"], fetchedTitle ? `Playlist: ${fetchedTitle}` : "Playlist Download");
   }
 
   closeModal("playlist-modal");
