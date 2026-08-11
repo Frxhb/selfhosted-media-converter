@@ -260,7 +260,7 @@
     "new_sub": "Abonnement hinzufügen",
     "new_subscription": "+ Neues Abonnement",
     "check_all": "🔄 Alle prüfen",
-    "description": "Abonniere einen Kanal oder eine Playlist. Der Server prüft automatisch in einem eigenen Intervall auf neue Videos und lädt sie herunter. Bereits geladene Videos werden nie erneut heruntergeladen. Downloads landen in outputs/scheduled/<Name>/.",
+    "description": "Abonniere einen Kanal oder eine Playlist. Der Server prüft automatisch in einem eigenen Intervall auf neue Videos und lädt sie herunter. Bereits geladene Videos werden nie erneut heruntergeladen. Downloads landen in outputs/scheduled/<Name>.",
     "no_subs": "Keine Abonnements vorhanden",
     "no_subs_yet": "Noch keine Abonnements angelegt.",
     "check_now": "Jetzt prüfen",

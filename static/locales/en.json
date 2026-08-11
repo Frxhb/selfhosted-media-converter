@@ -260,7 +260,7 @@
     "new_sub": "Add Subscription",
     "new_subscription": "+ New Subscription",
     "check_all": "🔄 Check All",
-    "description": "Subscribe to a channel or playlist. The server automatically checks for new videos at set intervals and downloads them. Previously downloaded videos are never re-downloaded. Downloads end up in outputs/scheduled/<Name>/.",
+    "description": "Subscribe to a channel or playlist. The server automatically checks for new videos at set intervals and downloads them. Previously downloaded videos are never re-downloaded. Downloads end up in outputs/scheduled/<Name>.",
     "no_subs": "No subscriptions found",
     "no_subs_yet": "No subscriptions created yet.",
     "check_now": "Check Now",
