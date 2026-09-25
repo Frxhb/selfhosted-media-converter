@@ -8,6 +8,7 @@ from starlette.background import BackgroundTask
 
 from app.job_manager import job_manager
 from app.core import INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, safe_join_within, get_free_disk_gb
+from app.database import get_output_sources_map, delete_output_source
 
 router = APIRouter()
 
@@ -49,6 +50,8 @@ def list_output_files():
     files = []
     ignored_exact = ("download_archive.txt",)
     ignored_suffixes = (".part", ".ytdl", ".temp", ".tmp", ".download", ".aria2")
+    # Einmal geladen statt pro Datei einzeln abgefragt - siehe get_output_sources_map().
+    source_urls = get_output_sources_map()
 
     for root, _, filenames in os.walk(OUTPUT_DIR):
         for name in sorted(filenames):
@@ -83,7 +86,8 @@ def list_output_files():
                 "rel_path": rel_path,
                 "size_mb": size_mb,
                 "category": category,
-                "mtime": mtime_iso
+                "mtime": mtime_iso,
+                "source_url": source_urls.get(rel_path)
             })
     return files
 
@@ -119,6 +123,7 @@ def delete_output_file(rel_path: str):
     if os.path.exists(file_path):
         try:
             os.remove(file_path)
+            delete_output_source(rel_path)
             return {"status": "success"}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

@@ -488,6 +488,7 @@
   "toast": {
     "log_empty": "Log ist leer.",
     "log_copied": "Log in Zwischenablage kopiert.",
+    "link_copied": "Link in Zwischenablage kopiert.",
     "copy_not_supported": "Kopieren nicht möglich in diesem Browser.",
     "cmd_copied": "Befehl in Zwischenablage kopiert.",
     "copy_failed": "Kopieren fehlgeschlagen.",
@@ -610,6 +611,7 @@
   },
   "label": {
     "play": "Abspielen",
+    "copy_source_link": "Quell-Link kopieren",
     "edit_metadata": "Metadaten bearbeiten",
     "download": "Herunterladen",
     "theme_dark": "Dunkel",

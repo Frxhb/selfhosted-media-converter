@@ -62,6 +62,18 @@ def init_db():
                 except Exception as e:
                     logger.warning(f"Spalte '{col}' konnte nicht hinzugefügt werden: {e}")
 
+        # Tabelle für die Zuordnung Ausgabedatei -> Quell-URL (z.B. YouTube-Link), aus dem
+        # sie per Download-Job entstanden ist. Getrennt von job_history, da Outputs rein
+        # dateisystembasiert gelistet werden (app/routers/files.py) und beim Neustart
+        # anhand des rel_path (relativ zu OUTPUT_DIR) nachgeschlagen werden müssen.
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS output_sources (
+                rel_path TEXT PRIMARY KEY,
+                source_url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # Index für find_similar_completed_jobs() - läuft bei jedem "Info abrufen" im
         # Download-Tab (Duplikat-Fingerprint-Check). Spaltenreihenfolge folgt der WHERE-
         # Klausel dort: status ist eine Gleichheitsprüfung (kommt zuerst), size_mb/
@@ -91,6 +103,45 @@ def record_job(job_id: str, title: str, job_type: str, status: str,
             )
     except Exception as e:
         logger.warning(f"record_job fehlgeschlagen: {e}")
+
+
+def record_output_source(rel_path: str, source_url: str):
+    """Merkt sich, aus welcher URL eine Ausgabedatei per Download-Job entstanden ist,
+    damit das Output-Dashboard beim Hovern über den Titel einen 'Link kopieren'-Button
+    anzeigen kann."""
+    if not rel_path or not source_url:
+        return
+    try:
+        with get_connection() as conn:
+            conn.execute(
+                """INSERT INTO output_sources (rel_path, source_url)
+                   VALUES (?, ?)
+                   ON CONFLICT(rel_path) DO UPDATE SET source_url = excluded.source_url""",
+                (rel_path, source_url)
+            )
+    except Exception as e:
+        logger.warning(f"record_output_source fehlgeschlagen: {e}")
+
+
+def get_output_sources_map() -> dict:
+    """Lädt alle bekannten rel_path -> Quell-URL Zuordnungen auf einmal, statt pro
+    Datei einzeln nachzuschlagen (wird beim Auflisten aller Output-Dateien gebraucht)."""
+    try:
+        with get_connection() as conn:
+            rows = conn.execute("SELECT rel_path, source_url FROM output_sources").fetchall()
+            return {row[0]: row[1] for row in rows}
+    except Exception as e:
+        logger.warning(f"get_output_sources_map fehlgeschlagen: {e}")
+        return {}
+
+
+def delete_output_source(rel_path: str):
+    """Räumt den Eintrag auf, wenn die zugehörige Ausgabedatei gelöscht wird."""
+    try:
+        with get_connection() as conn:
+            conn.execute("DELETE FROM output_sources WHERE rel_path = ?", (rel_path,))
+    except Exception as e:
+        logger.warning(f"delete_output_source fehlgeschlagen: {e}")
 
 
 def clear_db():

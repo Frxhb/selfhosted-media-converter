@@ -488,6 +488,7 @@
   "toast": {
     "log_empty": "Log is empty.",
     "log_copied": "Log copied to clipboard.",
+    "link_copied": "Link copied to clipboard.",
     "copy_not_supported": "Copying not supported in this browser.",
     "cmd_copied": "Command copied to clipboard.",
     "copy_failed": "Copy failed.",
@@ -610,6 +611,7 @@
   },
   "label": {
     "play": "Play",
+    "copy_source_link": "Copy source link",
     "edit_metadata": "Edit metadata",
     "download": "Download",
     "theme_dark": "Dark",

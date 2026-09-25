@@ -3,16 +3,27 @@ import re
 import signal
 import asyncio
 import logging
+import unicodedata
 import urllib.request
 import urllib.parse
 from typing import Dict, List, Optional, Set
 from fastapi import WebSocket
 import uuid
 from app.models import Job, JobCreateRequest, JobStatus, JobType, Pipeline, PipelineStage
-from app.database import record_job, load_pipelines
+from app.database import record_job, load_pipelines, record_output_source
 from app.core import COOKIES_FILE_PATH, OUTPUT_DIR, DOWNLOAD_TEMP_DIR
 
 logger = logging.getLogger("JobManager")
+
+
+def _normalize_for_filename_match(value: str) -> str:
+    """Macht Job-Titel und tatsächliche Ausgabedatei vergleichbar, auch wenn yt-dlp
+    Zeichen ersetzt hat, die auf Dateisystemen verboten sind (z.B. '|' -> '｜' (U+FF5C),
+    '/' -> '⧸' (U+2044/U+29F8)). NFKC normalisiert Vollbreiten-Varianten zurück auf ihr
+    ASCII-Äquivalent, danach wird alles außer Buchstaben/Zahlen zu nichts zusammengefasst -
+    ein reiner Exact-Match (wie vorher) schlug bei solchen Titeln immer fehl."""
+    value = unicodedata.normalize("NFKC", value or "")
+    return re.sub(r"[^\w]+", "", value, flags=re.UNICODE).lower()
 
 # Flags, die bei yt-dlp/gallery-dl beliebige Programme/Shell-Kommandos auf dem Host ausführen
 # oder Plugins von beliebigen Pfaden nachladen können. Da "Extra Flags" von Nutzern frei
@@ -852,9 +863,14 @@ class JobManager:
         resolved_output = job.output_file
         if not resolved_output and job.tool == "yt-dlp" and job.title:
             output_dir = os.getenv("OUTPUT_DIR", "/media/outputs")
-            if os.path.isdir(output_dir):
+            normalized_title = _normalize_for_filename_match(job.title)
+            if os.path.isdir(output_dir) and normalized_title:
                 for root, _, filenames in os.walk(output_dir):
-                    match = next((fn for fn in filenames if os.path.splitext(fn)[0] == job.title), None)
+                    match = next(
+                        (fn for fn in filenames
+                         if _normalize_for_filename_match(os.path.splitext(fn)[0]) == normalized_title),
+                        None
+                    )
                     if match:
                         resolved_output = os.path.join(root, match)
                         break
@@ -884,6 +900,19 @@ class JobManager:
                        size_mb=size_mb, duration_sec=duration_sec, ext=ext,
                        tool=job.tool, input_size_mb=input_size_mb,
                        is_playlist=job.is_playlist)
+
+            # Merkt sich die Quell-URL (z.B. YouTube-Link, egal ob eingetippt oder über die
+            # yt-Suche gefunden) für Download-Jobs, damit das Output-Dashboard sie später
+            # als "Link kopieren"-Button neben dem Dateititel anzeigen kann.
+            if (job.job_type == JobType.DOWNLOAD
+                    and job.input_file
+                    and job.input_file.lower().startswith(("http://", "https://"))
+                    and resolved_output):
+                try:
+                    rel_output_path = os.path.relpath(resolved_output, OUTPUT_DIR)
+                    record_output_source(rel_output_path, job.input_file)
+                except Exception as e:
+                    logger.debug(f"record_output_source konnte nicht aufgerufen werden: {e}")
 
             banner = f"\n============================================================\n[SUCCESS] Job {job.id} ({job.title}) ERFOLGREICH!\n============================================================\n"
             job.logs.append(banner)

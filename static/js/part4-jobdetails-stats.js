@@ -345,6 +345,10 @@ async function checkUrlSupportHeuristic(url) {
           const encPath = encForAttr(f.rel_path);
           const encCat = encForAttr(cat);
           const encName = encForAttr(f.name);
+          const encSourceUrl = encForAttr(f.source_url);
+          const sourceLinkBtn = f.source_url
+            ? `<button onclick="copyOutputSourceLink('${encSourceUrl}')" class="btn btn-secondary btn-sm" title="${t('label.copy_source_link')}: ${escapeHtml(f.source_url)}">🔗</button>`
+            : "";
           tbody.innerHTML += `
             <tr>
                 <td><input type="checkbox" class="lib-file-check" data-path="${escapeHtml(f.rel_path)}" onchange="updateLibraryBulkCounter()"></td>
@@ -355,6 +359,7 @@ async function checkUrlSupportHeuristic(url) {
                             ${isPlayable ? `<button onclick="playMediaPreview('${encPath}', '${encCat}', '${encName}')" class="btn btn-secondary btn-sm" title="${t('label.play')}">▶️</button>` : ""}
                             ${isPlayable ? `<button onclick="openTagsEditor('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-secondary btn-sm" title="${t('label.edit_metadata')}">🏷️</button>` : ""}
                             <a href="/api/files/download/${encodeURIComponent(f.rel_path)}" download class="btn btn-secondary btn-sm" title="${t('label.download')}">💾</a>
+                            ${sourceLinkBtn}
                             <button onclick="deleteOutputFile('${f.rel_path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')" class="btn btn-danger btn-sm" title="${t('common.delete')}">
                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                             </button>
@@ -368,6 +373,31 @@ async function checkUrlSupportHeuristic(url) {
         `;
         });
         updateLibraryBulkCounter();
+      }
+
+      async function copyOutputSourceLink(encUrl) {
+        const url = decodeURIComponent(encUrl);
+        if (!url) return;
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast(t("toast.link_copied"), "success");
+        } catch (e) {
+          // Clipboard-API kann in unsicheren Kontexten (kein HTTPS) fehlschlagen -
+          // Fallback über ein unsichtbares Textfeld + execCommand.
+          try {
+            const tmp = document.createElement("textarea");
+            tmp.value = url;
+            tmp.style.position = "fixed";
+            tmp.style.opacity = "0";
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand("copy");
+            document.body.removeChild(tmp);
+            showToast(t("toast.link_copied"), "success");
+          } catch (fallbackErr) {
+            showToast(t("toast.copy_not_supported"), "error");
+          }
+        }
       }
 
       function playMediaPreview(encPath, encCat, encName, source = "outputs") {
