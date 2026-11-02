@@ -12,6 +12,7 @@ import uuid
 from app.models import Job, JobCreateRequest, JobStatus, JobType, Pipeline, PipelineStage
 from app.database import record_job, load_pipelines, record_output_source
 from app.core import COOKIES_FILE_PATH, OUTPUT_DIR, DOWNLOAD_TEMP_DIR
+from app.process_utils import communicate_bounded
 
 logger = logging.getLogger("JobManager")
 
@@ -65,7 +66,7 @@ class JobManager:
         self.pending_queue: List[str] = []  # ordered list of pending job IDs; supports manual reordering
         self.queue_lock = asyncio.Lock()
         self.queue_event = asyncio.Event()  # signaled whenever a new job is queued
-        self.max_concurrent_jobs = int(os.getenv("MAX_CONCURRENT_JOBS", 2))
+        self.max_concurrent_jobs = max(1, min(8, int(os.getenv("MAX_CONCURRENT_JOBS", 2))))
         self.max_concurrent_per_domain = int(os.getenv("MAX_CONCURRENT_PER_DOMAIN", 2))
         self.max_concurrent_whisper_jobs = int(os.getenv("MAX_CONCURRENT_WHISPER_JOBS", 1))
         self.min_free_disk_gb = float(os.getenv("MIN_FREE_DISK_GB", 2.0))
@@ -132,20 +133,27 @@ class JobManager:
         self.active_websockets.discard(websocket)
 
     async def broadcast(self, message: dict):
-        disconnected = set()
-        for ws in self.active_websockets:
+        async def send(ws):
             try:
-                await ws.send_json(message)
+                await asyncio.wait_for(ws.send_json(message), timeout=2.0)
             except Exception:
-                disconnected.add(ws)
-        for ws in disconnected:
-            self.active_websockets.discard(ws)
+                self.active_websockets.discard(ws)
+        # Snapshot the set because a disconnect can happen while sends await I/O.
+        # Slow clients share one timeout window instead of delaying every client.
+        await asyncio.gather(*(send(ws) for ws in tuple(self.active_websockets)))
 
     async def start(self):
-        for i in range(self.max_concurrent_jobs):
+        for i in range(8):
             task = asyncio.create_task(self._worker(i))
             self.workers.append(task)
-        logger.info(f"JobManager gestartet ({self.max_concurrent_jobs} Workers).")
+        logger.info(f"JobManager gestartet (maximal {self.max_concurrent_jobs} parallele Jobs).")
+
+    async def stop(self):
+        await self.cancel_all_jobs()
+        for task in self.workers:
+            task.cancel()
+        await asyncio.gather(*self.workers, return_exceptions=True)
+        self.workers.clear()
 
     @staticmethod
     def _sanitize_args(tool: str, args: List[str]) -> List[str]:
@@ -197,7 +205,7 @@ class JobManager:
     def _count_running_for_domain(self, domain: str) -> int:
         count = 0
         for j in self.jobs.values():
-            if j.status == JobStatus.RUNNING and j.job_type == JobType.DOWNLOAD:
+            if (j.status == JobStatus.RUNNING or (j.status == JobStatus.PAUSED and j.id in self.running_processes)) and j.job_type == JobType.DOWNLOAD:
                 if self._extract_domain(j.input_file) == domain:
                     count += 1
         return count
@@ -607,11 +615,12 @@ class JobManager:
         if not job:
             return False
 
-        if job.status == JobStatus.RUNNING and job_id in self.running_processes:
-            proc = self.running_processes[job_id]
+        if job.status == JobStatus.RUNNING:
+            proc = self.running_processes.get(job_id)
             self.live_stop_requested.discard(job_id)
             try:
-                proc.kill()
+                if proc:
+                    proc.kill()
             except Exception:
                 pass
             job.status = JobStatus.CANCELLED
@@ -771,12 +780,19 @@ class JobManager:
         andere Downloads/Konvertierungen können vorgezogen werden.
         """
         async with self.queue_lock:
-            if not self.pending_queue:
+            active = sum(j.status == JobStatus.RUNNING or
+                         (j.status == JobStatus.PAUSED and j.id in self.running_processes)
+                         for j in self.jobs.values())
+            if not self.pending_queue or active >= self.max_concurrent_jobs:
+                self.queue_event.clear()
                 return None
             for idx, jid in enumerate(self.pending_queue):
                 job = self.jobs.get(jid)
                 if not job:
                     return self.pending_queue.pop(idx)  # orphaned id, drop it
+
+                if job.status != JobStatus.PENDING:
+                    continue
 
                 if job.job_type == JobType.DOWNLOAD and self.max_concurrent_per_domain > 0:
                     domain = self._extract_domain(job.input_file)
@@ -785,11 +801,14 @@ class JobManager:
 
                 if job.job_type == JobType.WHISPER and self.max_concurrent_whisper_jobs > 0:
                     running_whisper = sum(1 for j in self.jobs.values()
-                                           if j.status == JobStatus.RUNNING and j.job_type == JobType.WHISPER)
+                                           if (j.status == JobStatus.RUNNING or (j.status == JobStatus.PAUSED and j.id in self.running_processes)) and j.job_type == JobType.WHISPER)
                     if running_whisper >= self.max_concurrent_whisper_jobs:
                         continue  # skip, avoid RAM/CPU overload from parallel Whisper models
 
+                # Reserve the slot under the lock, before broadcasting yields control.
+                job.status = JobStatus.RUNNING
                 return self.pending_queue.pop(idx)
+            self.queue_event.clear()
         return None
 
     async def _worker(self, worker_id: int):
@@ -805,9 +824,6 @@ class JobManager:
                     await asyncio.wait_for(self.queue_event.wait(), timeout=3.0)
                 except asyncio.TimeoutError:
                     pass
-                async with self.queue_lock:
-                    if not self.pending_queue:
-                        self.queue_event.clear()
                 continue
 
             job = self.jobs.get(job_id)
@@ -817,7 +833,15 @@ class JobManager:
             job.status = JobStatus.RUNNING
             await self.broadcast({"type": "job_updated", "job": job.model_dump()})
             await self.broadcast_queue_order()
-            await self._execute_job_pipeline(job)
+            try:
+                await self._execute_job_pipeline(job)
+            except Exception as exc:
+                logger.exception("Job %s failed unexpectedly", job.id)
+                job.status = JobStatus.FAILED
+                job.error_message = str(exc)
+                await self.broadcast({"type": "job_updated", "job": job.model_dump()})
+            finally:
+                self.queue_event.set()
 
     async def _execute_job_pipeline(self, job: Job):
         input_size_mb = 0.0
@@ -841,7 +865,7 @@ class JobManager:
                 try:
                     cmd_dur = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", target_probe]
                     p_dur = await asyncio.create_subprocess_exec(*cmd_dur, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    out_dur, _ = await p_dur.communicate()
+                    out_dur, _ = await communicate_bounded(p_dur, timeout=15)
                     if out_dur:
                         val = out_dur.decode().strip()
                         if val and val != "N/A":
@@ -974,6 +998,8 @@ class JobManager:
                 await self.broadcast({"type": "log", "job_id": job.id, "line": retry_msg})
 
                 await asyncio.sleep(backoff_sec)
+                if job.status == JobStatus.CANCELLED:
+                    return
 
                 job.status = JobStatus.PENDING
                 job.progress = 0.0
@@ -1078,6 +1104,8 @@ class JobManager:
                 job.logs.insert(0, "[SYSTEM] ... ältere Log-Zeilen wurden entfernt (Limit erreicht) ...")
 
     async def _run_subprocess(self, job: Job, tool: str, args: List[str], label: str) -> bool:
+        if job.status == JobStatus.CANCELLED:
+            return False
         # Säubere Argumente: Entferne ALLE versehentlich führenden Tool-Namen aus den Argumenten
         clean_args = list(args)
         while clean_args and clean_args[0] == tool:
@@ -1109,32 +1137,30 @@ class JobManager:
                 except Exception:
                     pass
 
+        if tool == "ffmpeg":
+            from app.hardware import apply_thread_budget
+            clean_args = apply_thread_budget(clean_args, self.ffmpeg_threads, self.max_concurrent_jobs)
         cmd = [tool] + clean_args
-        if tool == "ffmpeg" and self.ffmpeg_threads > 0 and "-threads" not in clean_args:
-            # insert right after the binary name so it applies as a global ffmpeg option
-            cmd = [tool, "-threads", str(self.ffmpeg_threads)] + clean_args
 
         start_msg = f"[{label}] Ausführen: {' '.join(cmd)}"
         self._append_log(job, start_msg)
         await self.broadcast({"type": "log", "job_id": job.id, "line": start_msg})
-
-        def _apply_niceness():
-            # Runs in the forked child before exec; lowers CPU scheduling priority so
-            # heavy transcodes don't starve the web server / other containers on the host.
-            try:
-                os.nice(self.process_niceness)
-            except Exception:
-                pass
 
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT,
-                preexec_fn=_apply_niceness if os.name == "posix" else None
+                stderr=asyncio.subprocess.STDOUT
             )
             self.running_processes[job.id] = process
+            if job.status == JobStatus.CANCELLED:
+                process.kill()
+            try:
+                import psutil
+                psutil.Process(process.pid).nice(self.process_niceness)
+            except (OSError, psutil.Error):
+                pass
 
             buffer = b""
             while True:
@@ -1185,7 +1211,13 @@ class JobManager:
             logger.exception(f"Job {job.id} ({tool}): unerwartete Ausnahme während der Verarbeitung")
             return False
         finally:
-            self.running_processes.pop(job.id, None)
+            process = self.running_processes.pop(job.id, None)
+            if process and process.returncode is None:
+                try:
+                    process.kill()
+                except ProcessLookupError:
+                    pass
+                await process.wait()
 
     async def _parse_progress(self, job: Job, line: str):
         if job.tool == "ffmpeg":

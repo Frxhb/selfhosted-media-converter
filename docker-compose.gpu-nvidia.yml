@@ -1,0 +1,12 @@
+# Requires NVIDIA Container Toolkit and a compatible host driver.
+services:
+  media-converter:
+    environment:
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

@@ -602,6 +602,10 @@ async function checkUrlSupportHeuristic(url) {
         const container = document.getElementById(`${tab}-queue`);
         if (!container) return;
         const list = tabQueues[tab];
+        if (list.length === 0 && tab === 'video') {
+          container.innerHTML = `<div class="studio-empty"><strong>${escapeHtml(t('studio.no_files'))}</strong><span>${escapeHtml(t('studio.file_hint'))}</span><button class="btn btn-secondary btn-sm" onclick="document.getElementById('global-file-upload').click()">${escapeHtml(t('studio.upload'))}</button></div>`;
+          return;
+        }
         if (list.length === 0) {
           container.innerHTML =
             `<p style="text-align:center; color:var(--ink-dim); font-size:0.75rem; margin-top:2rem;">${t('queue.tab_empty', 'Noch keine Dateien in dieser Warteschlange.')}</p>`;

@@ -36,7 +36,7 @@
     "free": "free"
   },
   "import_card": {
-    "title": "File Import",
+    "title": "01 / ADD FILES",
     "inputs": "Inputs",
     "outputs": "Outputs",
     "select_source": "Select file from source:",
@@ -44,7 +44,7 @@
     "info": "Info",
     "add": "+ Add",
     "upload_label": "Upload new file (to /media/inputs):",
-    "click_or_drag": "Click or drag file here",
+    "click_or_drag": "Choose files or drop them here",
     "cancel": "Cancel",
     "preview_title": "View preview",
     "info_title": "ffprobe media info"
@@ -106,7 +106,7 @@
     "images_tab": "Images",
     "tools_tab": "Trim & Tools",
     "muxing_tab": "Muxing",
-    "video_queue": "Video Queue",
+    "video_queue": "Selected files",
     "clear_queue": "Clear",
     "custom_title": "Output Title (optional):",
     "output_name_label": "Output Name (optional, default: [Originalname]_converted):",
@@ -125,7 +125,7 @@
     "container": "Container:",
     "vcodec": "Video Codec:",
     "acodec": "Audio Codec:",
-    "crf": "Quality (CRF, lower = better):",
+    "crf": "Quality (lower = better):",
     "trim_start": "Trim Start Time (HH:MM:SS):",
     "trim_end": "Trim End Time (HH:MM:SS):",
     "start_video_btn": "Start Video Jobs",
@@ -410,7 +410,7 @@
     "watch_folder_pipeline": "Pipeline:",
     "watch_folder_interval": "Check interval (seconds):"
   },
-"modals": {
+  "modals": {
     "playlist_detected": "Playlist Detected",
     "playlist_detected_msg": "A playlist URL was detected. How would you like to proceed?",
     "radio_detected": "YouTube Radio / Mix Detected",
@@ -726,5 +726,103 @@
     "search_placeholder": "Search log...",
     "autorefresh": "Auto-refresh (5s)",
     "level_access": "Access log (HTTP requests)"
+  },
+  "hardware": {
+    "title": "Hardware & encoding",
+    "loading": "Checking hardware …",
+    "threads": "threads/job",
+    "no_gpu": "no usable encoder",
+    "no_ffmpeg": "FFmpeg is unavailable.",
+    "failed": "Hardware diagnostics failed.",
+    "hint": "GPU codecs appear in the video converter after a successful test. Auto shares the CPU budget across parallel jobs. Quality levels are not directly comparable between encoders."
+  },
+  "studio": {
+    "convert": "Convert video",
+    "convert_hint": "Change format, resolution or audio",
+    "download": "Download media",
+    "download_hint": "Paste a link and save video or audio",
+    "audio": "Extract audio",
+    "audio_hint": "Save audio as MP3, FLAC or WAV",
+    "library": "View results",
+    "library_hint": "Play and download your finished files",
+    "server": "System",
+    "server_hint": "CPU, memory and disk space",
+    "workspace": "WORKSPACE",
+    "convert_intro": "Add files and choose an output format.",
+    "ai": "Transcribe & edit",
+    "ai_intro": "Add a file and turn speech into text.",
+    "step2": "02 / CHOOSE A RESULT",
+    "profile_title": "Conversion preset",
+    "codec_details": "Adjust format & codec",
+    "optional": "Optional",
+    "resolution": "Maximum resolution",
+    "original": "Keep original",
+    "fps": "Frame rate",
+    "mute": "Video without sound",
+    "mute_hint": "Remove the audio track from the output",
+    "command": "Technical command preview",
+    "save": "Save as my preset",
+    "restore": "Load my preset",
+    "step3": "03 / READY TO GO",
+    "review": "Job",
+    "live": "Show live log",
+    "codec_unavailable": "The required encoder is unavailable here. Choose another preset or codec.",
+    "copy_conflict": "Stream Copy cannot change resolution or frame rate. Keep both original or choose a video encoder.",
+    "trim_invalid": "Enter valid trim times, e.g. 00:00:10. The end must come after the start.",
+    "name_invalid": "Output names cannot contain path separators or special characters such as /, : or ?.",
+    "files": "file(s)",
+    "original_fps": "Original frame rate",
+    "no_audio": "No audio",
+    "add_first": "Add files first.",
+    "custom_note": "Adjust the settings below.",
+    "saved": "Preset saved in this browser.",
+    "storage_failed": "Your browser could not save the preset.",
+    "restored": "Your preset has been loaded.",
+    "restore_failed": "The preset could not be fully loaded. Its encoder may be unavailable on this server.",
+    "no_files": "No files selected",
+    "file_hint": "Upload a file or add an existing file from the import area above.",
+    "upload": "Choose files",
+    "profiles": {
+      "universal": {
+        "title": "Play everywhere",
+        "description": "MP4 · H.264 · up to Full HD",
+        "note": "For browsers, TVs and mobile devices. Resolution is only reduced, never upscaled."
+      },
+      "compact": {
+        "title": "Save storage",
+        "description": "MP4 · H.265 · up to HD",
+        "note": "Smaller output at a lower resolution. H.265 often takes longer and may not play on older devices; H.264 is used if unavailable."
+      },
+      "web": {
+        "title": "Ready for the web",
+        "description": "WebM · VP9 · up to Full HD",
+        "note": "WebM with Opus audio for modern browsers. AV1 is used if VP9 is unavailable; encoding may take longer."
+      },
+      "remux": {
+        "title": "Keep full quality",
+        "description": "MKV · copy existing streams",
+        "note": "Changes the container without re-encoding. Very fast; the source streams must fit the target container. Cuts are not frame accurate in this mode."
+      }
+    },
+    "trim": "Trim",
+    "until_end": "Until the end",
+    "finetune": "Resolution, frame rate, audio & trim",
+    "start_one": "Convert 1 video",
+    "start_many": "Convert {count} videos",
+    "start_empty": "Start conversion",
+    "starting": "Creating jobs …",
+    "overview": "Overview",
+    "refresh": "Refresh files",
+    "recent_outputs": "Recent outputs",
+    "recent_inputs": "Source files",
+    "empty_outputs": "No output files yet.",
+    "empty_inputs": "No source files yet.",
+    "download_file": "Download",
+    "reuse": "Process",
+    "files_failed": "Could not load files. Please refresh.",
+    "upload_busy": "An upload is running. Wait or cancel first.",
+    "upload_failed_file": "Upload failed",
+    "upload_finished": "{done} uploaded · {failed} failed",
+    "upload_cancelled": "Upload cancelled. Previously uploaded files are kept."
   }
 }

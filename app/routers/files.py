@@ -1,5 +1,6 @@
 """Datei-Management-Routen: Auflisten, Hoch-/Herunterladen, Löschen und ZIP-Export von Input-/Output-Dateien."""
 import os
+import asyncio
 import zipfile
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, UploadFile, File, Body, Query
@@ -25,10 +26,12 @@ def list_input_files(source: str = Query("inputs")):
             full_path = os.path.join(root, name)
             rel_path = os.path.relpath(full_path, target_dir)
             try:
-                size_mb = round(os.path.getsize(full_path) / (1024 * 1024), 2)
-            except Exception:
-                size_mb = 0.0
-            files.append({"name": name, "path": full_path, "rel_path": rel_path, "size_mb": size_mb, "source": source})
+                info = os.stat(full_path)
+                size_mb = round(info.st_size / (1024 * 1024), 2)
+                modified = datetime.fromtimestamp(info.st_mtime).isoformat()
+            except OSError:
+                continue
+            files.append({"name": name, "path": full_path, "rel_path": rel_path, "size_mb": size_mb, "source": source, "mtime": modified})
     return files
 
 
@@ -144,12 +147,25 @@ async def upload_file(file: UploadFile = File(...)):
                 detail=f"Zu wenig freier Speicherplatz auf {INPUT_DIR} ({free_gb:.2f} GB frei, Minimum {min_free_gb:.1f} GB). Upload abgebrochen."
             )
 
-    safe_filename = os.path.basename(file.filename)
+    safe_filename = os.path.basename(file.filename).replace("\\", "_")
+    if safe_filename in ("", ".", ".."):
+        raise HTTPException(status_code=400, detail="Ungültiger Dateiname.")
+    stem, extension = os.path.splitext(safe_filename)
     target_path = os.path.join(INPUT_DIR, safe_filename)
-
+    # Exclusive creation avoids overwriting another upload, including simultaneous
+    # requests for the same name. Preserve the original extension for media tools.
+    suffix = 1
+    while True:
+        try:
+            descriptor = os.open(target_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            break
+        except FileExistsError:
+            suffix += 1
+            safe_filename = f"{stem} ({suffix}){extension}"
+            target_path = os.path.join(INPUT_DIR, safe_filename)
     try:
         bytes_written = 0
-        with open(target_path, "wb") as buffer:
+        with os.fdopen(descriptor, "wb") as buffer:
             while chunk := await file.read(1024 * 1024):
                 buffer.write(chunk)
                 bytes_written += len(chunk)
@@ -162,6 +178,10 @@ async def upload_file(file: UploadFile = File(...)):
 
         size_mb = round(os.path.getsize(target_path) / (1024 * 1024), 2)
         return {"filename": safe_filename, "path": target_path, "size_mb": size_mb, "status": "success"}
+    except asyncio.CancelledError:
+        if os.path.exists(target_path):
+            os.remove(target_path)
+        raise
     except HTTPException:
         if os.path.exists(target_path):
             try:

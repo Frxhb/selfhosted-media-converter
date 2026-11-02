@@ -12,6 +12,7 @@ from app.database import find_similar_completed_jobs
 from app.models import MediaTagsUpdateRequest
 from app.core import MEDIA_TAG_EXTENSIONS, _resolve_media_path_safely
 from app.supported_sites import check_url_support
+from app.process_utils import communicate_bounded
 
 logger = logging.getLogger("Main")
 router = APIRouter()
@@ -54,7 +55,7 @@ async def get_media_info(file_path: str):
 
     cmd = ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", resolved]
     proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, _ = await proc.communicate()
+    stdout, _ = await communicate_bounded(proc)
 
     try:
         return json.loads(stdout.decode('utf-8'))
@@ -82,7 +83,7 @@ async def check_similar_job(file_path: str):
         cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration",
                "-of", "default=noprint_wrappers=1:nokey=1", resolved]
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=15.0)
+        stdout, _ = await communicate_bounded(proc, timeout=15.0)
         val = stdout.decode().strip()
         if val and val != "N/A":
             duration_sec = float(val)
@@ -106,7 +107,7 @@ async def get_media_tags(file_path: str):
 
     cmd = ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", resolved]
     proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, _ = await proc.communicate()
+    stdout, _ = await communicate_bounded(proc)
 
     try:
         data = json.loads(stdout.decode('utf-8'))
@@ -156,7 +157,7 @@ async def set_media_tags(request: MediaTagsUpdateRequest):
 
     try:
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=60.0)
+        stdout, stderr = await communicate_bounded(proc, timeout=60.0)
 
         if proc.returncode != 0 or not os.path.exists(tmp_path):
             err_msg = stderr.decode('utf-8', errors='replace').strip()[-400:]
@@ -211,10 +212,8 @@ async def get_ytdlp_info(url: str, cookies: str = "none", po_token: str = "", la
 
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30.0)
+            stdout, stderr = await communicate_bounded(proc, timeout=30.0)
         except asyncio.TimeoutError:
-            proc.kill()
-            await proc.wait()
             raise HTTPException(status_code=504, detail="yt-dlp hat zu lange für die Metadaten-Abfrage gebraucht (Timeout nach 30s).")
 
         if proc.returncode != 0:
@@ -264,10 +263,8 @@ async def get_ytdlp_playlist_items(url: str, max_items: int = Query(500, ge=1, l
         ]
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=45.0)
+            stdout, stderr = await communicate_bounded(proc, timeout=45.0)
         except asyncio.TimeoutError:
-            proc.kill()
-            await proc.wait()
             raise HTTPException(status_code=504, detail="Playlist-Abfrage hat zu lange gedauert (Timeout nach 45s). Bei sehr großen Playlists ggf. direkt als Download-Job starten.")
 
         items = []
@@ -360,10 +357,8 @@ async def search_ytdlp_by_title(q: str, max_results: int = Query(8, ge=1, le=20)
         ]
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=18.0)
+            stdout, stderr = await communicate_bounded(proc, timeout=18.0)
         except asyncio.TimeoutError:
-            proc.kill()
-            await proc.wait()
             logger.warning(f"yt-dlp Titel-Suche Timeout für Query '{query}'")
             raise HTTPException(status_code=504, detail="Suche hat zu lange gedauert (Timeout nach 18s).")
 

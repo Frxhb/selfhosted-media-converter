@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.job_manager import job_manager
 from app.database import save_app_config
 from app.models import AppConfig
-from app.core import CONFIG_DIR, COOKIES_DIR, COOKIES_FILE_PATH, get_cookies_status, check_cookies_expiry
+from app.core import INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, COOKIES_DIR, COOKIES_FILE_PATH, get_cookies_status, check_cookies_expiry
 
 router = APIRouter()
 
@@ -19,6 +19,7 @@ MAX_COOKIES_FILE_SIZE = 1 * 1024 * 1024
 def get_config():
     has_saved_config = os.path.exists(os.path.join(CONFIG_DIR, "app_config.json"))
     return {
+        "media_paths": {"inputs": INPUT_DIR, "outputs": OUTPUT_DIR},
         "max_concurrent_jobs": job_manager.max_concurrent_jobs,
         "auto_cleanup_days": int(os.getenv("AUTO_CLEANUP_DAYS", "0")),
         "pushover_enabled": os.getenv("PUSHOVER_ENABLED", "false").lower() == "true",
@@ -50,7 +51,11 @@ def get_config():
 
 
 @router.post("/api/config")
-def save_config(config: AppConfig):
+async def save_config(config: AppConfig):
+    try:
+        save_app_config(config.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Einstellungen konnten nicht gespeichert werden: {e}")
     job_manager.max_concurrent_jobs = config.max_concurrent_jobs
     job_manager.min_free_disk_gb = config.min_free_disk_gb
     job_manager.prevent_output_overwrite = config.prevent_output_overwrite
@@ -68,10 +73,7 @@ def save_config(config: AppConfig):
     os.environ["AUTO_CLEANUP_DAYS"] = str(config.auto_cleanup_days)
     os.environ["CONFIRM_FULL_PLAYLIST"] = "true" if config.confirm_full_playlist_downloads else "false"
 
-    try:
-        save_app_config(config.model_dump())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Einstellungen konnten nicht gespeichert werden: {e}")
+    job_manager.queue_event.set()
 
     return {"status": "saved"}
 
@@ -101,7 +103,7 @@ async def upload_cookies(file: UploadFile = File(...)):
     von CONFIG_DIR. Wird von yt-dlp über --cookies bei jedem Download-Job automatisch
     mitgegeben, sobald eine gültige Datei vorliegt.
     """
-    raw = await file.read()
+    raw = await file.read(MAX_COOKIES_FILE_SIZE + 1)
 
     if len(raw) > MAX_COOKIES_FILE_SIZE:
         raise HTTPException(status_code=400, detail=f"Datei zu groß (max. {MAX_COOKIES_FILE_SIZE // 1024} KB erwartet für eine Cookies-Datei).")

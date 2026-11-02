@@ -33,24 +33,16 @@ RUN mkdir -p /media/inputs /media/outputs /app/config
 # Keep pip's own tooling current before installing anything else
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install CPU-only PyTorch by default. Without this, openai-whisper (in requirements.txt)
-# would pull PyPI's default GPU build of torch, which bundles the full CUDA runtime
-# (nvidia-cublas-cu12, nvidia-cudnn-cu12, nvidia-nccl-cu12, ...) - several GB of files
-# that are useless without an actual NVIDIA GPU passed into the container. Installing the
-# CPU wheel first means it's already satisfied when requirements.txt is processed next,
-# so pip won't fetch the CUDA variant on top of it.
-#
-# To build with GPU support instead, pass e.g. --build-arg TORCH_VARIANT=cu121 (pick the
-# cuXXX tag matching your host's NVIDIA driver from https://pytorch.org/get-started/locally/).
-# That alone isn't enough to use the GPU at runtime - you'll also need the
-# nvidia-container-toolkit installed on the host and `runtime: nvidia` (or the
-# equivalent `deploy.resources.reservations.devices` entry) in docker-compose.yml.
+# Whisper is optional for smaller NAS/ARM deployments. Keep enabled by default
+# for compatibility; disable with --build-arg INSTALL_WHISPER=false.
+ARG INSTALL_WHISPER=true
 ARG TORCH_VARIANT=cpu
-RUN pip install --no-cache-dir torch --index-url "https://download.pytorch.org/whl/${TORCH_VARIANT}"
-
-# Application's Python dependencies (gallery-dl pinned separately, alongside requirements.txt)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gallery-dl
+COPY requirements.txt requirements-ai.txt ./
+RUN pip install --no-cache-dir -r requirements.txt && \
+    if [ "$INSTALL_WHISPER" = "true" ]; then \
+      pip install --no-cache-dir torch --index-url "https://download.pytorch.org/whl/${TORCH_VARIANT}" && \
+      pip install --no-cache-dir -r requirements-ai.txt; \
+    fi
 
 # Application source. Copied last so that changing app code doesn't invalidate the
 # (much slower) dependency-installation layers above on rebuild.

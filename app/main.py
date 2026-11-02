@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from starlette.datastructures import MutableHeaders
 from dotenv import load_dotenv
 
+load_dotenv()
+
 from app.logging_config import setup_logging
 setup_logging()
 
@@ -23,11 +25,11 @@ from app.watch_folder import init_watch_folder_service
 
 from app.routers import system, stats, files, media, config, pipelines, jobs, subscriptions
 
-load_dotenv()
 logger = logging.getLogger("Main")
 
 
-for directory in [INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, FFMPEG_STATIC_DIR, DOWNLOAD_TEMP_DIR]:
+for directory in [INPUT_DIR, OUTPUT_DIR, CONFIG_DIR, FFMPEG_STATIC_DIR, DOWNLOAD_TEMP_DIR,
+                  *(os.path.join(OUTPUT_DIR, name) for name in ("videos", "audio", "images", "transcripts"))]:
     try:
         if not os.path.exists(directory):
             os.makedirs(directory, exist_ok=True)
@@ -189,8 +191,17 @@ async def lifespan(app: FastAPI):
     await job_manager.start()
     subscription_manager = init_subscription_manager(job_manager)
     await subscription_manager.start()
-    init_watch_folder_service(job_manager).start()
-    yield
+    watcher = init_watch_folder_service(job_manager)
+    watcher.start()
+    try:
+        yield
+    finally:
+        tasks = [subscription_manager._scheduler_task, watcher._task]
+        for task in tasks:
+            if task:
+                task.cancel()
+        await asyncio.gather(*(t for t in tasks if t), return_exceptions=True)
+        await job_manager.stop()
 
 app = FastAPI(title="Media Converter Pro API", lifespan=lifespan)
 

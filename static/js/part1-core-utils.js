@@ -1,3 +1,4 @@
+let serverMediaPaths = {inputs: "/media/inputs", outputs: "/media/outputs"};
 const tabQueues = { audio: [], video: [], images: [], tools: [] };
 let currentGroup = "dashboard";
 let activeConvSubTab = "video";

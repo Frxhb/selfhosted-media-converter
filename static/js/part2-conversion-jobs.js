@@ -46,7 +46,8 @@ function dismissToast(toast) {
         importCard.style.display =
           groupId === "converter" || groupId === "special" ? "block" : "none";
 
-        if (groupId === "dashboard") fetchStats();
+        if (typeof updateStudioWorkspace === 'function') updateStudioWorkspace();
+        if (groupId === "dashboard") { fetchStats(); refreshStudioFiles(); }
         if (groupId === "library") refreshOutputFiles();
         if (groupId === "pipelines") refreshPipelines();
         if (groupId === "subscriptions") refreshSubscriptions();
@@ -167,14 +168,12 @@ function dismissToast(toast) {
           outName = files[0].name.replace(/\.[^/.]+$/, "") + "_converted";
         }
 
-        let args = [`ffmpeg -hide_banner -y`];
-        if (trimStart) args.push(`-ss ${trimStart}`);
-        args.push(`-i "${input}"`);
-        if (trimEnd) args.push(`-to ${trimEnd}`);
-        args.push(`-c:v ${vcodec}`);
-        if (vcodec !== "copy") args.push(`-crf ${crf}`);
-        args.push(`-c:a ${acodec}`, `"/media/outputs/videos/${outName}.${container}"`);
-        document.getElementById("v-cmd-preview").textContent = args.join(" ");
+        if (typeof buildStudioVideoCommand === 'function') {
+          const args = buildStudioVideoCommand(input, `${serverMediaPaths.outputs}/videos/${outName}.${container}`);
+          document.getElementById('v-cmd-preview').textContent = ['ffmpeg', ...args.map(a => /[\s"']/.test(a) ? JSON.stringify(a) : a)].join(' ');
+          updateStudioSummary();
+        }
+
       }
 
       async function checkIfAV1Codec(filePath) {
@@ -195,11 +194,19 @@ function dismissToast(toast) {
       }
 
       async function submitVideoJob() {
-        const files = tabQueues["video"];
+        if (studioSubmitting) return;
+        const files = [...tabQueues["video"]];
+        const videoSettings = studioReadVideoSettings();
+        const validation = studioValidate(videoSettings);
+        if (validation) return showToast(validation, 'warn');
         if (files.length === 0)
           return showToast(t("toast.video_queue_empty"), "warn");
 
-        if (useClientFFmpeg) {
+        studioSubmitting = true;
+        updateStudioSummary();
+        try {
+        const selectedProfile = serverHardware?.encoders.find(c => c.id === document.getElementById("v-vcodec").value);
+        if (useClientFFmpeg && !selectedProfile?.hardware) {
           const fallbackServerFiles = [];
           for (const f of files) {
             const cJobId =
@@ -224,43 +231,40 @@ function dismissToast(toast) {
               if (!ffmpegWasm) await initFFmpegWasm();
 
               let fileSource = f.fileObj || f.path;
-              if (
-                typeof fileSource === "string" &&
-                fileSource.startsWith("/media/")
-              ) {
-                const relName = fileSource.replace(
-                  /\/media\/(inputs|outputs)\//,
-                  "",
-                );
-                fileSource = `/api/files/inputs/download/${encodeURIComponent(relName)}`;
+              if (typeof fileSource === 'string') {
+                for (const [source, directory] of Object.entries(serverMediaPaths)) {
+                  if (fileSource.startsWith(directory + '/')) {
+                    fileSource = `/api/files/${source}/download/${encodeURIComponent(fileSource.slice(directory.length + 1))}`;
+                    break;
+                  }
+                }
               }
 
-              const res = await fetch(fileSource);
-              const inputData = new Uint8Array(await res.arrayBuffer());
+              const sourceData = fileSource instanceof File ? await fileSource.arrayBuffer() : await (await fetch(fileSource)).arrayBuffer();
+              const inputData = new Uint8Array(sourceData);
               await ffmpegWasm.writeFile(f.name, inputData);
 
-              const container = document.getElementById("v-container").value;
-              const vcodec = document.getElementById("v-vcodec").value;
-              const acodec = document.getElementById("v-acodec").value;
-              const crf = document.getElementById("v-crf").value;
+              const {container} = videoSettings;
               const outName = `converted_${f.name.replace(/\.[^/.]+$/, "")}.${container}`;
 
-              let ffmpegArgs = ["-i", f.name];
-              if (vcodec !== "copy")
-                ffmpegArgs.push("-c:v", vcodec, "-crf", crf);
-              else ffmpegArgs.push("-c:v", "copy");
-              ffmpegArgs.push("-c:a", acodec, outName);
-
-              await ffmpegWasm.exec(ffmpegArgs);
+              const ffmpegArgs = buildStudioVideoCommand(f.name, outName, videoSettings);
+              const exitCode = await ffmpegWasm.exec(ffmpegArgs);
+              if (exitCode !== 0) throw new Error('Browser conversion failed');
               const data = await ffmpegWasm.readFile(outName);
 
               const blob = new Blob([data.buffer], {
                 type: `video/${container}`,
               });
               const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
+              const objectUrl = URL.createObjectURL(blob);
+              a.href = objectUrl;
               a.download = outName;
               a.click();
+              setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+              try {
+                await ffmpegWasm.deleteFile(f.name);
+                await ffmpegWasm.deleteFile(outName);
+              } catch (_) {}
 
               clientJobs[cJobId].status = "completed";
               clientJobs[cJobId].progress = 100.0;
@@ -271,22 +275,22 @@ function dismissToast(toast) {
             }
           }
           if (fallbackServerFiles.length > 0)
-            submitServerVideoJobs(fallbackServerFiles);
-          clearTabQueue("video");
+            await submitServerVideoJobs(fallbackServerFiles, videoSettings);
+          const completedPaths = files.filter(f => !fallbackServerFiles.includes(f)).map(f => f.path);
+          tabQueues.video = tabQueues.video.filter(f => !completedPaths.includes(f.path));
+          renderTabQueue('video');
           return;
         }
 
-        submitServerVideoJobs(files);
-        clearTabQueue("video");
+        await submitServerVideoJobs(files, videoSettings);
+        } finally {
+          studioSubmitting = false;
+          updateStudioSummary();
+        }
       }
 
-      async function submitServerVideoJobs(files) {
-        const container = document.getElementById("v-container").value;
-        const vcodec = document.getElementById("v-vcodec").value;
-        const acodec = document.getElementById("v-acodec").value;
-        const crf = document.getElementById("v-crf").value;
-        const trimStart = document.getElementById("v-trim-start").value.trim();
-        const trimEnd = document.getElementById("v-trim-end").value.trim();
+      async function submitServerVideoJobs(files, settings = studioReadVideoSettings()) {
+        const {container} = settings;
         const customTitle = document
           .getElementById("v-custom-title")
           ?.value.trim();
@@ -303,17 +307,10 @@ function dismissToast(toast) {
               ? `${customTitle}_${idx + 1}`
               : customTitle
             : `${baseName}_converted`;
-          const outPath = `/media/outputs/videos/${outName}.${container}`;
+          const outPath = `${serverMediaPaths.outputs}/videos/${outName}.${container}`;
 
-          let args = ["-hide_banner", "-y"];
-          if (trimStart) args.push("-ss", trimStart);
-          args.push("-i", f.path);
-          if (trimEnd) args.push("-to", trimEnd);
-          args.push("-c:v", vcodec);
-          if (vcodec !== "copy") args.push("-crf", crf);
-          args.push("-c:a", acodec, outPath);
-
-          await submitJob({
+          const args = buildStudioVideoCommand(f.path, outPath, settings);
+          const created = await submitJob({
             job_type: "video",
             tool: "ffmpeg",
             title: customTitle || f.name,
@@ -321,11 +318,15 @@ function dismissToast(toast) {
             input_file: f.path,
             output_file: outPath,
           });
+          if (created) {
+            tabQueues.video = tabQueues.video.filter(item => item.path !== f.path);
+            renderTabQueue('video');
+            updateStudioSummary();
+          }
           if ((idx + 1) % 3 === 0) {
             await new Promise((resolve) => setTimeout(resolve, 300));
           }
         }
-        clearTabQueue("video");
       }
 
       async function submitAudioJob() {

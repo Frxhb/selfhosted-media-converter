@@ -1,6 +1,6 @@
 # Media Converter
 
-Disclaimer: Vibe-coding project. 
+A self-hosted media toolkit with a bounded processing queue and hardware-aware encoding.
 
 <p align="center">
   <img src="pictures/banner.svg" alt="Media Converter Banner" width="100%">
@@ -213,10 +213,10 @@ Optional settings can be placed in `.env` and are picked up automatically. The m
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MAX_CONCURRENT_JOBS` | `2` | Maximum number of jobs processed in parallel |
+| `MAX_CONCURRENT_JOBS` | `2` | Maximum parallel jobs (1–8); UI changes apply immediately |
 | `MAX_CONCURRENT_PER_DOMAIN` | `2` | Maximum parallel downloads per source domain |
 | `MAX_CONCURRENT_WHISPER_JOBS` | `1` | Maximum parallel transcription jobs |
-| `FFMPEG_THREADS` | `Auto` | Threads FFmpeg is allowed to use |
+| `FFMPEG_THREADS` | `Auto` | Per-job CPU budget: available CPUs / configured parallel jobs; explicit thread counts override it |
 | `DEFAULT_PRIORITY` | `below_normal` | Default OS process priority for jobs |
 | `MIN_FREE_DISK_GB` | `2.0` | Minimum free disk space before new jobs are accepted |
 | `AUTO_DELETE_ORIGINALS` | `false` | Delete source files after successful processing |
@@ -251,6 +251,112 @@ http://<server-ip>:8080
 ```
 
 ---
+
+## Media Studio interface
+
+The overview shows recent outputs with download and processing actions, and existing
+source files that can be added directly to a conversion queue. File selection and
+drag-and-drop accept multiple uploads, processed sequentially with aggregate progress
+and cancellation. Successful uploads remain available after cancellation or partial
+failure. Duplicate upload names get a numeric suffix instead of overwriting files.
+The responsive layout keeps the job queue alongside the workspace on desktop;
+technical logs and codec details can be expanded when needed.
+
+The video converter includes four result-oriented presets:
+
+| Preset | Output |
+|--------|--------|
+| Play everywhere | H.264 / AAC in MP4, up to 1080p |
+| Save storage | H.265 (H.264 fallback) in MP4, up to 720p |
+| Ready for the web | VP9 (AV1 fallback) / Opus in WebM, up to 1080p |
+| Keep full quality | Copy video/audio into MKV without re-encoding |
+
+You can limit the resolution without upscaling, select a frame rate, remove audio
+and set a trim range. Resolution and frame-rate changes require re-encoding; Stream
+Copy combinations are checked before submission. The job summary shows the selected
+result before you start. A personal preset can be saved in this browser and loaded
+again; source paths, output names and trim ranges are not stored in that preset.
+Files stay selected when the server rejects a job, so you can correct it and retry.
+
+
+## Hardware and resource tuning
+
+Open **Settings → Hardware & encoding** to see the platform, available CPU budget,
+RAM and tested GPU encoders. `/api/system/hardware` exposes the same diagnostics,
+including reasons why compiled hardware encoders failed their test. Detection is
+cached until the application restarts. Software encoders are checked against the
+FFmpeg build; GPU candidates additionally encode one synthetic frame.
+
+The video converter offers CPU encoders plus usable NVIDIA NVENC, Intel QSV,
+Intel/AMD VAAPI and native macOS VideoToolbox encoders. A successful probe does not
+guarantee support for every source resolution, pixel format or driver combination.
+There is no silent switch to CPU when a GPU job fails. Existing pipeline stages keep
+their explicit codec settings; GPU selection is available in the video converter.
+VAAPI currently uses the first `/dev/dri/renderD*` device.
+
+- **Small NAS / Raspberry Pi:** start with one parallel job and Auto threads. Stream
+  Copy avoids re-encoding when the original streams fit the destination container.
+- **CPU server:** Auto shares CPU affinity and cgroup v1/v2 quotas across the
+  configured parallel jobs. Explicit thread settings override the budget. Decoder,
+  encoder, filter, x265 and SVT-AV1 pools receive limits where supported; these are
+  thread budgets, not a hard OS CPU limit.
+- **Intel/AMD on Linux:** pass the render device into the container:
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.gpu-intel.yml up --build -d
+  ```
+
+  The container user must have access to the render device. The installed FFmpeg
+  build and userspace drivers must support the selected GPU; passing a device alone
+  does not install drivers. The capability test reports failures.
+- **NVIDIA on Linux:** install NVIDIA Container Toolkit on the host, then:
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.gpu-nvidia.yml up --build -d
+  ```
+
+  See [Docker's GPU setup](https://docs.docker.com/compose/how-tos/gpu-support/).
+  FFmpeg's NVENC support and the host driver must be compatible. For CUDA Whisper,
+  also rebuild with a suitable `TORCH_VARIANT` build argument.
+- **Apple Silicon:** VideoToolbox requires a native macOS FFmpeg installation.
+  Docker Desktop runs Linux containers and does not expose Apple's VideoToolbox.
+
+Quality numbers have different meanings across encoders. The UI translates its
+quality selection to CRF, CQ, QP, global quality or VideoToolbox quality. Compare
+short samples for visual quality and file size before large batches.
+WebM selection filters video codecs to VP9/AV1 and uses Opus by default; GIF has no
+audio. MP4 output uses `+faststart` for earlier playback over HTTP. Stream Copy
+still requires source streams that are compatible with the chosen container.
+
+### Smaller image without transcription
+
+Whisper/PyTorch remains enabled by default. If you only download and convert,
+build without the AI dependencies:
+
+```bash
+docker compose build --build-arg INSTALL_WHISPER=false
+docker compose up -d
+```
+
+The transcription UI remains present, but starting a Whisper job reports the
+missing tool. Install `requirements-ai.txt` instead of `requirements.txt` for a
+native installation that needs transcription.
+
+### Development checks
+
+```bash
+python -m pip install -r requirements-test.txt
+python -m unittest discover -s tests -v
+node tests/test_video_options.cjs
+node tests/test_studio.cjs
+node tests/test_upload_batch.cjs
+```
+
+Tests cover queue admission, live concurrency changes, cancellation, request
+validation, subprocess cleanup, SQLite WAL backups and real FFmpeg conversions.
+GitHub Actions runs the checks on Python 3.11 and 3.14. Docker images and GPU
+encoders also need validation on the target hardware.
+
 
 ## Updating
 
@@ -323,14 +429,11 @@ docker compose up --build -d
 
 ## Roadmap
 
-Planned improvements:
+Further improvements:
 
-- English UI translation
-- User authentication
-- GPU acceleration for Whisper
-- Hardware accelerated encoding
+- User authentication and authorization
+- Automatic Whisper device/model selection based on available RAM/VRAM
 - Additional media providers
-- Workflow automation
 - Cloud storage integrations
 - Extended monitoring features
 

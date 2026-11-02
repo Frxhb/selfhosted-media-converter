@@ -1,0 +1,89 @@
+/* Media Studio: task-first layout, clear hierarchy, responsive controls. */
+:root { --bg: #0c111b; --surface: #121a27; --surface-raised: #1b2636; --surface-sunken: #0e1520; --line: #2a3648; --line-soft: #202c3d; --ink: #edf3fb; --ink-dim: #a1afc2; --ink-faint: #7c8ca2; --signal: #70e1c8; --signal-dim: #70e1c815; --radius-lg: 20px; --radius-md: 12px; }
+body { line-height: 1.6; }
+header { padding: .85rem 1.5rem; background: var(--bg); }
+.logo-mark { background: var(--signal-dim); border-color: var(--signal); border-radius: 11px; }
+.header-title h1 { font-size: 1.1rem; letter-spacing: -.04em; }
+.header-title p { letter-spacing: .03em; }
+.stage-rail { background: var(--bg); width: 205px; padding-top: 1.6rem; }
+.stage-btn { min-height: 48px; margin-bottom: .2rem; border-radius: 11px; font-size: .82rem; }
+.stage-num { display: none; }
+.stage-btn.active { box-shadow: inset 3px 0 var(--signal); color: var(--signal); }
+.dashboard-container { max-width: 1680px; padding: 1.5rem; gap: 1.5rem; }
+@media(min-width:1200px) { .dashboard-container { grid-template-columns: minmax(0, 1fr) 340px; } }
+@media(min-width:1024px) and (max-width:1199px) { .dashboard-container { grid-template-columns: minmax(0, 1fr) 300px; } }
+.card { padding: 1.3rem; box-shadow: 0 8px 28px #0000000a; }
+.card-title { font-family: var(--font-body); text-transform: none; letter-spacing: 0; color: var(--ink); font-size: .85rem; }
+.studio-eyebrow { display: block; font: 600 .62rem var(--font-mono); letter-spacing: .12em; color: var(--signal); margin-bottom: .65rem; }
+.studio-workspace-heading h2 { font: 600 clamp(1.8rem, 3vw, 2.8rem)/1.12 var(--font-display); letter-spacing: -.055em; max-width: 650px; margin-bottom: .9rem; }
+.studio-workspace-heading p { color: var(--ink-dim); font-size: .87rem; max-width: 460px; }
+.studio-section-title { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; margin-bottom: .8rem; flex-wrap: wrap; }
+.studio-section-title h3, .studio-review h3 { font: 600 1rem var(--font-display); letter-spacing: -.025em; }
+.studio-section-title > span { color: var(--ink-dim); font-size: .68rem; }
+.studio-launchers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-bottom: 2rem; }
+.studio-launchers button { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; color: var(--ink); padding: 1.2rem; text-align: left; display: flex; flex-direction: column; gap: .4rem; cursor: pointer; font-family: inherit; transition: border-color .15s, transform .15s; }
+.studio-launchers button:hover { border-color: var(--signal); transform: translateY(-2px); }
+.studio-task-icon { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; font-size: 1.3rem; color: var(--signal); margin-bottom: .5rem; }
+.studio-launchers strong { font-size: .9rem; font-weight: 600; }
+.studio-launchers button > span:not(.studio-task-icon) { font-size: .72rem; color: var(--ink-dim); max-width: 240px; }
+.studio-launchers b { position: absolute; right: 1.1rem; top: 1.25rem; color: var(--ink-faint); font-weight: 400; }
+.studio-workspace-heading { margin-bottom: 1.3rem; }
+#file-import-card { margin-bottom: 1.2rem; border-style: dashed; }
+.dropzone { min-height: 100px; display: grid; align-items: center; border-color: var(--ink-faint); }
+.studio-profiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+.studio-profile { background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 12px; padding: .9rem; color: var(--ink); text-align: left; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: .3rem; }
+.studio-profile strong { font-size: .82rem; }
+.studio-profile small { color: var(--ink-dim); font-size: .68rem; }
+.studio-profile[aria-pressed="true"] { border-color: var(--signal); background: var(--signal-dim); box-shadow: inset 0 0 0 1px var(--signal); }
+.studio-profile-note { min-height: 1.4rem; font-size: .73rem; color: var(--ink-dim); }
+.studio-details { background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 12px; }
+.studio-details summary, .studio-live-console > summary { padding: .85rem; cursor: pointer; font-size: .78rem; color: var(--ink-dim); }
+.studio-details[open] summary { border-bottom: 1px solid var(--line); color: var(--ink); }
+.studio-details-body, .studio-details > div { padding: .9rem; }
+.studio-toggle { display: flex; align-items: center; gap: .75rem; padding: .85rem; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.studio-toggle input { accent-color: var(--signal); width: 18px; height: 18px; }
+.studio-toggle strong { display: block; color: var(--ink); font-size: .78rem; }
+.studio-toggle small { display: block; font-weight: 400; margin-top: .1rem; }
+.studio-review { padding: 1.15rem; border-radius: 13px; background: var(--signal-dim); border: 1px solid var(--line); }
+.studio-review p { font-size: .76rem; color: var(--ink-dim); margin-top: .55rem; white-space: pre-line; }
+.studio-review .studio-validation { color: var(--warn); }
+.studio-save-profile { display: flex; gap: .5rem; flex-wrap: wrap; }
+.studio-activity { position: sticky; top: 95px; align-self: start; }
+.studio-activity > .card:first-child { height: min(590px, 70vh) !important; }
+.studio-live-console { padding: .3rem; }
+.studio-live-body { padding: .7rem; }
+.studio-live-body .card-title { flex-wrap: wrap; }
+#studio-start-video { min-height: 50px; background: var(--signal); color: #071915; border-radius: 12px; }
+select, input[type="text"], input[type="url"], input[type="number"] { min-height: 43px; }
+label { font-size: .76rem; }
+.subtab-nav { padding: .3rem; border-radius: 12px; }
+.subtab-btn { padding: .65rem .35rem; border-radius: 8px; }
+.btn { border-radius: 8px; }
+.btn-primary, .subtab-btn.active { color: #071915; }
+.kpi-card { padding: 1.1rem; }
+.kpi-card .val { font-size: 1.9rem; }
+.queue-listbox:has(.studio-empty) { height: auto; min-height: 100px; }
+.studio-empty { padding: 1.1rem; text-align: center; display: grid; gap: .4rem; justify-items: center; }
+.studio-empty strong { font-size: .82rem; color: var(--ink); font-family: var(--font-body); }
+.studio-empty span { font-size: .72rem; color: var(--ink-dim); }
+[hidden] { display: none !important; }
+@media(max-width:1023px) { .studio-activity { position: static; } }
+@media(max-width:600px) { .dashboard-container { padding: .85rem; } .studio-launchers { gap: .5rem; } .studio-launchers button { padding: .85rem; } .studio-launchers strong { font-size: .8rem; } .studio-launchers button > span:not(.studio-task-icon) { font-size: .68rem; } .card { padding: 1rem; } .studio-profiles { grid-template-columns: 1fr; } .subtab-nav { flex-wrap: wrap; } .subtab-btn { flex: 1 1 28%; } header { padding: .65rem .85rem; } }
+@media(min-width:901px) { .stage-rail { position: sticky; top: 78px; align-self: start; height: calc(100vh - 78px); overflow-y: auto; } }
+#file-import-card, .group-view { scroll-margin-top: 105px; }
+@media(max-width:600px) { #file-import-card, .group-view { scroll-margin-top: 150px; } }
+
+.studio-dashboard-title { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; }
+.studio-dashboard-title h2 { font:600 1.5rem var(--font-display); }
+.studio-recent { margin-bottom:1rem; }
+.studio-recent h3 { font-size:.9rem; margin-bottom:.7rem; }
+.studio-file-row { display:flex; gap:.7rem; align-items:center; justify-content:space-between; padding:.65rem 0; border-top:1px solid var(--line-soft); }
+.studio-file-name { min-width:0; flex:1; }
+.studio-file-name strong { display:block; overflow-wrap:anywhere; font-size:.78rem; font-weight:500; }
+.studio-file-name small, .studio-file-empty { color:var(--ink-dim); font-size:.7rem; }
+.studio-file-actions { display:flex; gap:.35rem; flex-shrink:0; flex-wrap:wrap; }
+.studio-launchers { margin-bottom:1rem; }
+.studio-launchers button { padding:.8rem 1rem; }
+.studio-launchers .studio-task-icon { display:none; }
+.studio-launchers button > span:not(.studio-task-icon) { font-size:.7rem; }
+@media(max-width:600px) { .studio-file-row { align-items:flex-start; flex-direction:column; } }

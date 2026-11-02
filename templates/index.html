@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="/static/css/layout.css?v={{ asset_version }}" />
     <link rel="stylesheet" href="/static/css/components.css?v={{ asset_version }}" />
     <link rel="stylesheet" href="/static/css/utilities.css?v={{ asset_version }}" />
+    <link rel="stylesheet" href="/static/css/studio.css?v={{ asset_version }}" />
   </head>
 
   <body>
@@ -371,7 +372,11 @@
 
       <div class="dashboard-container">
         <!-- Left Column -->
-        <div style="display: flex; flex-direction: column; gap: 1.1rem">
+        <div class="studio-activity" style="display: flex; flex-direction: column; gap: 1.1rem">
+          <div id="studio-workspace-heading" class="studio-workspace-heading" hidden>
+            <span class="studio-eyebrow" data-i18n="studio.workspace">ARBEITSBEREICH</span>
+            <h2 id="studio-workspace-title"></h2><p id="studio-workspace-description"></p>
+          </div>
           <!-- FILE IMPORT MANAGER -->
           <div id="file-import-card" class="card u-hidden" >
             <div class="card-title">
@@ -445,6 +450,7 @@
               <div>
                 <label data-i18n="import_card.upload_label">Neue Datei hochladen (nach /media/inputs):</label>
                 <div
+                  tabindex="0" role="button" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); document.getElementById('global-file-upload').click(); }"
                   class="dropzone"
                   id="upload-dropzone"
                   onclick="
@@ -457,6 +463,7 @@
                   <input
  type="file"
  id="global-file-upload"
+ multiple
  onchange="uploadSelectedFileWithProgress()" class="u-hidden" />
                 </div>
                 <div
@@ -502,6 +509,16 @@
 
           <!-- VIEW 0: DASHBOARD -->
           <div id="group-dashboard" class="group-view active">
+            <div class="studio-dashboard-title"><h2 data-i18n="studio.overview">Übersicht</h2><button class="btn btn-secondary btn-sm" onclick="refreshStudioFiles()" data-i18n="studio.refresh">Dateien aktualisieren</button></div>
+            <div class="studio-launchers">
+              <button onclick="studioNavigate('converter', 'video')"><span class="studio-task-icon">↔</span><strong data-i18n="studio.convert">Video umwandeln</strong><span data-i18n="studio.convert_hint">Format, Auflösung oder Ton ändern</span><b aria-hidden="true">↗</b></button>
+              <button onclick="studioNavigate('downloader')"><span class="studio-task-icon">↓</span><strong data-i18n="studio.download">Medien herunterladen</strong><span data-i18n="studio.download_hint">Link einfügen, Video oder Audio speichern</span><b aria-hidden="true">↗</b></button>
+              <button onclick="studioNavigate('converter', 'audio')"><span class="studio-task-icon">♫</span><strong data-i18n="studio.audio">Audio extrahieren</strong><span data-i18n="studio.audio_hint">Tonspur als MP3, FLAC oder WAV speichern</span><b aria-hidden="true">↗</b></button>
+              <button onclick="studioNavigate('library')"><span class="studio-task-icon">▦</span><strong data-i18n="studio.library">Ergebnisse ansehen</strong><span data-i18n="studio.library_hint">Fertige Dateien abspielen und herunterladen</span><b aria-hidden="true">↗</b></button>
+            </div>
+            <section class="card studio-recent"><h3 data-i18n="studio.recent_outputs">Letzte Ausgaben</h3><div id="studio-recent-outputs" role="status"></div></section>
+            <section class="card studio-recent"><h3 data-i18n="studio.recent_inputs">Vorhandene Quelldateien</h3><div id="studio-recent-inputs" role="status"></div></section>
+            <div class="studio-section-title"><h3 data-i18n="studio.server">System</h3><span data-i18n="studio.server_hint">Auslastung und laufende Aufträge</span></div>
             <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr)">
               <div class="kpi-card warn-kpi">
                 <span class="lbl" data-i18n="dashboard.active_jobs">Aktive Jobs</span>
@@ -1164,6 +1181,9 @@
  class="subtab-content subtab-conv-content active card u-col-gap-1"
  
  >
+              <div class="studio-section-title"><div><span class="studio-eyebrow" data-i18n="studio.step2">02 / ERGEBNIS WÄHLEN</span><h3 data-i18n="studio.profile_title">Konvertierungsprofil</h3></div></div>
+              <div id="studio-profiles" class="studio-profiles" role="group" aria-label="Konvertierungsprofile"></div>
+              <p id="studio-profile-note" class="studio-profile-note" role="status"></p>
               <div class="card-title">
                 <span data-i18n="converter.video_queue">Video-Warteschlange</span>
                 <button
@@ -1191,14 +1211,15 @@
                 />
               </div>
 
+              <details class="studio-details"><summary data-i18n="studio.codec_details">Format &amp; Codec anpassen</summary><div class="studio-details-body">
               <div class="grid-2">
                 <div>
                   <label for="v-container" data-i18n="converter.container">Container:</label>
-                  <select id="v-container" onchange="updateVideoPreview()"></select>
+                  <select id="v-container" onchange="refreshVideoCodecOptions(); updateVideoPreview()"></select>
                 </div>
                 <div>
                   <label for="v-vcodec" data-i18n="converter.vcodec">Video Codec:</label>
-                  <select id="v-vcodec" onchange="updateVideoPreview()"></select>
+                  <select id="v-vcodec" onchange="refreshVideoAudioOptions(); updateVideoPreview()"></select>
                 </div>
                 <div>
                   <label for="v-acodec" data-i18n="converter.acodec">Audio Codec:</label>
@@ -1209,11 +1230,18 @@
                   </select>
                 </div>
                 <div>
-                  <label for="v-crf" data-i18n="converter.crf">Qualität (CRF, niedriger = besser):</label>
+                  <label for="v-crf" data-i18n="converter.crf">Qualität (niedriger = besser):</label>
                   <select id="v-crf" onchange="updateVideoPreview()"></select>
                 </div>
               </div>
 
+              </div></details>
+              <details class="studio-details" id="studio-options"><summary data-i18n="studio.finetune">Auflösung, Bildrate, Ton &amp; Schnitt</summary><div class="studio-details-body">
+              <div class="grid-2 studio-output-controls">
+                <div><label for="studio-resolution" data-i18n="studio.resolution">Maximale Auflösung</label><select id="studio-resolution" onchange="studioSettingChanged()"><option value="source" data-i18n="studio.original">Original beibehalten</option><option value="2160">4K · 2160p</option><option value="1080">Full HD · 1080p</option><option value="720">HD · 720p</option><option value="480">SD · 480p</option></select></div>
+                <div><label for="studio-fps" data-i18n="studio.fps">Bildrate</label><select id="studio-fps" onchange="studioSettingChanged()"><option value="source" data-i18n="studio.original">Original beibehalten</option><option value="24">24 fps</option><option value="25">25 fps</option><option value="30">30 fps</option><option value="60">60 fps</option></select></div>
+              </div>
+              <label class="studio-toggle"><input type="checkbox" id="studio-mute" onchange="studioSettingChanged()"><span><strong data-i18n="studio.mute">Video ohne Ton</strong><small data-i18n="studio.mute_hint">Audiospur aus der Ausgabe entfernen</small></span></label>
               <div
                 style="
                   background: var(--surface-sunken);
@@ -1243,6 +1271,8 @@
                 </div>
               </div>
 
+              </div></details>
+              <details class="studio-details"><summary data-i18n="studio.command">Technische Befehlsvorschau</summary>
               <div>
                 <label data-i18n="downloader.cmd_preview">Befehlsvorschau:</label>
                 <div class="u-relative">
@@ -1273,11 +1303,14 @@
                   </button>
                 </div>
               </div>
+              </details>
+              <div class="studio-save-profile"><button class="btn btn-secondary" onclick="saveStudioProfile()" data-i18n="studio.save">Als eigenes Profil merken</button><button id="studio-restore-profile" class="btn btn-secondary" onclick="restoreStudioProfile()" hidden data-i18n="studio.restore">Eigenes Profil laden</button></div>
+              <section class="studio-review" aria-labelledby="studio-review-title"><span class="studio-eyebrow" data-i18n="studio.step3">03 / BEREIT ZUM START</span><h3 id="studio-review-title" data-i18n="studio.review">Auftrag</h3><p id="studio-summary" role="status"></p><p id="studio-validation" class="studio-validation" role="status"></p></section>
 
               <button
+                id="studio-start-video"
                 onclick="submitVideoJob()"
                 class="btn btn-success btn-full"
-                data-i18n="converter.start_video_btn"
               >
                 Video-Jobs starten
               </button>
@@ -2124,10 +2157,7 @@
             </div>
           </div>
 
-          <div
-            class="card"
-            style="height: 380px; display: flex; flex-direction: column"
-          >
+          <details class="card studio-live-console"><summary data-i18n="studio.live">Live-Protokoll anzeigen</summary><div class="studio-live-body">
             <div class="card-title">
               <span data-i18n="logs.title">Live-Ausgabe</span>
               <div style="display: flex; align-items: center; gap: 0.6rem">
@@ -2169,7 +2199,7 @@
               </div>
             </div>
             <pre id="log-console" class="console-box u-flex-1" ></pre>
-          </div>
+          </div></details>
         </div>
       </div>
     </div>
@@ -2878,6 +2908,11 @@
         </div>
         <div class="u-col-gap-1">
           <div class="settings-section">
+            <h4 data-i18n="hardware.title">Hardware &amp; Encoding</h4>
+            <p id="hardware-summary" class="settings-hint" role="status" data-i18n="hardware.loading">Hardware wird geprüft …</p>
+            <p class="settings-hint" data-i18n="hardware.hint">GPU-Codecs erscheinen nach erfolgreichem Test im Video-Konverter. Auto verteilt das CPU-Budget auf parallele Jobs. Die Qualitätsstufen sind zwischen Encodern nicht direkt vergleichbar.</p>
+          </div>
+          <div class="settings-section">
             <h4 data-i18n="settings.language" style="margin-bottom: 0.4rem;">Sprache / Language</h4>
             <div style="margin-top: 0.3rem;">
               <select id="lang-selector" onchange="switchLanguage(this.value)" class="lang-select-btn" style="width: 100%; max-width: 220px; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
@@ -3076,7 +3111,7 @@
               <div>
                 <label for="cfg-ffmpeg-threads" data-i18n="settings.ffmpeg_threads">ffmpeg Threads:</label>
                 <select id="cfg-ffmpeg-threads">
-                  <option value="Auto">Auto</option>
+                  <option value="Auto">Auto (CPU / Jobs)</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="4">4</option>
@@ -3518,5 +3553,6 @@ data-i18n="settings.cookies_test_btn"
     <script src="/static/js/part8-pipelines.js?v={{ asset_version }}"></script>
     <script src="/static/js/part9-subscriptions.js?v={{ asset_version }}"></script>
     <script src="/static/js/part10-logviewer.js?v={{ asset_version }}"></script>
+    <script src="/static/js/part11-studio.js?v={{ asset_version }}"></script>
   </body>
 </html>

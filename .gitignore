@@ -16,6 +16,7 @@ venv/
 # Environment files and secrets
 .env
 .env.*
+!.env.example
 *.db
 # test docker yml
 docker-compose.override.yml

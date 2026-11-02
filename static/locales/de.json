@@ -36,7 +36,7 @@
     "free": "frei"
   },
   "import_card": {
-    "title": "Datei-Import",
+    "title": "01 / DATEIEN HINZUFÜGEN",
     "inputs": "Eingänge",
     "outputs": "Ausgänge",
     "select_source": "Datei aus Quelle wählen:",
@@ -44,7 +44,7 @@
     "info": "Info",
     "add": "+ Hinzufügen",
     "upload_label": "Neue Datei hochladen (nach /media/inputs):",
-    "click_or_drag": "Klicken oder Datei hierher ziehen",
+    "click_or_drag": "Dateien auswählen oder hier ablegen",
     "cancel": "Abbrechen",
     "preview_title": "Vorschau ansehen",
     "info_title": "ffprobe Media Info"
@@ -106,7 +106,7 @@
     "images_tab": "Bilder",
     "tools_tab": "Schnitt & Tools",
     "muxing_tab": "Muxing",
-    "video_queue": "Video-Warteschlange",
+    "video_queue": "Ausgewählte Dateien",
     "clear_queue": "Leeren",
     "custom_title": "Ausgabename (optional):",
     "output_name_label": "Ausgabename (optional, Standard: [Originalname]_converted):",
@@ -125,7 +125,7 @@
     "container": "Container:",
     "vcodec": "Video-Codec:",
     "acodec": "Audio-Codec:",
-    "crf": "Qualität (CRF, niedriger = besser):",
+    "crf": "Qualität (niedriger = besser):",
     "trim_start": "Trim Startzeit (HH:MM:SS):",
     "trim_end": "Trim Endzeit (HH:MM:SS):",
     "start_video_btn": "Video-Jobs starten",
@@ -410,7 +410,7 @@
     "watch_folder_pipeline": "Pipeline:",
     "watch_folder_interval": "Prüfintervall (Sekunden):"
   },
-"modals": {
+  "modals": {
     "playlist_detected": "Playlist erkannt",
     "playlist_detected_msg": "Ein Playlist-Link wurde erkannt. Wie möchtest du mit dem Download fortfahren?",
     "radio_detected": "YouTube Radio / Mix erkannt",
@@ -726,5 +726,103 @@
     "search_placeholder": "Log durchsuchen...",
     "autorefresh": "Auto-Aktualisierung (5s)",
     "level_access": "Access-Log (HTTP-Anfragen)"
+  },
+  "hardware": {
+    "title": "Hardware & Encoding",
+    "loading": "Hardware wird geprüft …",
+    "threads": "Threads/Job",
+    "no_gpu": "kein nutzbarer Encoder",
+    "no_ffmpeg": "FFmpeg ist nicht verfügbar.",
+    "failed": "Hardware-Diagnose fehlgeschlagen.",
+    "hint": "GPU-Codecs erscheinen nach erfolgreichem Test im Video-Konverter. Auto verteilt das CPU-Budget auf parallele Jobs. Die Qualitätsstufen sind zwischen Encodern nicht direkt vergleichbar."
+  },
+  "studio": {
+    "convert": "Video umwandeln",
+    "convert_hint": "Format, Auflösung oder Ton ändern",
+    "download": "Medien herunterladen",
+    "download_hint": "Link einfügen, Video oder Audio speichern",
+    "audio": "Audio extrahieren",
+    "audio_hint": "Tonspur als MP3, FLAC oder WAV speichern",
+    "library": "Ergebnisse ansehen",
+    "library_hint": "Fertige Dateien abspielen und herunterladen",
+    "server": "System",
+    "server_hint": "CPU, RAM und Speicherplatz",
+    "workspace": "ARBEITSBEREICH",
+    "convert_intro": "Dateien hinzufügen und Ausgabeformat wählen.",
+    "ai": "Transkribieren & bearbeiten",
+    "ai_intro": "Datei hinzufügen und Sprache in Text verwandeln.",
+    "step2": "02 / ERGEBNIS WÄHLEN",
+    "profile_title": "Konvertierungsprofil",
+    "codec_details": "Format & Codec anpassen",
+    "optional": "Optional",
+    "resolution": "Maximale Auflösung",
+    "original": "Original beibehalten",
+    "fps": "Bildrate",
+    "mute": "Video ohne Ton",
+    "mute_hint": "Audiospur aus der Ausgabe entfernen",
+    "command": "Technische Befehlsvorschau",
+    "save": "Als eigenes Profil merken",
+    "restore": "Eigenes Profil laden",
+    "step3": "03 / BEREIT ZUM START",
+    "review": "Auftrag",
+    "live": "Live-Protokoll anzeigen",
+    "codec_unavailable": "Der benötigte Encoder ist hier nicht verfügbar. Bitte ein anderes Profil oder einen anderen Codec wählen.",
+    "copy_conflict": "Stream Copy kann Auflösung und Bildrate nicht ändern. Beide auf Original stellen oder einen Video-Encoder wählen.",
+    "trim_invalid": "Bitte gültige Schnittzeiten angeben, z. B. 00:00:10. Das Ende muss nach dem Start liegen.",
+    "name_invalid": "Der Ausgabename darf keine Pfadtrennzeichen oder Sonderzeichen wie /, : oder ? enthalten.",
+    "files": "Datei(en)",
+    "original_fps": "Original-Bildrate",
+    "no_audio": "Ohne Ton",
+    "add_first": "Zuerst Dateien hinzufügen.",
+    "custom_note": "Einstellungen können unten angepasst werden.",
+    "saved": "Profil in diesem Browser gespeichert.",
+    "storage_failed": "Der Browser konnte das Profil nicht speichern.",
+    "restored": "Eigenes Profil geladen.",
+    "restore_failed": "Das Profil konnte nicht vollständig geladen werden. Möglicherweise ist der gespeicherte Encoder hier nicht verfügbar.",
+    "no_files": "Keine Dateien ausgewählt",
+    "file_hint": "Datei hochladen oder oben eine vorhandene Datei hinzufügen.",
+    "upload": "Dateien auswählen",
+    "profiles": {
+      "universal": {
+        "title": "Überall abspielen",
+        "description": "MP4 · H.264 · bis Full HD",
+        "note": "Für Browser, Fernseher und Mobilgeräte. Auflösung wird nur verkleinert, nie hochgerechnet."
+      },
+      "compact": {
+        "title": "Weniger Speicher",
+        "description": "MP4 · H.265 · bis HD",
+        "note": "Kompaktere Ausgabe mit geringerer Auflösung. H.265 braucht meist länger und wird nicht von jedem älteren Gerät unterstützt; falls nicht verfügbar, wird H.264 gewählt."
+      },
+      "web": {
+        "title": "Fürs Web",
+        "description": "WebM · VP9 · bis Full HD",
+        "note": "WebM mit Opus-Ton für moderne Browser. Falls VP9 fehlt, wird AV1 gewählt; Encoding kann länger dauern."
+      },
+      "remux": {
+        "title": "Ohne Qualitätsverlust",
+        "description": "MKV · vorhandene Spuren kopieren",
+        "note": "Ändert nur den Container, ohne neu zu kodieren. Sehr schnell; die vorhandenen Spuren müssen vom Zielcontainer unterstützt werden. Schnitte sind dabei nicht framegenau."
+      }
+    },
+    "trim": "Schnitt",
+    "until_end": "Bis zum Ende",
+    "finetune": "Auflösung, Bildrate, Ton & Schnitt",
+    "start_one": "1 Video konvertieren",
+    "start_many": "{count} Videos konvertieren",
+    "start_empty": "Konvertierung starten",
+    "starting": "Aufträge werden angelegt …",
+    "overview": "Übersicht",
+    "refresh": "Dateien aktualisieren",
+    "recent_outputs": "Letzte Ausgaben",
+    "recent_inputs": "Vorhandene Quelldateien",
+    "empty_outputs": "Noch keine Ausgaben vorhanden.",
+    "empty_inputs": "Noch keine Quelldateien vorhanden.",
+    "download_file": "Herunterladen",
+    "reuse": "Verarbeiten",
+    "files_failed": "Dateien konnten nicht geladen werden. Bitte erneut aktualisieren.",
+    "upload_busy": "Ein Upload läuft bereits. Bitte warten oder abbrechen.",
+    "upload_failed_file": "Upload fehlgeschlagen",
+    "upload_finished": "{done} hochgeladen · {failed} fehlgeschlagen",
+    "upload_cancelled": "Upload abgebrochen. Bereits hochgeladene Dateien bleiben erhalten."
   }
 }

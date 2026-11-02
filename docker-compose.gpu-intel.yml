@@ -1,0 +1,5 @@
+# Linux Intel/AMD VAAPI; use together with docker-compose.yml.
+services:
+  media-converter:
+    devices:
+      - /dev/dri:/dev/dri

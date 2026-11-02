@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from typing import List, Optional, Literal
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 class JobType(str, Enum):
@@ -61,7 +61,7 @@ class Job(BaseModel):
 
 class JobCreateRequest(BaseModel):
     job_type: JobType
-    tool: str = "ffmpeg"
+    tool: Literal["ffmpeg", "yt-dlp", "gallery-dl", "whisper", "HandBrakeCLI"] = "ffmpeg"
     title: Optional[str] = None
     command_args: List[str]
     second_pass_args: Optional[List[str]] = None
@@ -78,7 +78,7 @@ class PipelineStage(BaseModel):
     {input} = Ausgabedatei der vorherigen Stufe (bzw. URL/Ausgangsdatei bei Stufe 1),
     {output} = generierter Ausgabepfad dieser Stufe."""
     job_type: JobType
-    tool: str = "ffmpeg"
+    tool: Literal["ffmpeg", "yt-dlp", "gallery-dl", "whisper", "HandBrakeCLI"] = "ffmpeg"
     label: str = ""
     command_args: List[str] = Field(default_factory=list)
     second_pass_args: Optional[List[str]] = None
@@ -149,26 +149,36 @@ class MediaTagsUpdateRequest(BaseModel):
     comment: Optional[str] = None
 
 class AppConfig(BaseModel):
-    max_concurrent_jobs: int = 2
+    max_concurrent_jobs: int = Field(2, ge=1, le=8)
     pushover_enabled: bool = False
     pushover_user_key: str = ""
     pushover_token: str = ""
-    auto_cleanup_days: int = 0
+    auto_cleanup_days: int = Field(0, ge=0)
     default_vcodec: str = "libx264"
-    default_crf: int = 23
+    default_crf: int = Field(23, ge=0, le=63)
     default_aformat: str = "mp3"
     default_whisper_model: str = "base"
     # Safety / reliability settings
-    min_free_disk_gb: float = 2.0
+    min_free_disk_gb: float = Field(2.0, ge=0, allow_inf_nan=False)
     prevent_output_overwrite: bool = True
     confirm_full_playlist_downloads: bool = True
-    max_concurrent_per_domain: int = 2
-    max_concurrent_whisper_jobs: int = 1
+    max_concurrent_per_domain: int = Field(2, ge=0, le=8)
+    max_concurrent_whisper_jobs: int = Field(1, ge=1, le=8)
     auto_delete_originals: bool = False
     ffmpeg_threads: str = "Auto"  # "Auto" or a positive integer as string
-    process_priority: str = "below_normal"  # low | below_normal | normal | above_normal | high
+    process_priority: Literal["low", "below_normal", "normal", "above_normal", "high"] = "below_normal"  # low | below_normal | normal | above_normal | high
     # Watch-Ordner: automatisches Verarbeiten neuer Dateien, die manuell/von einem anderen
     # Tool (rsync, Syncthing, ...) in INPUT_DIR abgelegt werden - siehe app/watch_folder.py
     watch_folder_enabled: bool = False
     watch_folder_pipeline_id: Optional[str] = None
-    watch_folder_interval_seconds: int = 30
+    watch_folder_interval_seconds: int = Field(30, ge=10, le=86400)
+
+    @field_validator("ffmpeg_threads")
+    @classmethod
+    def validate_threads(cls, value):
+        value = value.strip()
+        if value.lower() == "auto":
+            return "Auto"
+        if value.isdigit() and 1 <= int(value) <= 1024:
+            return str(int(value))
+        raise ValueError("Use Auto or a thread count between 1 and 1024")

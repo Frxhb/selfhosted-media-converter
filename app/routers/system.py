@@ -5,8 +5,13 @@ import shutil
 import zipfile
 import subprocess
 import logging
+import tempfile
+import sqlite3
+from contextlib import closing
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, Request, Query, File
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
+from app.database import DB_PATH, CONFIG_JSON_PATH
 from fastapi.templating import Jinja2Templates
 
 from app.logging_config import LOG_DIR
@@ -55,17 +60,25 @@ def backup_config():
     Exportiert app_config.json und die Stats-Datenbank als ZIP, für Umzug auf einen
     anderen Server oder als Sicherung vor größeren Änderungen.
     """
-    backup_zip_path = os.path.join(CONFIG_DIR, "_config_backup_export.zip")
+    backup_dir = tempfile.mkdtemp(prefix="media-backup-")
+    backup_zip_path = os.path.join(backup_dir, "backup.zip")
     try:
         with zipfile.ZipFile(backup_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            config_json_path = os.path.join(CONFIG_DIR, "app_config.json")
-            if os.path.exists(config_json_path):
-                zipf.write(config_json_path, arcname="app_config.json")
-            db_path = os.path.join(CONFIG_DIR, "mcp_stats.db")
-            if os.path.exists(db_path):
-                zipf.write(db_path, arcname="mcp_stats.db")
-        return FileResponse(backup_zip_path, filename="media_converter_backup.zip", media_type="application/zip")
+            if os.path.exists(CONFIG_JSON_PATH):
+                zipf.write(CONFIG_JSON_PATH, arcname="app_config.json")
+            if os.path.exists(DB_PATH):
+                # A raw copy of a WAL database may omit committed history. The
+                # SQLite backup API produces a consistent snapshot while jobs run.
+                snapshot = os.path.join(backup_dir, "mcp_stats.db")
+                with closing(sqlite3.connect(DB_PATH)) as source, closing(sqlite3.connect(snapshot)) as target:
+                    source.backup(target)
+                zipf.write(snapshot, arcname="mcp_stats.db")
+        return FileResponse(
+            backup_zip_path, filename="media_converter_backup.zip", media_type="application/zip",
+            background=BackgroundTask(shutil.rmtree, backup_dir, ignore_errors=True),
+        )
     except Exception as e:
+        shutil.rmtree(backup_dir, ignore_errors=True)
         raise HTTPException(status_code=500, detail=f"Backup fehlgeschlagen: {e}")
 
 
@@ -194,3 +207,10 @@ def update_ytdlp():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/system/hardware")
+def get_hardware():
+    """Cached FFmpeg build/driver checks; process restart refreshes capabilities."""
+    from app.hardware import hardware_info
+    return hardware_info(job_manager.max_concurrent_jobs)

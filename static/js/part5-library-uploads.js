@@ -54,119 +54,89 @@ async function addSelectedFileToActiveQueue() {
 }
 
 let currentUploadXhr = null;
+let uploadBatchRunning = false;
+let uploadBatchCancelled = false;
 
 function cancelFileUpload() {
-  if (currentUploadXhr) {
-    currentUploadXhr.abort();
-    currentUploadXhr = null;
-  }
+  uploadBatchCancelled = true;
+  if (currentUploadXhr) currentUploadXhr.abort();
 }
 
-function uploadSelectedFileWithProgress() {
-  const input = document.getElementById("global-file-upload");
-  if (!input.files || input.files.length === 0) return;
+function uploadBatchFile(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    currentUploadXhr = xhr;
+    xhr.open('POST', '/api/files/upload', true);
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress(event.loaded);
+    };
+    xhr.onload = () => {
+      currentUploadXhr = null;
+      let data;
+      try { data = JSON.parse(xhr.responseText); } catch (_) {}
+      if (xhr.status >= 200 && xhr.status < 300 && data?.path) resolve(data);
+      else reject(new Error(data?.detail || `HTTP ${xhr.status}`));
+    };
+    xhr.onerror = () => { currentUploadXhr = null; reject(new Error(t('toast.network_error_upload'))); };
+    xhr.onabort = () => { currentUploadXhr = null; reject(new Error('cancelled')); };
+    const body = new FormData(); body.append('file', file);
+    xhr.send(body);
+  });
+}
 
-  const file = input.files[0];
-  const fileSizeMb = (file.size / (1024 * 1024)).toFixed(2);
-
-  const wrapper = document.getElementById("upload-progress-wrapper");
-  const fill = document.getElementById("upload-progress-fill");
-  const statusText = document.getElementById("upload-status-text");
-  const cancelBtn = document.getElementById("upload-cancel-btn");
-
-  wrapper.style.display = "block";
-  if (cancelBtn) cancelBtn.style.display = "inline-block";
-  fill.style.width = "0%";
-  fill.className = "meter-fill";
-  statusText.style.color = "var(--ink-dim)";
-  statusText.textContent = t("label.upload_starting").replace("{size}", fileSizeMb);
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const xhr = new XMLHttpRequest();
-  currentUploadXhr = xhr;
-
-  xhr.open("POST", "/api/files/upload", true);
-
-  xhr.upload.onprogress = (e) => {
-    if (e.lengthComputable) {
-      const pct = Math.round((e.loaded / e.total) * 100);
-      const loadedMb = (e.loaded / (1024 * 1024)).toFixed(2);
-      fill.style.width = `${pct}%`;
-      statusText.textContent = t("label.upload_progress").replace("{pct}", pct).replace("{loaded}", loadedMb).replace("{total}", fileSizeMb);
-    }
-  };
-
-  xhr.onabort = () => {
-    currentUploadXhr = null;
-    if (cancelBtn) cancelBtn.style.display = "none";
-    fill.classList.add("warn-fill");
-    statusText.style.color = "var(--warn)";
-    statusText.textContent = t("label.upload_cancelled_icon");
-    showToast(t("toast.upload_cancelled"), "info");
-
-    setTimeout(() => {
-      wrapper.style.display = "none";
-      fill.classList.remove("warn-fill");
-      statusText.textContent = "";
-      input.value = "";
-    }, 2000);
-  };
-
-  xhr.onload = async () => {
-    currentUploadXhr = null;
-    if (cancelBtn) cancelBtn.style.display = "none";
-
-    if (xhr.status === 200) {
-      fill.style.width = "100%";
-      fill.classList.add("ok-fill");
-      statusText.textContent = t("label.upload_success_icon");
-      showToast(t("toast.file_uploaded").replace("{name}", file.name), "success");
-
-      const res = JSON.parse(xhr.responseText);
-      await refreshFiles();
-      addFileToQueue(activeConvSubTab, {
-        name: res.filename,
-        path: res.path,
-        size_mb: res.size_mb,
-      });
-
-      setTimeout(() => {
-        wrapper.style.display = "none";
-        fill.classList.remove("ok-fill");
-        statusText.textContent = "";
-        input.value = "";
-      }, 2500);
-    } else {
-      let errDetail = `HTTP ${xhr.status}`;
+async function uploadSelectedFileWithProgress() {
+  const input = document.getElementById('global-file-upload');
+  if (uploadBatchRunning) return showToast(t('studio.upload_busy'), 'warn');
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  uploadBatchRunning = true; uploadBatchCancelled = false;
+  // Keep the upload destination stable when the user switches tabs mid-upload.
+  const group = currentGroup, selectedTab = activeConvSubTab;
+  const wrapper = document.getElementById('upload-progress-wrapper');
+  const fill = document.getElementById('upload-progress-fill');
+  const status = document.getElementById('upload-status-text');
+  const cancel = document.getElementById('upload-cancel-btn');
+  const total = files.reduce((sum, file) => sum + file.size, 0);
+  let finishedBytes = 0, done = 0, failed = 0;
+  wrapper.style.display = 'block'; cancel.style.display = 'inline-block';
+  fill.className = 'meter-fill'; status.style.color = 'var(--ink-dim)';
+  try {
+    for (let index = 0; index < files.length && !uploadBatchCancelled; index++) {
+      const file = files[index];
+      const progress = loaded => {
+        const pct = Math.round((finishedBytes + loaded) / Math.max(total, 1) * 100);
+        fill.style.width = `${Math.min(100, pct)}%`;
+        status.textContent = `${index + 1}/${files.length} · ${file.name} · ${pct}%`;
+      };
+      progress(0);
       try {
-        const res = JSON.parse(xhr.responseText);
-        if (res.detail) errDetail = res.detail;
-      } catch (e) { }
-
-      fill.classList.add("danger-fill");
-      statusText.style.color = "var(--danger)";
-      statusText.textContent = `❌ ${errDetail}`;
-      showToast(t("toast.upload_failed").replace("{detail}", errDetail), "warn", 7000);
-
-      setTimeout(() => {
-        wrapper.style.display = "none";
-        fill.classList.remove("danger-fill");
-      }, 4000);
+        const result = await uploadBatchFile(file, progress);
+        done++;
+        if (group === 'special') {
+          const select = document.getElementById('sp-whisper-file');
+          if (select) { await refreshFiles(); select.value = result.path; }
+        } else {
+          const category = getFileCategory(result.filename);
+          const tab = selectedTab === 'tools' ? 'tools' : category === 'image' ? 'images' : category;
+          if (tabQueues[tab]) addFileToQueue(tab, {name: result.filename, path: result.path, size_mb: result.size_mb});
+        }
+      } catch (error) {
+        if (uploadBatchCancelled) break;
+        failed++;
+        showToast(`${file.name}: ${error.message}`, 'warn', 7000);
+      }
+      finishedBytes += file.size;
     }
-  };
-
-  xhr.onerror = () => {
-    currentUploadXhr = null;
-    if (cancelBtn) cancelBtn.style.display = "none";
-    fill.classList.add("danger-fill");
-    statusText.style.color = "var(--danger)";
-    statusText.textContent = t("label.network_error_icon");
-    showToast(t("toast.network_error_upload"), "warn");
-  };
-
-  xhr.send(formData);
+  } finally {
+    uploadBatchRunning = false; currentUploadXhr = null;
+    input.value = ''; cancel.style.display = 'none';
+    fill.classList.add(failed || uploadBatchCancelled ? 'warn-fill' : 'ok-fill');
+    status.textContent = uploadBatchCancelled ? t('studio.upload_cancelled')
+      : t('studio.upload_finished').replace('{done}', done).replace('{failed}', failed);
+    if (!uploadBatchCancelled) fill.style.width = '100%';
+    await refreshFiles();
+    if (typeof refreshStudioFiles === 'function') refreshStudioFiles();
+  }
 }
 
 async function resetGuiAndRefresh() {
@@ -346,6 +316,7 @@ async function submitJob(payload, force = false) {
     appendLog(`[SYSTEM] ${t("label.system_job_started").replace("{id}", job.id)}`);
     showToast(t("toast.job_started").replace("{title}", job.title), "success");
     loadJobs();
+    return job;
   } catch (e) {
     showToast(t("toast.error_prefix") + e.message, "warn");
   }
@@ -355,6 +326,8 @@ async function loadServerConfig() {
   try {
     const res = await fetch("/api/config");
     const cfg = await res.json();
+    serverMediaPaths = cfg.media_paths || serverMediaPaths;
+    if (typeof updateVideoPreview === 'function') updateVideoPreview();
     document.getElementById("cfg-max-jobs").value =
       cfg.max_concurrent_jobs;
     document.getElementById("cfg-cleanup-days").value =
@@ -422,6 +395,8 @@ async function saveServerConfig() {
     document.getElementById("cfg-client-ffmpeg").checked;
 
   useClientFFmpeg = isClientFFmpeg;
+  refreshVideoCodecOptions();
+  updateVideoPreview();
   localStorage.setItem(
     "mcp_use_client_ffmpeg",
     isClientFFmpeg ? "true" : "false",
